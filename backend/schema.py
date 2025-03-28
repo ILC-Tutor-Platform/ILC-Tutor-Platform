@@ -1,3 +1,5 @@
+#   Description: This file contains the schema for the UserDetail model used for data serialization and validation for CRUD operations. 
+
 from pydantic import BaseModel
 from datetime import date
 
