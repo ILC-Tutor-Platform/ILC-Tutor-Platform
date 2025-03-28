@@ -9,19 +9,12 @@ load_dotenv()
 
 def db_connect():
     """Connect to the PostgreSQL database using environment variables."""
-    # Extract credentials
-    username = os.getenv("DATABASE_USERNAME")
-    password = os.getenv("DATABASE_PASSWORD")
-    dbname = os.getenv("DATABASE_NAME")
-    port = os.getenv("DATABASE_PORT", "5432")
-    host = os.getenv("DATABASE_HOST")
 
-    # Ensure all required values are present
-    if not all([username, password, dbname, host]):
-        raise ValueError("Missing database credentials in .env file.")
+    DATABASE_URL = os.getenv("DATABASE_URL")
+
 
     # Create the database engine
-    engine = create_engine(f"postgresql+psycopg2://{username}:{password}@{host}:{port}/{dbname}?sslmode=require", echo=True)
+    engine = create_engine(DATABASE_URL)
 
     return engine
 
