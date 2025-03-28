@@ -1,3 +1,4 @@
+# Description: This file initializes the supabase client using the credentials fetched from the .env file.
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import os

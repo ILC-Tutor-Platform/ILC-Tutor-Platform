@@ -1,3 +1,4 @@
+# Description: This file contains the database connection and session creation logic.
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -21,9 +22,4 @@ def db_connect():
 engine = db_connect()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
-
-# def create_tables(engine):
-#     """Drop and create tables using raw metadata."""
-#     Base.metadata.drop_all(engine, checkfirst=True)
-#     Base.metadata.create_all(engine, checkfirst=True)
     

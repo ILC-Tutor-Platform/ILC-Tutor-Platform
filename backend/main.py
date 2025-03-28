@@ -1,3 +1,5 @@
+# This file contains the FastAPI code to interact with the database and Supabase
+
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from database import engine, SessionLocal
@@ -15,11 +17,13 @@ def get_db():
     finally:
         db.close()  # Ensure session is closed after request
 
+# Display all data from the user_detail table
 @app.get("/")
 def get_details(db: Session = Depends(get_db)):
     response = supabase.table("user_detail").select("*").execute()
     return response.data
 
+# Add user data to table
 @app.post("/user", response_model=UserDetailSchema)
 def create_user(user: UserDetailSchema, db: Session = Depends(get_db)):
     try:
@@ -31,6 +35,7 @@ def create_user(user: UserDetailSchema, db: Session = Depends(get_db)):
     except Exception as e:
         return {"error": str(e)}
 
+# Delete user data from table
 @app.delete("/user/{userid}")
 def delete_user(userid: int, db: Session = Depends(get_db)):
     try:
@@ -41,6 +46,7 @@ def delete_user(userid: int, db: Session = Depends(get_db)):
     except Exception as e:
         return {"error": str(e)}
     
+# Update user data in table
 @app.put("/user/{userid}", response_model=UserDetailSchema)
 def update_user(userid: int, user: UserDetailSchema, db: Session = Depends(get_db)):
     try:
