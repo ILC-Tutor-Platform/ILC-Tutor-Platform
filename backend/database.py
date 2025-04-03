@@ -9,7 +9,6 @@ import os
 load_dotenv()
 
 def db_connect():
-    """Connect to the PostgreSQL database using environment variables."""
 
     DATABASE_URL = os.getenv("DATABASE_URL")
 
