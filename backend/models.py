@@ -37,12 +37,12 @@ class TutorDetail(Base):
     availability = Column(String, nullable=False)
     description = Column(String, nullable=False)
     social_media_links = Column(String, nullable=False)
-    status = Column(UUID(as_uuid=True), ForeignKey("status_detail.status_id"), nullable=False)
+    status = Column(Integer, ForeignKey("status_detail.status_id"), nullable=False)
 
 class StatusDetail(Base):
     __tablename__ = "status_detail"
 
-    status_id = Column(UUID(as_uuid=True), primary_key=True, index=True, server_default=text("gen_random_uuid()")) # added server_default="gen_random_uuid()" to auto generate a uuid
+    status_id = Column(Integer, primary_key=True, index=True)
     status = Column(String, nullable=False)
 
 class SubjectDetail(Base):
