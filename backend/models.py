@@ -1,6 +1,5 @@
 # Description: This file contains the ORM model for the UserDetail table that will be used to create the table in the database.
 
-import uuid
 from sqlalchemy import Column, Integer, Date, String, ForeignKey, text
 from database import Base, engine  # Directly import engine
 from sqlalchemy.dialects.postgresql import UUID
@@ -57,3 +56,17 @@ class SubjectDetail(Base):
 print("🚀 Attempting to create tables in Supabase...")
 Base.metadata.create_all(bind=engine)
 print("✅ Tables created successfully!")
+
+
+"""
+04/04/2025
+For this branch, I have added the following features:
+- Added a new model for AdminDetail to store admin-specific information.
+- Added a new model for StudentDetail to store student-specific information.
+- Added a new model for TutorDetail to store tutor-specific information.
+- Added a new model for StatusDetail to store status-specific information.
+- Added a new model for SubjectDetail to store subject-specific information.
+- Used UUID for primary keys in all models for better security and uniqueness.
+- Added server_default=text("gen_random_uuid()") to auto-generate UUIDs for primary keys.
+- Used ForeignKey() relationships to link models together where necessary.
+"""
