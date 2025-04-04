@@ -1,3 +1,5 @@
+# Description: This file contains the ORM model for the UserDetail table that will be used to create the table in the database.
+
 from sqlalchemy import Column, Integer, Date, String
 from database import Base, engine  # Directly import engine
 
@@ -8,6 +10,7 @@ class UserDetail(Base):
     userid = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
+    role = Column(String, nullable=False)
     datejoined = Column(Date, nullable=False)
 
 # Create Tables
