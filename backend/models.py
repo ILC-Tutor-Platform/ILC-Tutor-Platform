@@ -11,7 +11,7 @@ class UserDetail(Base):
     userid = Column(UUID(as_uuid=True), primary_key=True, index=True, server_default=text("gen_random_uuid()")) # added server_default="gen_random_uuid()" to auto generate a uuid
     name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
-    role = Column(String, nullable=False)
+    role = Column(Integer, ForeignKey("role_detail.role_id"), nullable=False)
     datejoined = Column(Date, nullable=False)
 
 class AdminDetail(Base):
