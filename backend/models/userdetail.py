@@ -16,6 +16,4 @@ class UserDetail(Base):
     datejoined = Column(Date, nullable=False)
 
 # Create Tables
-# print("🚀 Attempting to create tables in Supabase...")
 Base.metadata.create_all(bind=engine)
-# print("✅ Tables created successfully!")

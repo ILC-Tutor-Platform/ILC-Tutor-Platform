@@ -4,6 +4,7 @@ from . import BaseModel
 from . import date
 from typing import Optional
 
+# Schema for UserDetail model
 class UserDetailSchema(BaseModel):
     name: Optional[str] = None
     email: str
