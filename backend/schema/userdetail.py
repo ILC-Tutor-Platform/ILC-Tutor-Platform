@@ -2,11 +2,12 @@
 #   for data serialization and validation for CRUD operations. 
 from . import BaseModel
 from . import date
+from typing import Optional
 
 class UserDetailSchema(BaseModel):
-    name: str
+    name: Optional[str] = None
     email: str
-    role: str
+    role: Optional[str] = None
     datejoined: date
 
     class Config:
