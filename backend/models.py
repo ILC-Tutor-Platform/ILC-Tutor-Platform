@@ -11,7 +11,7 @@ class UserDetail(Base):
     userid = Column(UUID(as_uuid=True), primary_key=True, index=True, server_default=text("gen_random_uuid()")) # added server_default="gen_random_uuid()" to auto generate a uuid
     name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
-    role = Column(Integer, ForeignKey("role_detail.role_id"), nullable=False)
+    #role = Column(Integer, ForeignKey("role_detail.role_id"), nullable=False) # remove this since it is not used in the table
     datejoined = Column(Date, nullable=False)
 
 class AdminDetail(Base):
@@ -61,9 +61,8 @@ class RoleDetail(Base):
 class UserRoleDetail(Base):
     __tablename__ = "user_role_detail"
 
-    user_role_id = Column(UUID(as_uuid=True), primary_key=True, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user_detail.userid"), nullable=False)
-    role_id = Column(Integer, ForeignKey("role_detail.role_id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user_detail.userid"), primary_key=True, nullable=False)
+    role_id = Column(Integer, ForeignKey("role_detail.role_id"), primary_key=True, nullable=False)
 
 # Create Tables
 print("🚀 Attempting to create tables in Supabase...")
