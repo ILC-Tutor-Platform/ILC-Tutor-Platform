@@ -1,9 +1,9 @@
 import { createContext, useState, useContext, ReactNode, useEffect } from "react";
-import { supabase } from "../supabaseClient"; // Adjust the import path as necessary
-import { Session } from "@supabase/supabase-js"; // Import Supabase's Session type
+import { supabase } from "../supabaseClient"; 
+import { Session } from "@supabase/supabase-js"; 
 
 interface AuthContextType {
-    session: Session | null; // Correctly type the session
+    session: Session | null; 
     signUpNewUser: (email: string, password: string) => Promise<{ success: boolean, error?: string }>;
     signInUser: (email: string, password: string) => Promise<{ success: boolean, error?: string }>;
     signOut: () => Promise<void>;
@@ -12,8 +12,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
-    const [session, setSession] = useState<Session | null>(null); // Type the session state properly
-
+    const [session, setSession] = useState<Session | null>(null);
     // Signup
     const signUpNewUser = async (email: string, password: string) => {
         const { data, error } = await supabase.auth.signUp({

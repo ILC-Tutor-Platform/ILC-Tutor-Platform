@@ -22,7 +22,7 @@ const Signup = () => {
     
             // Check if signup was successful
             if (result.success) {
-                navigate("/verify-email");
+                navigate("/verify-email"); // Currently not working, needs fix
             } else {
                 // Handle known error from result
                 setError(result.error || "An unknown error occurred.");

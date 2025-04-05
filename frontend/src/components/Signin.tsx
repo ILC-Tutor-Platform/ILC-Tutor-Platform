@@ -16,7 +16,7 @@ const Signin = () => {
 
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true); // Show loading state
+        setLoading(true); 
         try {
             const result = await signInUser(email, password);
     
@@ -28,7 +28,6 @@ const Signin = () => {
                 setError(result.error || "An unknown error occurred.");
             }
         } catch (err: any) {
-            // Handle unexpected errors
             console.error("Sign up error:", err); // Log for debugging purposes
             setError("An unexpected error occurred.");
         } finally {

@@ -7,6 +7,7 @@ const Dashboard = () => {
 
     console.log(session);
 
+    // Redirect to the app
     const handleSignOut = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
