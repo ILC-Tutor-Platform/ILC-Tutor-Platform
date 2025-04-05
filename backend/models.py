@@ -52,6 +52,19 @@ class SubjectDetail(Base):
     subject_name = Column(String, nullable=False)
     subject_description = Column(String, unique=True, index=True, nullable=False)
 
+class RoleDetail(Base):
+    __tablename__ = "role_detail"
+
+    role_id = Column(Integer, primary_key=True, index=True)
+    role_name = Column(String, nullable=False)
+
+class UserRoleDetail(Base):
+    __tablename__ = "user_role_detail"
+
+    user_role_id = Column(UUID(as_uuid=True), primary_key=True, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user_detail.userid"), nullable=False)
+    role_id = Column(Integer, ForeignKey("role_detail.role_id"), nullable=False)
+
 # Create Tables
 print("🚀 Attempting to create tables in Supabase...")
 Base.metadata.create_all(bind=engine)

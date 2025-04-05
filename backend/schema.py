@@ -49,3 +49,16 @@ class SubjectDetailSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+class RoleDetailSchema(BaseModel):
+    role_name: str
+
+    class Config:
+        from_attributes = True
+
+class UserDetailResponseSchema(BaseModel):
+    user_id: str
+    role_id: int
+
+    class Config:
+        from_attributes = True
