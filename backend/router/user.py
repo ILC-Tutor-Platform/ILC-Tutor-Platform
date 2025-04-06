@@ -7,14 +7,6 @@ from supabase_client import supabase
 
 router = APIRouter()
 
-# Dependency to get a session
-# def get_db():
-#     db = SessionLocal()
-#     try:
-#         yield db  # Provide session to request
-#     finally:
-#         db.close()  # Ensure session is closed after request
-
 # Display all data from the user_detail table
 @router.get("/")
 def get_details(db: Session = Depends(get_db)):
