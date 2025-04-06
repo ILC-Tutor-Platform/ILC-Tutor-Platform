@@ -21,3 +21,7 @@ For this branch (```10-be-user-role-system```), I have added the following featu
 - Removed role from the UserDetail to prevent single role limitation
 - Created a new role table to store the roles
 - Created a UserRole association table so that users can have many roles, and a role can belong to multiple users 
+
+#### 04/06/2025
+- moved the models to models dir for separation of concerns
+- moved the schema to schema dir
