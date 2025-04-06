@@ -1,12 +1,14 @@
 # Backend
 
-## Tech Stack
-FastAPI\
-Supabase\
-SQLAlchemy\
-uvicorn\
-psycopg2\
+## Requirements
+```
+FastAPI
+Supabase
+SQLAlchemy
+uvicorn
+psycopg2
 python-dotenv
+```
 
 ### LOGS
 
