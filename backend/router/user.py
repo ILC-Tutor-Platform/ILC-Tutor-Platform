@@ -1,4 +1,4 @@
-from fastapi import Depends, APIRouter
+from fastapi import Depends, APIRouter, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 from models import UserDetail
@@ -23,22 +23,22 @@ def create_user(user: UserDetailSchema, db: Session = Depends(get_db)):
         db.refresh(db_user)
         return db_user
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=400, detail=str(e))
 
 # Delete user data from table
 @router.delete("/user/{userid}")
-def delete_user(userid: int, db: Session = Depends(get_db)):
+def delete_user(userid: str, db: Session = Depends(get_db)):
     try:
         user = db.query(UserDetail).filter(UserDetail.userid == userid).first()
         db.delete(user)
         db.commit()
         return {"message": "User deleted successfully"}
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=400, detail=str(e))
     
 # Update user data in table
 @router.put("/user/{userid}", response_model=UserDetailSchema)
-def update_user(userid: int, user: UserDetailSchema, db: Session = Depends(get_db)):
+def update_user(userid: str, user: UserDetailSchema, db: Session = Depends(get_db)):
     try:
         db_user = db.query(UserDetail).filter(UserDetail.userid == userid).first()
         db_user.name = user.name
@@ -49,4 +49,4 @@ def update_user(userid: int, user: UserDetailSchema, db: Session = Depends(get_d
         db.refresh(db_user)
         return db_user
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=400, detail=str(e))
