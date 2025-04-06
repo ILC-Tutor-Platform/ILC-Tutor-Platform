@@ -99,7 +99,7 @@ def verify_email(email: str, db: Session = Depends(get_db)):
                 userid=user.id,  # Use 'userid' column
                 email=email,
                 datejoined=user.created_at.date(),  # Assuming user.created_at is a datetime object
-                role="user",  # Default role
+                # role="user",  # Default role
                 name=None  # Adjust based on your needs
             )
 
