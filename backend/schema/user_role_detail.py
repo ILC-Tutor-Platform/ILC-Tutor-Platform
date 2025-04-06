@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-class UserRoleSchema(BaseModel):
+class UserRoleDetailSchema(BaseModel):
     user_id: str
     role_id: int
 
