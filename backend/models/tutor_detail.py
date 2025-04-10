@@ -9,7 +9,6 @@ class TutorDetail(Base):
 
     tutor_id = Column(UUID(as_uuid=True), ForeignKey("user_detail.userid"), primary_key=True, index=True)
     expertise = Column(String, nullable=False)
-    subject_id = Column(UUID(as_uuid=True), ForeignKey("subject.subject_id"), nullable=False)
     availability = Column(String, nullable=False)
     description = Column(String, nullable=False)
     social_media_links = Column(String, nullable=False)
