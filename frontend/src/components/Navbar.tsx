@@ -1,26 +1,55 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { Button } from "./ui/button";
 import Logo from "@/assets/AralLinkLogo.svg";
 
 const Navbar = () => {
   return (
-    <nav className="flex items-center justify-between px-20 py-7 shadow-md sticky top-0">
-      <Link to={"/"}>
+    <nav className="flex items-center justify-between px-20 py-7 shadow-md sticky top-0 bg-white z-50">
+      <NavLink to={"/"}>
         <img src={Logo} alt="Logo" className="w-35 h-auto" />
-      </Link>
+      </NavLink>
 
       <ul className="flex gap-10 items-center">
         <li>
-          <Link to={"/"} className="hover:text-ilc-yellow underline-offset-[15px] hover:underline">Home</Link>
+          <NavLink
+            to={"/"}
+            className={({ isActive }) =>
+              isActive
+                ? "text-ilc-yellow underline underline-offset-[15px]"
+                : "hover:text-ilc-yellow underline-offset-[15px] hover:underline"
+            }
+          >
+            Home
+          </NavLink>
         </li>
         <li>
-          <Link to={"/tutor"} className="hover:text-ilc-yellow underline-offset-[15px] hover:underline">Tutor</Link>
+          <NavLink
+            to={"/tutor"}
+            className={({ isActive }) =>
+              isActive
+                ? "text-ilc-yellow underline underline-offset-[15px]"
+                : "hover:text-ilc-yellow underline-offset-[15px] hover:underline"
+            }
+          >
+            Tutor
+          </NavLink>
         </li>
         <li>
-          <Link to={"/profile"} className="hover:text-ilc-yellow underline-offset-[15px] hover:underline">Profile</Link>
+          <NavLink
+            to={"/profile"}
+            className={({ isActive }) =>
+              isActive
+                ? "text-ilc-yellow underline underline-offset-[15px]"
+                : "hover:text-ilc-yellow underline-offset-[15px] hover:underline"
+            }
+          >
+            Profile
+          </NavLink>
         </li>
         <li className="border-[2px] border-gray-300 border-dashed">
-          <Button variant={"yellow-button"} size={'navbar-size'}>LOG OUT</Button>
+          <Button variant={"yellow-button"} size={"navbar-size"}>
+            LOG OUT
+          </Button>
         </li>
       </ul>
     </nav>

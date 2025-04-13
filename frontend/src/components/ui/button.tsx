@@ -23,12 +23,15 @@ const buttonVariants = cva(
           "text-primary underline-offset-4 hover:underline",
         "yellow-button": 
           "bg-ilc-yellow hover:bg-amber-300 cursor-pointer text-white",
+        "yellow-button-outline":
+        "hover:bg-amber-300 border-[2px] border-ilc-yellow cursor-pointer text-ilc-yellow hover:text-white hover:bg-ilc-yellow",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
         "navbar-size": "py-3 px-7",
+        "browse-tutors": "h-12 px-6",
         icon: "size-9",
       },
     },
