@@ -8,7 +8,6 @@ import { AuthContextProvider } from './context/AuthContext.tsx'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <>
-    <h1>ILC Tutoring Platform</h1>
     <AuthContextProvider>
     <RouterProvider router={router} />
     </AuthContextProvider>

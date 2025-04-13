@@ -1,12 +1,15 @@
-// import { useState } from 'react';
-import Signup from './components/Signup';
+import Navbar from "./components/Navbar";
+import { Outlet } from "react-router-dom";
 
 function App() {
   return (
-    <>
-    <Signup />
-    </>
-  )
+    <main>
+      <Navbar />
+      <div className="min-h-screen">
+        <Outlet />
+      </div>
+    </main>
+  );
 }
 
-export default App; 
+export default App;
