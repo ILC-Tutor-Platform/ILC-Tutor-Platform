@@ -1,6 +1,4 @@
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
+from database import Base
 
 from .admin_detail import AdminDetail
 from .role_detail import RoleDetail

@@ -1,7 +1,7 @@
 # This file initializes the FastAPI App
 from fastapi import FastAPI
 from router import user, auth
-import models
+from models import *
 from database import engine, Base
 
 app = FastAPI()
