@@ -43,11 +43,11 @@ const Signin = () => {
     <div className="flex h-screen items-center w-full">
       <form
         onSubmit={handleSignIn}
-        className="flex flex-col gap-10 md:gap-15 xl:w-[30%] mx-auto py-15 md:px-10 rounded-2xl green-shadow-card"
+        className="flex flex-col w-[90%] md:gap-15 xl:w-[30%] mx-auto py-7 md:px-10 rounded-2xl green-shadow-card"
       >
         <div className="grid gap-10">
           <img src={Logo} alt="Logo" className="w-35 h-auto mx-auto" />
-          <h2 className="font-bold text-6xl text-center">Sign in</h2>
+          <h2 className="font-bold text-5xl text-center">Sign in</h2>
         </div>
 
         <div className="flex flex-col gap-8 p-8">
@@ -57,7 +57,7 @@ const Signin = () => {
               type="email"
               name="email"
               id="email"
-              placeholder="Email"
+              placeholder="Email address"
               autoComplete="email"
             />
 
@@ -72,7 +72,7 @@ const Signin = () => {
             />
           </div>
 
-          <div className="flex gap-8 justify-center">
+          <div className="flex gap-4 justify-center">
             <Button type="submit" disabled={loading} variant={"yellow-button"}>
               Sign in as Student
             </Button>
@@ -82,12 +82,12 @@ const Signin = () => {
             </Button>
           </div>
 
-          <p className="text-center">
-            Don't have an account?{" "}
-            <Link to="/signup" className="font-bold">
+          <div className="flex items-center justify-center gap-1 text-ilc-grey">
+            <p>Don't have an account? </p>
+            <Link to="/signup" className="font-bold text-black">
               Sign up
             </Link>
-          </p>
+          </div>
 
           {error && <p className="text-red-600 text-center pt-4">{error}</p>}
         </div>

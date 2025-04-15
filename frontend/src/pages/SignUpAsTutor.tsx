@@ -1,78 +1,108 @@
-import { Link, useNavigate } from "react-router-dom";
-import React, { useState } from "react";
-import { UserAuth } from "@/context/AuthContext";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import Logo from "@/assets/AralLinkLogo.svg";
+import { Link } from "react-router-dom";
 
-const SignUpAsTutor = () => {
+const SignUpAsStudent = () => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [middleInitial, setMiddleInitial] = useState("");
+  const [expertise, setExpertise] = useState("");
+  const [affiliations, setAffiliations] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const navigate = useNavigate();
-
-  const authContext = UserAuth();
-  const { session, signUpNewUser } = authContext || {};
-  console.log(session);
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true); // Show loading state
-    try {
-      const result = await signUpNewUser(email, password);
-
-      // Check if signup was successful
-      if (result.success) {
-        navigate("/verify-email");
-      } else {
-        // Handle known error from result
-        setError(result.error || "An unknown error occurred.");
-      }
-    } catch (err: any) {
-      // Handle unexpected errors
-      console.error("Sign up error:", err); // Log for debugging purposes
-      setError("An unexpected error occurred.");
-    } finally {
-      setLoading(false); // End loading state, regardless of success or failure
-    }
-  };
 
   return (
-    <div>
-      <form onSubmit={handleSignUp} className="max-w-md m-auto pt-24">
-        <h2 className="font-bold pb-2">Sign up today!</h2>
-        <p>
-          Already have an account? <Link to="/signin">Sign in</Link>
-        </p>
-        <div className="flex flex-col py-4">
-          {/* <label htmlFor="Email">Email</label> */}
-          <input
+    <div className="flex min-h-screen items-center">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+        }}
+        className="grid w-[90%] xl:w-[30%] mx-auto py-15 px-4 xl:px-10 gap-10 rounded-2xl green-shadow-card"
+      >
+        <div className="grid gap-10">
+          <img src={Logo} alt="Logo" className="w-35 h-auto mx-auto" />
+          <h2 className="font-bold text-5xl xl:text-6xl text-center">
+            Sign Up
+          </h2>
+        </div>
+
+        <div className="grid gap-4">
+          <div
+            className="grid grid-cols-3 gap-4"
+            style={{ gridTemplateColumns: "1fr 1fr 20%" }}
+          >
+            <Input
+              onChange={(e) => setFirstName(e.target.value)}
+              className="p-3 mt-2"
+              type="text"
+              name="firstName"
+              id="firstName"
+              placeholder="First Name"
+              autoComplete="given-name"
+            />
+            <Input
+              onChange={(e) => setLastName(e.target.value)}
+              className="p-3 mt-2"
+              type="text"
+              name="lastName"
+              id="lastName"
+              placeholder="Last Name"
+              autoComplete="family-name"
+            />
+            <Input
+              onChange={(e) => setMiddleInitial(e.target.value)}
+              className="p-3 mt-2"
+              type="text"
+              name="middleInitial"
+              id="middleInitial"
+              placeholder="M.I."
+              autoComplete="additional-name"
+            />
+          </div>
+
+          <Input
+            onChange={(e) => setExpertise(e.target.value)}
+            className="p-3 mt-2"
+            type="text"
+            name="expertise"
+            id="expertise"
+            placeholder="Expertise"
+          />
+
+          <Input
+            onChange={(e) => setAffiliations(e.target.value)}
+            className="p-3 mt-2"
+            type="text"
+            name="affiliations"
+            id="affiliations"
+            placeholder="Affiliations"
+          />
+
+          <Input
             onChange={(e) => setEmail(e.target.value)}
             className="p-3 mt-2"
             type="email"
             name="email"
             id="email"
-            placeholder="Email"
+            placeholder="UP Mail"
+            autoComplete="email"
           />
         </div>
-        <div className="flex flex-col py-4">
-          {/* <label htmlFor="Password">Password</label> */}
-          <input
-            onChange={(e) => setPassword(e.target.value)}
-            className="p-3 mt-2"
-            type="password"
-            name="password"
-            id="password"
-            placeholder="Password"
-          />
+        <div className="flex items-center w-[50%] mx-auto">
+          <Button variant={"yellow-button"} type="submit" className="w-full">
+            Sign up as Tutor
+          </Button>
         </div>
-        <button type="submit" disabled={loading} className="w-full mt-4">
-          Sign Up
-        </button>
-        {error && <p className="text-red-600 text-center pt-4">{error}</p>}
+        <div className="flex items-center justify-center gap-1 text-ilc-grey">
+          <p>Already have an account? </p>
+          <Link to="/signin" className="font-bold text-black">
+            Login
+          </Link>
+        </div>
       </form>
-      )
     </div>
   );
 };
 
-export default SignUpAsTutor;
+export default SignUpAsStudent;
