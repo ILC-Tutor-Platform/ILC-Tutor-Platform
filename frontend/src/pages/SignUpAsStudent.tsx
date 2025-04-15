@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import { UserAuth } from "@/context/AuthContext";
+import { Input } from "@/components/ui/input";
 
 const SignUpAsStudent = () => {
   const [email, setEmail] = useState("");
@@ -45,24 +46,26 @@ const SignUpAsStudent = () => {
         </p>
         <div className="flex flex-col py-4">
           {/* <label htmlFor="Email">Email</label> */}
-          <input
+          <Input
             onChange={(e) => setEmail(e.target.value)}
             className="p-3 mt-2"
             type="email"
             name="email"
             id="email"
             placeholder="Email"
+            autoComplete="email"
           />
         </div>
         <div className="flex flex-col py-4">
           {/* <label htmlFor="Password">Password</label> */}
-          <input
+          <Input
             onChange={(e) => setPassword(e.target.value)}
             className="p-3 mt-2"
             type="password"
             name="password"
             id="password"
             placeholder="Password"
+            autoComplete="current-password"
           />
         </div>
         <button type="submit" disabled={loading} className="w-full mt-4">

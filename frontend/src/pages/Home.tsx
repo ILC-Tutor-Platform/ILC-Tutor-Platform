@@ -11,19 +11,16 @@ const Home = () => {
 
       {/* HERO */}
       <div className="absolute flex flex-col gap-8 md:gap-15 left-[10%] top-[10%]">
-
         <div className="flex flex-col gap-4">
           <h1 className="text-5xl lg:text-[5.5rem] font-bold">Welcome to</h1>
           <img src={Logo} alt="" className="w-[14rem] lg:w-sm h-auto" />
         </div>
 
-        <div className="w-[90%] md:w-[50%] lg:w-[25%]">
-          <p className="lg:text-xl">
-            AralLink is the Interactive Learning Center's official platform for
-            connecting students with tutors and booking academic support
-            sessions—all in one place.
-          </p>
-        </div>
+        <p className="w-[80%] md:w-[45%] xl:text-xl xl:w-1/4">
+          AralLink is the Interactive Learning Center's official platform for
+          connecting students with tutors and booking academic support
+          sessions—all in one place.
+        </p>
 
         <div>
           <Button
@@ -34,9 +31,7 @@ const Home = () => {
             BROWSE TUTORS
           </Button>
         </div>
-
       </div>
-
     </section>
   );
 };

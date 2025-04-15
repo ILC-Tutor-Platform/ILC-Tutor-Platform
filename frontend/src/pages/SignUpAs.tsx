@@ -7,14 +7,14 @@ const SignUpAs = () => {
   const navigate = useNavigate();
   return (
     <div className="flex h-screen items-center">
-      <div className="flex flex-col gap-15 w-[30%] mx-auto py-15 px-10 rounded-2xl green-shadow-card">
+      <div className="flex flex-col gap-15 xl:w-[30%] mx-auto py-15 px-10 rounded-2xl green-shadow-card">
         <div className="grid gap-10">
           <img src={Logo} alt="Logo" className="w-35 h-auto mx-auto" />
-          <h2 className="font-bold text-6xl text-center">Sign Up</h2>
+          <h2 className="font-bold text-5xl xl:text-6xl text-center">Sign Up</h2>
         </div>
 
         <div className="flex flex-col gap-8">
-          <div className="flex justify-evenly">
+          <div className="flex justify-evenly gap-4 xl:gap-0">
             <Button onClick={() => navigate("/signup/student")} variant={'yellow-button'}>
               Sign up as Student
             </Button>
