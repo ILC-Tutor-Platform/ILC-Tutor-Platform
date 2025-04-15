@@ -1,5 +1,10 @@
-from sqlalchemy.orm import declarative_base
+from database import Base
 
-Base = declarative_base()
-
-from .userdetail import UserDetail  # Import the UserDetail model to ensure it's registered with Base
+from .admin_detail import AdminDetail
+from .role_detail import RoleDetail
+from .status_detail import StatusDetail
+from .student_detail import StudentDetail
+from .subject_detail import SubjectDetail
+from .tutor_detail import TutorDetail
+from .user_detail import UserDetail
+from .user_role_detail import UserRoleDetail
