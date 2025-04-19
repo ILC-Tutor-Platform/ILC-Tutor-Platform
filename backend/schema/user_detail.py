@@ -7,7 +7,7 @@ from typing import Optional
 class UserDetailSchema(BaseModel):
     name: Optional[str] = None
     email: str
-    role: Optional[str] = None
+    password: str
     datejoined: date
 
     class Config:

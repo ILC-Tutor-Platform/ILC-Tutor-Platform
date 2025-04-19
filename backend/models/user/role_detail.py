@@ -1,6 +1,5 @@
 from sqlalchemy import Column, String, Integer
-from . import Base
-from database import engine
+from models import Base
 
 class RoleDetail(Base):
     __tablename__ = "role_detail"
