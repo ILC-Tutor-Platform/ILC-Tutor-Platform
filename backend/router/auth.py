@@ -41,10 +41,11 @@ def verify_email(email: str, db: Session = Depends(get_db)):
             db.add(new_user_detail) 
             db.commit()
 
-            role = user.user_metadata.get("role")
+            role = user.user_metadata.get("role", [])
+            print(f"User roles: {role}") 
             
             # Add user to user_role_detail table
-            if role == "0":
+            if "0" in role:
                 new_student_detail = StudentDetail(
                     student_id = user.id,
                     student_number = user.user_metadata.get("student_number"),
@@ -65,7 +66,7 @@ def verify_email(email: str, db: Session = Depends(get_db)):
             # Query tutor status from status_detail table
             tutor_status = db.query(StatusDetail).filter(StatusDetail.status_id == '0').first()
 
-            if user.user_metadata.get("role") == "1":
+            if "1" in role:
                 new_tutor_detail = TutorDetail(
                     tutor_id = user.id,
                     status = tutor_status.status_id,
@@ -132,36 +133,26 @@ def signup_student(payload: StudentSignupSchema):
     try:
         user = payload.user
         student = payload.student
+
         # Check if the user already exists
-        try:
-            # Fetch all users 
-            response = supabase.auth.admin.list_users()
-            user_list = response.users if hasattr(response, 'users') else response  # fallback for some clients
-
-            # Look for matching email (case-insensitive just in case)
-            existing_user = next(
-                (u for u in user_list if u.email.lower() == user.email.lower()),
-                None
-            )
-
-            print("User exists:", existing_user.email if existing_user else "No user found")
-            print("User ID: ", existing_user.id)
-
-        except Exception as e:
-            print("Error fetching users:", str(e))
-            existing_user = None
-
+        existing_user = get_existing_user(user)
 
         # Update user role from existing email
         if existing_user:
             # Obtain the role
             current_role = existing_user.user_metadata.get("role", [])
 
+            if isinstance(current_role, str):  # If the role is not a list, make it one
+                current_role = [current_role]
+            
             if "0" not in current_role:
                 current_role.append("0")
+            else: 
+                return {"message": "User is already a student."}
+
 
             # Ensure you are updating user metadata correctly
-            update_response = supabase.auth.admin.update_user_by_id(
+            supabase.auth.admin.update_user_by_id(
                 existing_user.id,
                 {
                     "user_metadata": {  
@@ -171,6 +162,7 @@ def signup_student(payload: StudentSignupSchema):
                     }
                 }
             )
+            return {"message": "User updated as a student and tutor."}
 
         else:
             supabase.auth.sign_up({
@@ -185,9 +177,8 @@ def signup_student(payload: StudentSignupSchema):
                     }
                 }
             })
+            return {"message": "Student registered successfully. Email verification sent."}
 
-        return {"message": "Student registered successfully, verification email sent."}
-    
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -209,28 +200,80 @@ def signup_tutor(payload: TutorSignupSchema):
         available_time_from = [t.isoformat() for t in available_time_from]
         available_time_to = [t.isoformat() for t in available_time_to]
 
-        # Continue with the sign-up logic
-        supabase.auth.sign_up({
-            "email": user.email,
-            "password": user.password,
-            "options": {
-                "data": {
-                    "name": user.name,
-                    "availability": availability, 
-                    "available_time_from": available_time_from,
-                    "available_time_to": available_time_to, 
-                    "description": tutor.description,
-                    "expertise": expertise,
-                    "affiliation": affiliation,
-                    "socials": socials,
-                    "role": ["1"],
-                    "status": "0",
+        # Check if the user already exists
+        existing_user = get_existing_user(user)
+
+        if existing_user: 
+            # Obtain the role
+            current_role = existing_user.user_metadata.get("role", [])
+            
+            if isinstance(current_role, str):  # If the role is not a list, make it one
+                current_role = [current_role]
+            
+            if "1" not in current_role:
+                current_role.append("1")
+            else: 
+                return {"message": "User is already a tutor."}
+
+            # Ensure you are updating user metadata correctly
+            supabase.auth.admin.update_user_by_id(
+                existing_user.id,
+                {
+                    "user_metadata": {  
+                        "role": current_role,  
+                        "availability": availability, 
+                        "available_time_from": available_time_from,
+                        "available_time_to": available_time_to, 
+                        "description": tutor.description,
+                        "expertise": expertise,
+                        "affiliation": affiliation,
+                        "socials": socials,
+                        "status": "0",
+                    }
                 }
-            }
-        })
+            )
+            return {"message": "User updated as a tutor and student."}
+        else:
+            supabase.auth.sign_up({
+                "email": user.email,
+                "password": user.password,
+                "options": {
+                    "data": {
+                        "name": user.name,
+                        "availability": availability, 
+                        "available_time_from": available_time_from,
+                        "available_time_to": available_time_to, 
+                        "description": tutor.description,
+                        "expertise": expertise,
+                        "affiliation": affiliation,
+                        "socials": socials,
+                        "role": "1",
+                        "status": "0",
+                    }
+                }
+            })
+            
+            return {"message": "Tutor registered successfully. Email verification sent."}
+
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
+def get_existing_user(user):
+    # Check if the user already exists
+    try:
+        # Fetch all users 
+        response = supabase.auth.admin.list_users()
+        user_list = response.users if hasattr(response, 'users') else response  # fallback for some clients
+        
+        # Look for matching email (case-insensitive just in case)
+        existing_user = next(
+            (u for u in user_list if u.email.lower() == user.email.lower()),
+            None
+        )
+    except Exception as e:
+        print("Error fetching users:", str(e))
+        existing_user = None
 
+    return existing_user
