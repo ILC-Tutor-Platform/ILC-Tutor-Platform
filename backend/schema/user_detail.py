@@ -5,7 +5,7 @@ from . import date
 from typing import Optional
 
 class UserDetailSchema(BaseModel):
-    name: Optional[str] = None
+    name: str
     email: str
     password: str
     datejoined: date
