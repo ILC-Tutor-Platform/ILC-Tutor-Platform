@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from database import get_db
 from sqlalchemy.orm import Session
-from models import UserDetail, StudentDetail, UserRoleDetail, TutorDetail, StatusDetail, TutorSocials, TutorAffiliation, TutorAvailability, TutorExpertise
+from models import UserDetail, StudentDetail, UserRoleDetail, TutorDetail, StatusDetail, TutorSocials, TutorAffiliation, TutorAvailability, TutorExpertise, SubjectDetail
 from supabase_client import supabase
 from schema import StudentSignupSchema, TutorSignupSchema
 from pydantic import BaseModel
@@ -135,6 +135,15 @@ def create_tutor_profile(user, db, tutor_status):
         )
         db.add(new_tutor_availability)
 
+    tutor_subject = user.user_metadata.get("subject", [])
+    for subject in tutor_subject:
+        new_tutor_subject = SubjectDetail(
+            tutor_id=user.id,
+            subject_name=subject  # This is now a single string like "Calculus"
+        )
+        db.add(new_tutor_subject)
+
+
     db.add(UserRoleDetail(user_id=user.id, role_id="1"))
     db.commit()    
 #Register a student and send verification email
@@ -204,6 +213,7 @@ def signup_tutor(payload: TutorSignupSchema):
         affiliation = payload.affiliation.affiliation 
         expertise = payload.expertise.expertise  
         socials = payload.socials.socials  
+        subject = payload.subject
 
         # Convert to ISO format
         availability = [dt.isoformat() for dt in availability]
@@ -239,6 +249,7 @@ def signup_tutor(payload: TutorSignupSchema):
                         "affiliation": affiliation,
                         "socials": socials,
                         "status": "0",
+                        "subject": subject.subject_name
                     }
                 }
             )
@@ -259,6 +270,7 @@ def signup_tutor(payload: TutorSignupSchema):
                         "socials": socials,
                         "role": "1",
                         "status": "0",
+                        "subject": subject.subject_name
                     }
                 }
             })

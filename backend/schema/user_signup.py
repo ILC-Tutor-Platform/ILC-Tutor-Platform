@@ -1,4 +1,4 @@
-from . import BaseModel, UserDetailSchema, StudentDetailSchema, TutorDetailSchema, TutorAvailabilitySchema, TutorAffiliationSchema, TutorExpertiseSchema, TutorSocials
+from . import BaseModel, UserDetailSchema, StudentDetailSchema, TutorDetailSchema, TutorAvailabilitySchema, TutorAffiliationSchema, TutorExpertiseSchema, TutorSocials, SubjectDetailSchema
 
 class StudentSignupSchema(BaseModel):
     user: UserDetailSchema
@@ -7,6 +7,7 @@ class StudentSignupSchema(BaseModel):
 class TutorSignupSchema(BaseModel):
     user: UserDetailSchema
     tutor: TutorDetailSchema
+    subject: SubjectDetailSchema
     availability: TutorAvailabilitySchema
     affiliation: TutorAffiliationSchema
     expertise: TutorExpertiseSchema

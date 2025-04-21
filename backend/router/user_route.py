@@ -156,3 +156,5 @@ def update_user_profile(uid: str, data: dict):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
+
+    
