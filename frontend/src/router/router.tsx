@@ -9,6 +9,8 @@ import StudentDashboardProfile from "@/pages/StudentDashboardProfile";
 import TutorTracking from "@/pages/TutorTracking";
 import StudentScheduleTracking from "@/pages/StudentScheduleTracking";
 import StudentAnnouncements from "@/pages/StudentAnnouncements";
+import Tutors from "@/pages/Tutors";
+import IndividualTutor from "@/pages/IndividualTutor";
 
 export const router = createBrowserRouter([
   {
@@ -21,8 +23,12 @@ export const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "/tutor",
-        element: <div>Tutor</div>,
+        path: "/tutors",
+        element: <Tutors />,
+      },
+      {
+        path: "/tutors/:id",
+        element: <IndividualTutor />,
       },
       {
         path: "/profile",

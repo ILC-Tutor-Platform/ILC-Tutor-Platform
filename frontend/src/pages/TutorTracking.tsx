@@ -4,9 +4,9 @@ import TutorCard from "../components/ui/TutorCard";
 
 // Placeholder tutor data for demonstration
 const tutors = [
-  { id: 1, name: "Name", subject: "Subject/s" },
-  { id: 2, name: "Name", subject: "Subject/s" },
-  { id: 3, name: "Name", subject: "Subject/s" },
+  { id: 1, name: "Name", subject: "Subject/s", available: "Dates Available", expertise: "Expertise" },
+  { id: 2, name: "Name", subject: "Subject/s", available: "Dates Available", expertise: "Expertise" },
+  { id: 3, name: "Name", subject: "Subject/s", available: "Dates Available", expertise: "Expertise" },
 ];
 
 const TutorTracking = () => {
@@ -60,6 +60,8 @@ const TutorTracking = () => {
                   key={tutor.id}
                   name={tutor.name}
                   subject={tutor.subject}
+                  available={tutor.available}
+                  expertise={tutor.expertise}
                 />
               ))}
             </div>
