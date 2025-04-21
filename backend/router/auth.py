@@ -57,7 +57,6 @@ def verify_email(email: str, db: Session = Depends(get_db)):
 def add_detail(user, role, db):
     # Add user to student_detail table
     if "0" in role:
-
         create_student_profile(user, db)   
 
     # Query tutor status from status_detail table

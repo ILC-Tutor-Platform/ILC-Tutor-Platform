@@ -89,85 +89,110 @@ def update_user_profile(uid: str, data: dict):
             if user_fields:
                 supabase.table("user_detail").update(user_fields).eq("userid", uid).execute()
 
+        role = user.user_metadata.get("role", [])
         # Student table
         if "student" in data:
-            student_fields = {
-                "student_number": data["student"].get("student_number"),
-                "degree_program": data["student"].get("degree_program")
-            }
-            student_fields = {k: v for k, v in student_fields.items() if v is not None}
-            if student_fields:
-                supabase.table("student_detail").update(student_fields).eq("student_id", uid).execute()
+            if "0" in role:
+                student_fields = {
+                    "student_number": data["student"].get("student_number"),
+                    "degree_program": data["student"].get("degree_program")
+                }
+                student_fields = {k: v for k, v in student_fields.items() if v is not None}
+                if student_fields:
+                    supabase.table("student_detail").update(student_fields).eq("student_id", uid).execute()
+            else:
+                raise HTTPException(status_code=403, detail="Only students can update student fields.")
 
         # Tutor table
         if "tutor" in data:
-            tutor_fields = {
-                "description": data["tutor"].get("description")
-            }
-            tutor_fields = {k: v for k, v in tutor_fields.items() if v is not None}
-            
-            if tutor_fields:
-                supabase.table("tutor_detail").update(tutor_fields).eq("tutor_id", uid).execute()
-
+            if "1" in role:
+                tutor_fields = {
+                    "description": data["tutor"].get("description")
+                }
+                tutor_fields = {k: v for k, v in tutor_fields.items() if v is not None}
+                
+                if tutor_fields:
+                    supabase.table("tutor_detail").update(tutor_fields).eq("tutor_id", uid).execute()
+            else:
+                raise HTTPException(status_code=403, detail="Only tutors can update tutor fields.")
+        
         if "subject" in data:
-            subject_name = data["subject"].get("subject_name", [])
-            supabase.table("subject_detail").delete().eq("tutor_id", uid).execute()
-            for name in subject_name:
-                supabase.table("subject_detail").insert({
-                    "tutor_id": uid,
-                    "subject_name": name
-                }).execute()
-
+            if "1" in role:
+                subject_name = data["subject"].get("subject_name", [])
+                supabase.table("subject_detail").delete().eq("tutor_id", uid).execute()
+                for name in subject_name:
+                    supabase.table("subject_detail").insert({
+                        "tutor_id": uid,
+                        "subject_name": name
+                    }).execute()
+            else:
+                raise HTTPException(status_code=403, detail="Only tutors can update tutor fields.")
+        
         if "expertise" in data:
-            expertise_list = data["expertise"].get("expertise", [])
-            supabase.table("tutor_expertise").delete().eq("tutor_id", uid).execute()
-            for topic in expertise_list:
-                supabase.table("tutor_expertise").insert({
-                    "tutor_id": uid,
-                    "expertise": topic
-                }).execute()
+            if "1" in role:
+                expertise_list = data["expertise"].get("expertise", [])
+                supabase.table("tutor_expertise").delete().eq("tutor_id", uid).execute()
+                for topic in expertise_list:
+                    supabase.table("tutor_expertise").insert({
+                        "tutor_id": uid,
+                        "expertise": topic
+                    }).execute()
+            else:
+                raise HTTPException(status_code=403, detail="Only tutors can update tutor fields.")    
 
         if "availability" in data:
-            availability_list = data["availability"]
-            dates = availability_list.get("availability", [])
-            time_from = availability_list.get("available_time_from", [])
-            time_to = availability_list.get("available_time_to", [])
+            if "1" in role:
+                availability_list = data["availability"]
+                dates = availability_list.get("availability", [])
+                time_from = availability_list.get("available_time_from", [])
+                time_to = availability_list.get("available_time_to", [])
 
-            # Delete existing availability entries
-            supabase.table("tutor_availability").delete().eq("tutor_id", uid).execute()
+                # Delete existing availability entries
+                supabase.table("tutor_availability").delete().eq("tutor_id", uid).execute()
 
-            # Insert new availability entries
-            for i in range(len(dates)):
-                if i < len(time_from) and i < len(time_to):
-                    supabase.table("tutor_availability").insert({
-                        "tutor_id": uid,
-                        "availability": dates[i],
-                        "available_time_from": time_from[i],
-                        "available_time_to": time_to[i]
-                    }).execute()
+                # Insert new availability entries
+                for i in range(len(dates)):
+                    if i < len(time_from) and i < len(time_to):
+                        supabase.table("tutor_availability").insert({
+                            "tutor_id": uid,
+                            "availability": dates[i],
+                            "available_time_from": time_from[i],
+                            "available_time_to": time_to[i]
+                        }).execute()
+            else:
+                raise HTTPException(status_code=403, detail="Only tutors can update tutor fields.")    
 
 
         if "affiliation" in data:
-            affiliation_list = data["affiliation"].get("affiliation", [])
-            supabase.table("tutor_affiliation").delete().eq("tutor_id", uid).execute()
-            for affiliation in affiliation_list:
-                supabase.table("tutor_affiliation").insert({
-                    "tutor_id": uid,
-                    "affiliations": affiliation
-                }).execute()
+            if "1" in role:
+                affiliation_list = data["affiliation"].get("affiliation", [])
+                supabase.table("tutor_affiliation").delete().eq("tutor_id", uid).execute()
+                for affiliation in affiliation_list:
+                    supabase.table("tutor_affiliation").insert({
+                        "tutor_id": uid,
+                        "affiliations": affiliation
+                    }).execute()
+            else:
+                raise HTTPException(status_code=403, detail="Only tutors can update tutor fields.")    
 
         if "socials" in data:
-            socials_list = data["socials"].get("socials", [])
-            supabase.table("tutor_socials").delete().eq("tutor_id", uid).execute()
-            for link in socials_list:
-                supabase.table("socials_detail").insert({
-                    "tutor_id": uid,
-                    "socials": link
-                }).execute()
+            if "1" in role:
+                # Get socials from the metadata 
+                socials_list = data["socials"].get("socials", [])
+                
+                # Get socials from the database, if it exists
+                supabase.table("tutor_socials").delete().eq("tutor_id", uid).execute()
+                for link in socials_list:
+                    supabase.table("tutor_socials").insert({
+                        "tutor_id": uid,
+                        "socials": link
+                    }).execute()
+            else:
+                raise HTTPException(status_code=403, detail="Only tutors can update tutor fields.")    
 
         return {"message": "Profile updated successfully."}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Update user failed.")
     
 
 # Delete user data from table
