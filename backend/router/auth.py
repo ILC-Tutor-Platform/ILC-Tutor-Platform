@@ -4,11 +4,11 @@ from sqlalchemy.orm import Session
 from models import UserDetail, StudentDetail, UserRoleDetail, TutorDetail, StatusDetail, TutorSocials, TutorAffiliation, TutorAvailability, TutorExpertise
 from supabase_client import supabase
 from schema import StudentSignupSchema, TutorSignupSchema
-from fastapi.security import OAuth2PasswordBearer
-from datetime import datetime
+from pydantic import BaseModel
 
 router = APIRouter()
 
+# ----------- SIGN UP ----------------
 # Verifies a user’s email after signup.
 @router.post("/auth/verify-email")
 def verify_email(email: str, db: Session = Depends(get_db)):
@@ -22,13 +22,15 @@ def verify_email(email: str, db: Session = Depends(get_db)):
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
+        role = user.user_metadata.get("role", [])
         # Check if user is already verified
         if user.email_confirmed_at:
             # Check if user already exists in user_detail table
             existing_user_detail = db.query(UserDetail).filter(UserDetail.userid == user.id).first()
             if existing_user_detail:
-                # If user already exists, return a message
-                return {"message": "User profile already exists", "email": user.email}
+                # If user already exists, update data
+                add_detail(user, role, db)
+                return {"message": "User profile updated.", "email": user.email}
 
             # Add user to user_detail table
             new_user_detail = UserDetail(
@@ -41,84 +43,9 @@ def verify_email(email: str, db: Session = Depends(get_db)):
             db.add(new_user_detail) 
             db.commit()
 
-            role = user.user_metadata.get("role", [])
-            print(f"User roles: {role}") 
             
-            # Add user to user_role_detail table
-            if "0" in role:
-                new_student_detail = StudentDetail(
-                    student_id = user.id,
-                    student_number = user.user_metadata.get("student_number"),
-                    degree_program = user.user_metadata.get("degree_program"),
-                )
-
-                db.add(new_student_detail)
-
-                # Add student user id to user_role_detail
-                new_user_role = UserRoleDetail(
-                    user_id = user.id,
-                    role_id = "0"
-                )
-
-                db.add(new_user_role)
-                db.commit()
-                
-            # Query tutor status from status_detail table
-            tutor_status = db.query(StatusDetail).filter(StatusDetail.status_id == '0').first()
-
-            if "1" in role:
-                new_tutor_detail = TutorDetail(
-                    tutor_id = user.id,
-                    status = tutor_status.status_id,
-                    description = user.user_metadata.get("description")
-                )
-
-                db.add(new_tutor_detail)
-                db.commit()
-                
-                # Insert affiliation
-                tutor_affiliation = user.user_metadata.get("affiliation", [])
-                for affiliation in tutor_affiliation:
-                    new_tutor_affiliation = TutorAffiliation(
-                        tutor_id = user.id,
-                        affiliations = affiliation
-                    )
-
-                    db.add(new_tutor_affiliation)
-
-                # Insert expertise
-                tutor_expertise = user.user_metadata.get("expertise", [])
-                for expertise in tutor_expertise:
-                    new_tutor_expertise = TutorExpertise(
-                        tutor_id = user.id,
-                        expertise = expertise
-                    )
-
-                    db.add(new_tutor_expertise)
-
-                # Insert socials
-                tutor_socials = user.user_metadata.get("socials", [])
-                for socials in tutor_socials:
-                    new_tutor_socials = TutorSocials(
-                        tutor_id = user.id,
-                        socials = socials
-                    )
-
-                    db.add(new_tutor_socials)
-
-                tutor_availability = user.user_metadata.get("availability", [])
-                available_time_from = user.user_metadata.get("available_time_from", [])
-                available_time_to = user.user_metadata.get("available_time_to", [])
-
-                for i in range(len(tutor_availability)):
-                    new_tutor_availability = TutorAvailability(
-                        tutor_id=user.id,
-                        availability = tutor_availability[i],
-                        available_time_from = available_time_from[i],
-                        available_time_to = available_time_to[i]
-                    )
-                    db.add(new_tutor_availability)
-                db.commit()
+            # Add user to student or tutor table
+            add_detail(user, role, db)
 
             return {"message": "Account was successfully created.", "email": user.email}
         else:
@@ -127,6 +54,89 @@ def verify_email(email: str, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+def add_detail(user, role, db):
+    # Add user to student_detail table
+    if "0" in role:
+
+        create_student_profile(user, db)   
+
+    # Query tutor status from status_detail table
+    tutor_status = db.query(StatusDetail).filter(StatusDetail.status_id == '0').first()
+    
+    # Add user to tutor_detail table
+    if "1" in role:
+        create_tutor_profile(user, db, tutor_status)
+
+def create_student_profile(user, db):
+    new_student_detail = StudentDetail(
+        student_id = user.id,
+        student_number = user.user_metadata.get("student_number"),
+        degree_program = user.user_metadata.get("degree_program"),
+    )
+
+    db.add(new_student_detail)
+
+    # Add student user id to user_role_detail
+    new_user_role = UserRoleDetail(
+        user_id = user.id,
+        role_id = "0"
+    )
+
+    db.add(new_user_role)
+    db.commit()
+
+def create_tutor_profile(user, db, tutor_status):
+    new_tutor_detail = TutorDetail(
+        tutor_id = user.id,
+        status = tutor_status.status_id,
+        description = user.user_metadata.get("description")
+    )
+
+    db.add(new_tutor_detail)
+    db.commit()   
+
+    # Insert affiliation
+    tutor_affiliation = user.user_metadata.get("affiliation", [])
+    for affiliation in tutor_affiliation:
+        new_tutor_affiliation = TutorAffiliation(
+            tutor_id = user.id,
+            affiliations = affiliation
+        )
+        db.add(new_tutor_affiliation)
+
+    # Insert expertise
+    tutor_expertise = user.user_metadata.get("expertise", [])
+    for expertise in tutor_expertise:
+        new_tutor_expertise = TutorExpertise(
+            tutor_id = user.id,
+            expertise = expertise
+        )
+        db.add(new_tutor_expertise)
+
+    # Insert socials
+    tutor_socials = user.user_metadata.get("socials", [])
+    for socials in tutor_socials:
+        new_tutor_socials = TutorSocials(
+            tutor_id = user.id,
+            socials = socials
+        )
+        db.add(new_tutor_socials)
+
+    tutor_availability = user.user_metadata.get("availability", [])
+    available_time_from = user.user_metadata.get("available_time_from", [])
+    available_time_to = user.user_metadata.get("available_time_to", [])
+
+    for i in range(len(tutor_availability)):
+        new_tutor_availability = TutorAvailability(
+            tutor_id=user.id,
+            availability = tutor_availability[i],
+            available_time_from = available_time_from[i],
+            available_time_to = available_time_to[i]
+        )
+        db.add(new_tutor_availability)
+
+    db.add(UserRoleDetail(user_id=user.id, role_id="1"))
+    db.commit()    
 #Register a student and send verification email
 @router.post("/auth/signup/student")
 def signup_student(payload: StudentSignupSchema):
@@ -162,7 +172,7 @@ def signup_student(payload: StudentSignupSchema):
                     }
                 }
             )
-            return {"message": "User updated as a student and tutor."}
+            return {"message": "Signup successful. Student is now a tutor."}
 
         else:
             supabase.auth.sign_up({
@@ -232,7 +242,7 @@ def signup_tutor(payload: TutorSignupSchema):
                     }
                 }
             )
-            return {"message": "User updated as a tutor and student."}
+            return {"message": "Signup successful. Tutor is also a student."}
         else:
             supabase.auth.sign_up({
                 "email": user.email,
@@ -259,7 +269,7 @@ def signup_tutor(payload: TutorSignupSchema):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-
+# Check if the user already exists in supabase auth
 def get_existing_user(user):
     # Check if the user already exists
     try:
@@ -277,3 +287,85 @@ def get_existing_user(user):
         existing_user = None
 
     return existing_user
+
+
+# --------------------- LOGIN ------------------
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class LoginResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    uid: str
+
+@router.post("/auth/login/student", response_model=LoginResponse)
+async def login(credentials: LoginRequest):
+    try:
+        auth_response = supabase.auth.sign_in_with_password({
+            "email": credentials.email, 
+            "password": credentials.password
+        })
+        
+        if auth_response.user is None:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        else:
+            print("User logged in successfully.")
+
+        return LoginResponse(
+            access_token=auth_response.session.access_token,
+            refresh_token=auth_response.session.refresh_token,
+            uid=auth_response.user.id
+        )
+    
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Authentication failed")
+    
+@router.post("/auth/login/tutor", response_model=LoginResponse)
+async def login(credentials: LoginRequest):
+    try:
+        auth_response = supabase.auth.sign_in_with_password({
+            "email": credentials.email, 
+            "password": credentials.password
+        })
+        
+        if auth_response.user is None:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        else:
+            print("User logged in successfully.")
+
+        return LoginResponse(
+            access_token=auth_response.session.access_token,
+            refresh_token=auth_response.session.refresh_token,
+            uid=auth_response.user.id
+        )
+    
+    except Exception:
+        raise HTTPException(status_code=401, detail="Authentication failed")
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+class RefreshResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    uid: str
+
+@router.post("/auth/login/refresh", response_model=RefreshResponse)
+async def refresh_token(payload: RefreshRequest):
+    try:
+        response = supabase.auth.refresh_session(payload.refresh_token)
+        session = response.session
+
+        if not session:
+            raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+        
+        return RefreshResponse(
+            access_token=session.access_token,
+            refresh_token=session.refresh_token,
+            uid=session.user.id
+        )
+    
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Token refresh failed")
+    
