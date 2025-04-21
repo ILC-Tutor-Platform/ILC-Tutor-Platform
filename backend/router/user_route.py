@@ -13,10 +13,6 @@ def get_details():
     response = supabase.table("user_detail").select("*").execute()
     return response.data
 
-# --------------- USER PROFILE -------------------
-# class UserProfile(BaseModel):
-#     user_metadata: dict
-
 @router.get("/users/profile")
 def get_profile(uid: str, db: Session = Depends(get_db)):
     try:
@@ -73,44 +69,6 @@ def get_profile(uid: str, db: Session = Depends(get_db)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-# Add user data to table
-# @router.post("/user", response_model=UserDetailSchema)
-# def create_user(user: UserDetailSchema, db: Session = Depends(get_db)):
-#     try:
-#         db_user = UserDetail(**user.model_dump())
-#         db.add(db_user)
-#         db.commit()
-#         db.refresh(db_user)
-#         return db_user
-#     except Exception as e:
-#         raise HTTPException(status_code=400, detail=str(e))
-
-# Delete user data from table
-@router.delete("/user/{userid}")
-def delete_user(userid: str, db: Session = Depends(get_db)):
-    try:
-        user = db.query(UserDetail).filter(UserDetail.userid == userid).first()
-        db.delete(user)
-        db.commit()
-        return {"message": "User deleted successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    
-# Update user data in table
-# @router.patch("/users/update", response_model=UserDetailSchema)
-# def update_user(userid: str, user: UserDetailSchema, db: Session = Depends(get_db)):
-#     try:
-#         db_user = db.query(UserDetail).filter(UserDetail.userid == userid).first()
-#         db_user.name = user.name
-#         db_user.email = user.email
-#         db_user.role = user.role
-#         db_user.datejoined = user.datejoined
-#         db.commit()
-#         db.refresh(db_user)
-#         return db_user
-#     except Exception as e:
-#         raise HTTPException(status_code=400, detail=str(e))
     
 @router.patch("/users/profile/update")
 def update_user_profile(uid: str, data: dict):
@@ -151,10 +109,74 @@ def update_user_profile(uid: str, data: dict):
             if tutor_fields:
                 supabase.table("tutor_detail").update(tutor_fields).eq("tutor_id", uid).execute()
 
-        return {"message": "Profile updated successfully."}
+        if "subject" in data:
+            subject_name = data["subject"].get("subject_name", [])
+            supabase.table("subject_detail").delete().eq("tutor_id", uid).execute()
+            for name in subject_name:
+                supabase.table("subject_detail").insert({
+                    "tutor_id": uid,
+                    "subject_name": name
+                }).execute()
 
+        if "expertise" in data:
+            expertise_list = data["expertise"].get("expertise", [])
+            supabase.table("tutor_expertise").delete().eq("tutor_id", uid).execute()
+            for topic in expertise_list:
+                supabase.table("tutor_expertise").insert({
+                    "tutor_id": uid,
+                    "expertise": topic
+                }).execute()
+
+        if "availability" in data:
+            availability_list = data["availability"]
+            dates = availability_list.get("availability", [])
+            time_from = availability_list.get("available_time_from", [])
+            time_to = availability_list.get("available_time_to", [])
+
+            # Delete existing availability entries
+            supabase.table("tutor_availability").delete().eq("tutor_id", uid).execute()
+
+            # Insert new availability entries
+            for i in range(len(dates)):
+                if i < len(time_from) and i < len(time_to):
+                    supabase.table("tutor_availability").insert({
+                        "tutor_id": uid,
+                        "availability": dates[i],
+                        "available_time_from": time_from[i],
+                        "available_time_to": time_to[i]
+                    }).execute()
+
+
+        if "affiliation" in data:
+            affiliation_list = data["affiliation"].get("affiliation", [])
+            supabase.table("tutor_affiliation").delete().eq("tutor_id", uid).execute()
+            for affiliation in affiliation_list:
+                supabase.table("tutor_affiliation").insert({
+                    "tutor_id": uid,
+                    "affiliations": affiliation
+                }).execute()
+
+        if "socials" in data:
+            socials_list = data["socials"].get("socials", [])
+            supabase.table("tutor_socials").delete().eq("tutor_id", uid).execute()
+            for link in socials_list:
+                supabase.table("socials_detail").insert({
+                    "tutor_id": uid,
+                    "socials": link
+                }).execute()
+
+        return {"message": "Profile updated successfully."}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
 
-    
+# Delete user data from table
+@router.delete("/user/{userid}")
+def delete_user(userid: str, db: Session = Depends(get_db)):
+    try:
+        user = db.query(UserDetail).filter(UserDetail.userid == userid).first()
+        db.delete(user)
+        db.commit()
+        return {"message": "User deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
