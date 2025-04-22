@@ -23,9 +23,9 @@ const tutorDesc = {
 };
 
 const IndividualTutor = () => {
-  const params = useParams<{ id: string }>();
-  const { id } = params;
-  console.log(id);
+  const params = useParams<{ tutorName: string }>();
+  const { tutorName } = params;
+  console.log(tutorName);
   scrollToTop();
   return (
     <section className="grid relative top-[10vh] items-center justify-center px-5 w-full">
@@ -34,7 +34,7 @@ const IndividualTutor = () => {
         style={{ boxShadow: "0px 4px 4px rgba(48, 123, 116, 0.3)" }}
       >
         <TutorCard
-          name={sampleTutor.name}
+          name={tutorName ?? "baby q"}
           subject={sampleTutor.subject}
           available={sampleTutor.available}
           expertise={sampleTutor.expertise}
@@ -44,7 +44,7 @@ const IndividualTutor = () => {
           className="flex flex-col gap-4 rounded-xl bg-ilc-green p-5 text-white"
           style={{ boxShadow: "0px 4px 4px rgba(48, 123, 116, 0.3)" }}
         >
-          <p className="text-2xl">Hi, I'm {tutorDesc.name}!</p>
+          <p className="text-2xl">Hi, I'm {tutorName ?? "Guest"}!</p>
           <p>{tutorDesc.desc}</p>
         </div>
         <div className="grid gap-5">

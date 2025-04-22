@@ -4,42 +4,42 @@ import { useNavigate } from "react-router-dom";
 const tutors = [
   {
     id: "1",
-    name: "Name",
+    name: "errol",
     subject: "Subject/s",
     available: "Dates Available",
     expertise: "Expertise",
   },
   {
     id: "2",
-    name: "Name",
+    name: "dave",
     subject: "Subject/s",
     available: "Dates Available",
     expertise: "Expertise",
   },
   {
     id: "3",
-    name: "Name",
+    name: "laurence",
     subject: "Subject/s",
     available: "Dates Available",
     expertise: "Expertise",
   },
   {
     id: "4",
-    name: "Name",
+    name: "trixie",
     subject: "Subject/s",
     available: "Dates Available",
     expertise: "Expertise",
   },
   {
     id: "5",
-    name: "Name",
+    name: "nicole",
     subject: "Subject/s",
     available: "Dates Available",
     expertise: "Expertise",
   },
   {
     id: "6",
-    name: "Name",
+    name: "dagohoy",
     subject: "Subject/s",
     available: "Dates Available",
     expertise: "Expertise",
@@ -48,9 +48,9 @@ const tutors = [
 
 const Tutors = () => {
   const navigate = useNavigate();
-  const handleTutorClick = (id: string) => {
-    console.log(`Tutor with ID ${id} clicked`);
-    navigate(`/tutors/${id}`);
+  const handleTutorClick = (tutorName: string) => {
+    console.log(`Tutor with ID ${tutorName} clicked`);
+    navigate(`/tutors/${tutorName}`);
   }
   return (
     <section className="flex flex-col gap-10 px-5 xl:px-40 relative top-[2vh]">
@@ -65,7 +65,7 @@ const Tutors = () => {
                 available={tutor.available}
                 expertise={tutor.expertise}
                 className="mx-auto"
-                onClick={() => handleTutorClick(tutor.id)}
+                onClick={() => handleTutorClick(tutor.name)}
               />
           );
         })}
