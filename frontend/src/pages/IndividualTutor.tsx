@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import TutorCard from "@/components/ui/TutorCard";
 import { Button } from "@/components/ui/button";
+import { DropdownDatesAvail } from "@/components/DropdownDatesAvail";
 
 const scrollToTop = () => {
   window.scrollTo({
@@ -21,11 +22,6 @@ const tutorDesc = {
   desc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis.",
 };
 
-const dateAvailable = {
-  monday: "10:00 AM - 12:00 PM",
-  wednesday: "2:00 PM - 4:00 PM",
-}
-
 const IndividualTutor = () => {
   const params = useParams<{ id: string }>();
   const { id } = params;
@@ -34,7 +30,7 @@ const IndividualTutor = () => {
   return (
     <section className="grid relative top-[10vh] items-center justify-center px-5 w-full">
       <div
-        className="flex flex-col bg-ilc-tutor-card p-5 gap-5 rounded-2xl border-2 items-center mx-auto md:w-[60%] xl:w-[50%]"
+        className="flex flex-col bg-ilc-tutor-card p-5 gap-5 rounded-2xl border-2 mx-auto md:w-[60%] xl:w-[50%]"
         style={{ boxShadow: "0px 4px 4px rgba(48, 123, 116, 0.3)" }}
       >
         <TutorCard
@@ -46,19 +42,19 @@ const IndividualTutor = () => {
         />
         <div
           className="flex flex-col gap-4 rounded-xl bg-ilc-green p-5 text-white"
-          style={{ boxShadow: "0px 4px 4px rgba(48, 123, 116, 0.3)" }}  
+          style={{ boxShadow: "0px 4px 4px rgba(48, 123, 116, 0.3)" }}
         >
           <p className="text-2xl">Hi, I'm {tutorDesc.name}!</p>
           <p>{tutorDesc.desc}</p>
         </div>
+        <div className="grid gap-5">
+          <p className="text-2xl font-bold">Select Date</p>
+          <div className="mx-auto">
+            <DropdownDatesAvail />
+          </div>
+        </div>
         <div className="mx-auto">
           <Button variant={"yellow-button"}>BOOK A SESSION</Button>
-        </div>
-        <div>
-          <p className="text-2xl font-bold">Select Date</p>
-          <button>
-            {/* ADD DROPDOWN MENU TOMS */}
-          </button>
         </div>
       </div>
     </section>
