@@ -317,11 +317,17 @@ async def login(credentials: LoginRequest):
             "email": credentials.email, 
             "password": credentials.password
         })
+
+        user = auth_response.user
         
-        if auth_response.user is None:
+        if not user:
             raise HTTPException(status_code=401, detail="Invalid credentials")
-        else:
-            print("User logged in successfully.")
+        
+        role = auth_response.user.user_metadata.get("role", [])
+        if "0" not in role:
+            raise HTTPException(status_code=403, detail="User is not a student")
+
+        print(f"Student {user.email} logged in successfully.")
 
         return LoginResponse(
             access_token=auth_response.session.access_token,
@@ -339,11 +345,17 @@ async def login(credentials: LoginRequest):
             "email": credentials.email, 
             "password": credentials.password
         })
+
+        user = auth_response.user
         
-        if auth_response.user is None:
+        if not user:
             raise HTTPException(status_code=401, detail="Invalid credentials")
-        else:
-            print("User logged in successfully.")
+        
+        role = auth_response.user.user_metadata.get("role", [])
+        if "1" not in role:
+            raise HTTPException(status_code=403, detail="User is not a tutor")
+
+        # print(f"Tutor {auth_response.email} logged in successfully.")
 
         return LoginResponse(
             access_token=auth_response.session.access_token,
@@ -351,7 +363,7 @@ async def login(credentials: LoginRequest):
             uid=auth_response.user.id
         )
     
-    except Exception:
+    except Exception as e:
         raise HTTPException(status_code=401, detail="Authentication failed")
 
 class RefreshRequest(BaseModel):

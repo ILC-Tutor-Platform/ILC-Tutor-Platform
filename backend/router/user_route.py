@@ -1,34 +1,69 @@
-from fastapi import Depends, APIRouter, HTTPException
+from fastapi import Depends, APIRouter, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from database import get_db
 from models import UserDetail, StudentDetail, TutorDetail, UserRoleDetail, TutorAffiliation, TutorAvailability, TutorExpertise, TutorSocials
-from schema import UserDetailSchema
 from supabase_client import supabase
-from pydantic import BaseModel
+from jose import jwt, JWTError
+import os
+
 router = APIRouter()
 
-# Display all data from the user_detail table
-@router.get("/")
-def get_details():
-    response = supabase.table("user_detail").select("*").execute()
-    return response.data
+JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
+JWT_ALGORITHM = "HS256"
+
+# Role-based access function
+def require_role(allowed_roles: list[str]):
+    def checker(user=Depends(verify_token)):
+        if not any(str(role) in user["role"] for role in allowed_roles):
+            raise HTTPException(status_code=403, detail="Permission denied: The user's role is not allowed to access this endpoint.")
+        return user
+    return checker
+
+def get_authorization_token(request: Request):
+    auth_header = request.headers.get("Authorization")
+    
+    if not auth_header:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header missing"
+        )  
+
+    return auth_header.split(" ")[1] 
+
+def verify_token(token: str = Depends(get_authorization_token)): 
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM], audience="authenticated")
+        user_id = payload.get("sub")
+        role = payload.get("user_metadata", {}).get("role", [])
+
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token: no subject")
+        
+        return {
+            "user_id": user_id,
+            "role": role
+        }
+    except JWTError as e:
+        raise HTTPException(status_code=401, detail=f"Invalid or expired token: {str(e)}")
 
 @router.get("/users/profile")
-def get_profile(uid: str, db: Session = Depends(get_db)):
+def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
     try:
-        # Fetch user from your local DB
+        uid = user["user_id"] 
+        roles = user["role"]
+
+        # Fetch user from supabase
         user_detail = db.query(UserDetail).filter(UserDetail.userid == uid).first()
         if not user_detail:
-            raise HTTPException(status_code=404, detail="User not found in UserDetail")
+            raise HTTPException(status_code=404, detail="User not found in database.")
 
         # Fetch user from Supabase
         all_users = supabase.auth.admin.list_users()
         user = next((u for u in all_users if u.id == uid), None)
         if not user:
-            raise HTTPException(status_code=404, detail="User not found in Supabase")
+            raise HTTPException(status_code=404, detail="User not found in database.")
 
-        roles = db.query(UserRoleDetail.role_id).filter(UserRoleDetail.user_id == uid).all()
-        role_ids = [r[0] for r in roles] 
+        role_ids = [int(r) for r in roles]
 
         response = {
             "user": {
@@ -69,15 +104,23 @@ def get_profile(uid: str, db: Session = Depends(get_db)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 @router.patch("/users/profile/update")
-def update_user_profile(uid: str, data: dict):
+def update_user_profile(
+    data: dict, 
+    user=Depends(verify_token), 
+    ):
+
+    uid = user["user_id"]
+    role = user["role"]
+
     try:
         # Check if user exists in Supabase Auth
         all_users = supabase.auth.admin.list_users()
         user = next((u for u in all_users if u.id == uid), None)
+
         if not user:
-            raise HTTPException(status_code=404, detail="User not found in Supabase")
+            raise HTTPException(status_code=404, detail="User not found in database.")
 
         # User table
         if "user" in data:
@@ -89,7 +132,6 @@ def update_user_profile(uid: str, data: dict):
             if user_fields:
                 supabase.table("user_detail").update(user_fields).eq("userid", uid).execute()
 
-        role = user.user_metadata.get("role", [])
         # Student table
         if "student" in data:
             if "0" in role:
@@ -194,7 +236,6 @@ def update_user_profile(uid: str, data: dict):
     except Exception as e:
         raise HTTPException(status_code=400, detail="Update user failed.")
     
-
 # Delete user data from table
 @router.delete("/user/{userid}")
 def delete_user(userid: str, db: Session = Depends(get_db)):
