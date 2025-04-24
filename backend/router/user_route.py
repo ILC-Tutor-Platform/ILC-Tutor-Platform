@@ -12,12 +12,13 @@ JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
 JWT_ALGORITHM = "HS256"
 
 # Role-based access function
-def require_role(allowed_roles: list[str]):
+def require_role(allowed_roles: list[int]):
     def checker(user=Depends(verify_token)):
         if not any(str(role) in user["role"] for role in allowed_roles):
             raise HTTPException(status_code=403, detail="Permission denied: The user's role is not allowed to access this endpoint.")
         return user
     return checker
+
 
 def get_authorization_token(request: Request):
     auth_header = request.headers.get("Authorization")
@@ -45,6 +46,20 @@ def verify_token(token: str = Depends(get_authorization_token)):
         }
     except JWTError as e:
         raise HTTPException(status_code=401, detail=f"Invalid or expired token: {str(e)}")
+
+# Test routes to check role-based API access 
+@router.get("/student-data")
+def get_student_data(user=Depends(require_role([0]))):
+    return {"msg": "Student data", "user_id": user["user_id"]}
+
+@router.get("/tutor-data")
+def get_tutor_data(user=Depends(require_role([1]))):
+    return {"msg": "Tutor data", "user_id": user["user_id"]}
+
+@router.get("/both")
+def get_common_data(user=Depends(require_role([0, 1]))):
+    return {"msg": "This user is a student and a tutor.", "roles": user["role"]}
+
 
 @router.get("/users/profile")
 def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
