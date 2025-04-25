@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
-# --------------------- LOGIN ------------------
 class LoginRequest(BaseModel):
     email: str
     password: str
@@ -33,11 +32,11 @@ async def login(credentials: LoginRequest):
         user = auth_response.user
         
         if not user:
-            raise HTTPException(status_code=401, detail="Invalid credentials")
+            raise HTTPException(status_code=401, detail="Invalid credentials.")
         
         role = auth_response.user.user_metadata.get("role", [])
         if "0" not in role:
-            raise HTTPException(status_code=403, detail="User is not a student")
+            raise HTTPException(status_code=403, detail="User is not a student.")
 
         return LoginResponse(
             access_token=auth_response.session.access_token,

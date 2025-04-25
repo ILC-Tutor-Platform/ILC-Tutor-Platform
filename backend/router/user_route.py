@@ -38,7 +38,7 @@ def verify_token(token: str = Depends(get_authorization_token)):
         role = payload.get("user_metadata", {}).get("role", [])
 
         if user_id is None:
-            raise HTTPException(status_code=401, detail="Invalid token: no subject")
+            raise HTTPException(status_code=401, detail="Invalid token: No subject.")
         
         return {
             "user_id": user_id,
@@ -60,7 +60,6 @@ def get_tutor_data(user=Depends(require_role([1]))):
 def get_common_data(user=Depends(require_role([0, 1]))):
     return {"msg": "This user is a student and a tutor.", "roles": user["role"]}
 
-
 @router.get("/users/profile")
 def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
     try:
@@ -75,9 +74,6 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
         # Fetch user from Supabase
         all_users = supabase.auth.admin.list_users()
         user = next((u for u in all_users if u.id == uid), None)
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found in database.")
-
         role_ids = [int(r) for r in roles]
 
         response = {
@@ -117,8 +113,8 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
 
         return response
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="User does not exist.")
 
 @router.patch("/users/profile/update")
 def update_user_profile(
