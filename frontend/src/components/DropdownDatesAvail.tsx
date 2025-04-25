@@ -15,6 +15,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 const availableDates = [
   { day: "Monday", time: "10:00 AM - 12:00 PM" },
   { day: "Wednesday", time: "2:00 PM - 4:00 PM" },
+  { day: "Friday", time: "1:00 PM - 3:00 PM" },
 ];
 
 type Checked = DropdownMenuCheckboxItemProps["checked"];

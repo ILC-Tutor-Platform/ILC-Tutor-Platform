@@ -30,7 +30,7 @@ const IndividualTutor = () => {
   return (
     <section className="grid relative top-[10vh] items-center justify-center px-5 w-full">
       <div
-        className="flex flex-col bg-ilc-tutor-card p-5 gap-5 rounded-2xl border-2 mx-auto md:w-[60%] xl:w-[50%]"
+        className="flex flex-col bg-ilc-tutor-card p-5 gap-5 rounded-2xl mx-auto md:w-[60%] xl:w-[50%]"
         style={{ boxShadow: "0px 4px 4px rgba(48, 123, 116, 0.3)" }}
       >
         <TutorCard
@@ -38,7 +38,7 @@ const IndividualTutor = () => {
           subject={sampleTutor.subject}
           available={sampleTutor.available}
           expertise={sampleTutor.expertise}
-          className="bg-white border-2"
+          className="bg-white"
         />
         <div
           className="flex flex-col gap-4 rounded-xl bg-ilc-green p-5 text-white"
