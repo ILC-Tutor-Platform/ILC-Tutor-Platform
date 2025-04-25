@@ -1,7 +1,7 @@
 from fastapi import Depends, APIRouter, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from database import get_db
-from models import UserDetail, StudentDetail, TutorDetail, UserRoleDetail, TutorAffiliation, TutorAvailability, TutorExpertise, TutorSocials
+from models import UserDetail, StudentDetail, TutorDetail, UserRoleDetail, TutorAffiliation, TutorAvailability, TutorExpertise, TutorSocials, AdminDetail
 from supabase_client import supabase
 from jose import jwt, JWTError
 import os
@@ -111,6 +111,14 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
                     "availability": [a.availability for a in availability]
                 }
 
+        if 2 in role_ids:
+            admin = db.query(AdminDetail).filter(AdminDetail.admin_id == uid).first()
+
+            if admin:
+                response["admin"] = {
+                    "admin_role": admin.admin_role
+                }
+
         return response
 
     except Exception:
@@ -168,6 +176,18 @@ def update_user_profile(
                     supabase.table("tutor_detail").update(tutor_fields).eq("tutor_id", uid).execute()
             else:
                 raise HTTPException(status_code=403, detail="Only tutors can update tutor fields.")
+
+        # Admin table
+        if "admin" in data:
+            if "2" in role:
+                admin_fields = {
+                    "admin_role": data["admin"].get("admin_role")
+                }
+                
+                if admin_fields:
+                    supabase.table("admin_detail").update(admin_fields).eq("admin_id", uid).execute()
+            else:
+                raise HTTPException(status_code=403, detail="Only an admin can update admin fields.")
         
         if "subject" in data:
             if "1" in role:
