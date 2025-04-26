@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import StudentSidebar from "../components/StudentSidebar";
+import TutorSidebar from "../components/TutorSidebar";
 
 interface Schedule {
-  tutor: string;
-  datetime: string;
+  student: string;
+  scheduleDateTime: string;
   subject: string;
   status: "PENDING" | "APPROVED" | "DECLINED";
 }
 
-const StudentScheduleTracking = () => {
+const TutorSchedule = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const sidebarWidth = sidebarOpen ? 7 : 0; // 7rem
@@ -30,22 +30,22 @@ const StudentScheduleTracking = () => {
   useEffect(() => {
     const mockData: Schedule[] = [
       {
-        tutor: "Name",
-        datetime: "Date & Time",
-        subject: "Subject",
-        status: "DECLINED",
-      },
-      {
-        tutor: "Name",
-        datetime: "Date & Time",
+        student: "Name",
+        scheduleDateTime: "Date & Time",
         subject: "Subject",
         status: "APPROVED",
       },
       {
-        tutor: "Name",
-        datetime: "Date & Time",
+        student: "Name",
+        scheduleDateTime: "Date & Time",
         subject: "Subject",
         status: "PENDING",
+      },
+      {
+        student: "Name",
+        scheduleDateTime: "Date & Time",
+        subject: "Subject",
+        status: "DECLINED",
       },
     ];
     setSchedules(mockData);
@@ -53,10 +53,7 @@ const StudentScheduleTracking = () => {
 
   return (
     <div className="min-h-screen font-manrope relative flex">
-      <StudentSidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-      />
+      <TutorSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div
         className="transition-all duration-300 ease-in-out flex-1"
@@ -83,20 +80,22 @@ const StudentScheduleTracking = () => {
 
           <div className="w-full min-h-[calc(100vh-10rem)] bg-[#F9F8F4] border border-black border-opacity-30 rounded-[1.25rem] p-4 md:p-6 lg:p-8 xl:p-10 shadow-md">
             <div className="w-full">
+              {/* Header Row */}
               <div className="grid grid-cols-4 font-semibold text-white bg-[#8A1538] rounded-md px-4 py-3 text-center text-xs sm:text-sm md:text-base">
-                <div>Tutor</div>
+                <div>Student</div>
                 <div>Date & Time</div>
                 <div>Subject</div>
                 <div>Status</div>
               </div>
 
+              {/* Dynamic Rows */}
               {schedules.map((schedule, index) => (
                 <div
                   key={index}
                   className="grid grid-cols-4 items-center bg-white rounded-md px-4 py-3 mt-2 text-center text-xs sm:text-sm md:text-base"
                 >
-                  <div>{schedule.tutor}</div>
-                  <div>{schedule.datetime}</div>
+                  <div>{schedule.student}</div>
+                  <div>{schedule.scheduleDateTime}</div>
                   <div>{schedule.subject}</div>
                   <div>
                     <span
@@ -121,4 +120,4 @@ const StudentScheduleTracking = () => {
   );
 };
 
-export default StudentScheduleTracking;
+export default TutorSchedule;

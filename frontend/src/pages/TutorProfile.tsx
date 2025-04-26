@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import StudentSidebar from "../components/StudentSidebar";
+import StudentSidebar from "../components/TutorSidebar";
 import ProfilePlaceholder from "../assets/ProfilePlaceholder.svg";
 import BadgeIcon from "../assets/user2.svg";
 import EditIcon from "../assets/edit.svg";
 
-const StudentDashboardProfile = () => {
+const TutorProfile = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const sidebarWidth = sidebarOpen ? 7 : 0;
 
@@ -58,7 +58,7 @@ const StudentDashboardProfile = () => {
                 alt="badge icon"
               />
               <div className="text-white text-xs md:text-sm lg:text-base xl:text-lg font-bold font-montserrat break-words">
-                Student
+                Tutor
               </div>
             </div>
           </div>
@@ -115,4 +115,4 @@ const StudentDashboardProfile = () => {
   );
 };
 
-export default StudentDashboardProfile;
+export default TutorProfile;

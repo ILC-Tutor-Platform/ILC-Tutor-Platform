@@ -1,8 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Integer
-from . import Base
-from database import engine
+from models import Base
 from sqlalchemy.dialects.postgresql import UUID
-import uuid
 
 class UserRoleDetail(Base):
     __tablename__ = "user_role_detail"

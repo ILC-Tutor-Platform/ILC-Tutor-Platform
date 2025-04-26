@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import StudentSidebar from "../components/StudentSidebar";
-import BadgeIcon from "../assets/user2.svg";
+import StudentSidebar from "../components/TutorSidebar";
 
-const StudentAnnouncements = () => {
+const TutorAnnouncements = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const sidebarWidth = sidebarOpen ? 7 : 0;
 
@@ -36,7 +35,6 @@ const StudentAnnouncements = () => {
             className="flex items-center gap-2 md:gap-4 mb-4 md:mb-6"
             style={{
               color: "#8A1538",
-              fontSize: "2rem",
               fontFamily: "Montserrat",
               fontWeight: 700,
               wordWrap: "break-word",
@@ -66,4 +64,4 @@ const StudentAnnouncements = () => {
   );
 };
 
-export default StudentAnnouncements;
+export default TutorAnnouncements;

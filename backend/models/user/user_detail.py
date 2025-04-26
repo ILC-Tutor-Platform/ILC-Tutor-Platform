@@ -1,7 +1,6 @@
 # Description: This file contains the ORM model for the UserDetail table that will be used to create the table in the database.
 from sqlalchemy import Column, Date, String
-from . import Base
-from database import engine
+from models import Base
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
