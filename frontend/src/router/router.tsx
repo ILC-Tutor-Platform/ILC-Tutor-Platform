@@ -9,6 +9,10 @@ import StudentDashboardProfile from "@/pages/StudentDashboardProfile";
 import TutorTracking from "@/pages/TutorTracking";
 import StudentScheduleTracking from "@/pages/StudentScheduleTracking";
 import StudentAnnouncements from "@/pages/StudentAnnouncements";
+import TutorProfile from "@/pages/TutorProfile";
+import StudentTracking from "@/pages/StudentTracking";
+import TutorSchedule from "@/pages/TutorSchedule";
+import TutorAnnouncements from "@/pages/TutorAnnouncements";
 
 export const router = createBrowserRouter([
   {
@@ -25,7 +29,15 @@ export const router = createBrowserRouter([
         element: <div>Tutor</div>,
       },
       {
-        path: "/profile",
+        path: "/profile/student",
+        element: <StudentDashboardProfile />,
+      },
+      {
+        path: "/profile/tutor",
+        element: <TutorProfile />,
+      },
+      {
+        path: "/studentprofile",
         element: <StudentDashboardProfile />,
       },
       {
@@ -33,12 +45,28 @@ export const router = createBrowserRouter([
         element: <TutorTracking />,
       },
       {
-        path: "student/schedule-tracking", // 👈 your new page route
+        path: "/student/schedule-tracking",
         element: <StudentScheduleTracking />,
       },
       {
-        path: "student/announcements", // 👈 your new page route
+        path: "/student/announcements",
         element: <StudentAnnouncements />,
+      },
+      {
+        path: "/tutorprofile/student-tracking",
+        element: <StudentTracking />,
+      },
+      {
+        path: "/tutorprofile/schedule",
+        element: <TutorSchedule />,
+      },
+      {
+        path: "/tutorprofile/announcements",
+        element: <TutorAnnouncements />,
+      },
+      {
+        path: "/tutorprofile",
+        element: <TutorProfile />,
       },
     ],
   },
