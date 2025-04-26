@@ -1,16 +1,32 @@
 from database import Base
 
-from .admin_detail import AdminDetail
-from .role_detail import RoleDetail
-from .status_detail import StatusDetail
-from .student_detail import StudentDetail
-from .subject_detail import SubjectDetail
-from .tutor_detail import TutorDetail
-from .user_detail import UserDetail
-from .user_role_detail import UserRoleDetail
-from .session import Session
-from .subject_offered import SubjectOffered
-from .session_history import SessionHistory
-from .announcement import Announcement
-from .feedback import Feedback
-from .topic_detail import TopicDetail
+# Student info
+from .student.student_detail import StudentDetail
+
+# User general info
+from .user.role_detail import RoleDetail
+from .user.user_detail import UserDetail
+from .user.user_role_detail import UserRoleDetail
+from .user.status_detail import StatusDetail
+
+# Subject models
+from .subject.subject_offered import SubjectOffered
+from .subject.subject_detail import SubjectDetail
+from .subject.topic_detail import TopicDetail
+
+# Admin models
+from .admin.announcement import Announcement
+from .admin.admin_detail import AdminDetail
+from .admin.feedback import Feedback
+
+# Session models
+from .session.history import SessionHistory
+from .session.session_students import SessionStudents
+from .session.session import Session
+
+# Tutor models
+from .tutor.detail import TutorDetail
+from .tutor.availability import TutorAvailability
+from .tutor.affiliation import TutorAffiliation
+from .tutor.expertise import TutorExpertise
+from .tutor.socials import TutorSocials
