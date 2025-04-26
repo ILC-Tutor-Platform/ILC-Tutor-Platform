@@ -10,7 +10,7 @@ interface SidebarProps {
   setSidebarOpen: (open: boolean) => void;
 }
 
-const StudentSidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
+const TutorSidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -44,17 +44,21 @@ const StudentSidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       {(sidebarOpen || isMobile) && (
         <div className="flex flex-col justify-center items-center flex-1 gap-8 mt-24">
           {[
-            { label: "Profile", icon: Profile, route: "/studentprofile" },
-            { label: "Tutor", icon: Tutor, route: "/student/tutor-tracking" },
+            { label: "Profile", icon: Profile, route: "/tutorprofile" },
+            {
+              label: "Students",
+              icon: Tutor,
+              route: "/tutorprofile/student-tracking",
+            },
             {
               label: "Schedule",
               icon: Schedule,
-              route: "/student/schedule-tracking",
+              route: "/tutorprofile/schedule",
             },
             {
               label: "Announcements",
               icon: Announcements,
-              route: "/student/announcements",
+              route: "/tutorprofile/announcements",
               large: true,
             },
           ].map((item) => (
@@ -81,4 +85,4 @@ const StudentSidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   );
 };
 
-export default StudentSidebar;
+export default TutorSidebar;

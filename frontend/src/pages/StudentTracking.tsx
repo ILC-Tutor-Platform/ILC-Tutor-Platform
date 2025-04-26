@@ -1,17 +1,9 @@
-import { useEffect, useState } from "react";
-import StudentSidebar from "../components/StudentSidebar";
+import { useState, useEffect } from "react";
+import TutorSidebar from "@/components/TutorSidebar";
 
-interface Schedule {
-  tutor: string;
-  datetime: string;
-  subject: string;
-  status: "PENDING" | "APPROVED" | "DECLINED";
-}
-
-const StudentScheduleTracking = () => {
+const StudentTracking = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const sidebarWidth = sidebarOpen ? 7 : 0; // 7rem
+  const sidebarWidth = sidebarOpen ? 7 : 0;
 
   useEffect(() => {
     const navbar = document.querySelector("nav");
@@ -27,36 +19,9 @@ const StudentScheduleTracking = () => {
     };
   }, [sidebarOpen]);
 
-  useEffect(() => {
-    const mockData: Schedule[] = [
-      {
-        tutor: "Name",
-        datetime: "Date & Time",
-        subject: "Subject",
-        status: "DECLINED",
-      },
-      {
-        tutor: "Name",
-        datetime: "Date & Time",
-        subject: "Subject",
-        status: "APPROVED",
-      },
-      {
-        tutor: "Name",
-        datetime: "Date & Time",
-        subject: "Subject",
-        status: "PENDING",
-      },
-    ];
-    setSchedules(mockData);
-  }, []);
-
   return (
     <div className="min-h-screen font-manrope relative flex">
-      <StudentSidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-      />
+      <TutorSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div
         className="transition-all duration-300 ease-in-out flex-1"
@@ -74,7 +39,7 @@ const StudentScheduleTracking = () => {
             }}
           >
             <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
-              My Schedule
+              My Students
             </span>
             <button className="see-history-button text-sm sm:text-base md:text-base lg:text-lg xl:text-xl">
               See History
@@ -84,32 +49,32 @@ const StudentScheduleTracking = () => {
           <div className="w-full min-h-[calc(100vh-10rem)] bg-[#F9F8F4] border border-black border-opacity-30 rounded-[1.25rem] p-4 md:p-6 lg:p-8 xl:p-10 shadow-md">
             <div className="w-full">
               <div className="grid grid-cols-4 font-semibold text-white bg-[#8A1538] rounded-md px-4 py-3 text-center text-xs sm:text-sm md:text-base">
-                <div>Tutor</div>
-                <div>Date & Time</div>
+                <div>Name</div>
                 <div>Subject</div>
-                <div>Status</div>
+                <div>Date & Time</div>
+                <div>Action</div>
               </div>
 
-              {schedules.map((schedule, index) => (
+              {Array.from({ length: 8 }).map((_, index) => (
                 <div
                   key={index}
                   className="grid grid-cols-4 items-center bg-white rounded-md px-4 py-3 mt-2 text-center text-xs sm:text-sm md:text-base"
                 >
-                  <div>{schedule.tutor}</div>
-                  <div>{schedule.datetime}</div>
-                  <div>{schedule.subject}</div>
-                  <div>
-                    <span
-                      className={`border text-xs px-3 py-1 rounded-full ${
-                        schedule.status === "APPROVED"
-                          ? "border-[#307B74] text-[#307B74]"
-                          : schedule.status === "DECLINED"
-                          ? "border-[#8A1538] text-[#8A1538]"
-                          : "border-gray-400 text-gray-500"
-                      }`}
-                    >
-                      {schedule.status}
-                    </span>
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                      <span className="text-[0.875rem]">👤</span>
+                    </div>
+                    <span className="text-[0.9rem]">Name</span>
+                  </div>
+                  <div className="text-[0.9rem]">Subject</div>
+                  <div className="text-[0.9rem]">Date & Time</div>
+                  <div className="flex justify-center gap-2">
+                    <button className="bg-[#8A1538] hover:bg-[#73122f] text-white text-xs px-3 py-1 rounded">
+                      ✖
+                    </button>
+                    <button className="bg-[#307B74] hover:bg-[#24625b] text-white text-xs px-3 py-1 rounded">
+                      ✓
+                    </button>
                   </div>
                 </div>
               ))}
@@ -121,4 +86,4 @@ const StudentScheduleTracking = () => {
   );
 };
 
-export default StudentScheduleTracking;
+export default StudentTracking;
