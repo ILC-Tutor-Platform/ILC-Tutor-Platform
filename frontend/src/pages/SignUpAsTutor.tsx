@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Logo from "@/assets/AralLinkLogo.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const SignUpAsStudent = () => {
   const [firstName, setFirstName] = useState("");
@@ -11,8 +11,25 @@ const SignUpAsStudent = () => {
   const [expertise, setExpertise] = useState("");
   const [affiliations, setAffiliations] = useState("");
   const [email, setEmail] = useState("");
-// placeholder for the sign up as tutor function
+  const [password, setPassword] = useState("");
+
+  const role = "tutor";
+  const navigate = useNavigate();
+
+  // placeholder for the sign up as tutor function
   const signUpAsTutorHandler = async () => {
+    if (
+      !firstName ||
+      !lastName ||
+      !expertise ||
+      !affiliations ||
+      !email ||
+      !password
+    ) {
+      console.error("Please fill in all the fields!");
+      window.alert("Please fill in all the fields!");
+      return;
+    }
     const signUpData = {
       firstName,
       lastName,
@@ -20,9 +37,12 @@ const SignUpAsStudent = () => {
       expertise,
       affiliations,
       email,
+      password,
+      role,
     };
     console.log(signUpData);
-  }
+    navigate("/verify-email");
+  };
 
   return (
     <div className="flex min-h-screen items-center">
@@ -100,6 +120,15 @@ const SignUpAsStudent = () => {
             id="email"
             placeholder="UP Mail"
             autoComplete="email"
+          />
+          <Input
+            onChange={(e) => setPassword(e.target.value)}
+            className="p-3 mt-2"
+            type="password"
+            name="password"
+            id="password"
+            placeholder="Create password"
+            autoComplete="password"
           />
         </div>
         <div className="flex items-center w-[50%] mx-auto">

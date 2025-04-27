@@ -3,16 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Logo from "@/assets/AralLinkLogo.svg";
 import { Link } from "react-router-dom";
-
-interface SignUp {
-  firstName: string;
-  lastName: string;
-  middleInitial: string;
-  degreeProgram: string;
-  studentNumber: string;
-  email: string;
-  password: string;
-}
+import { useNavigate } from "react-router-dom";
 
 const SignUpAsStudent = () => {
   const [firstName, setFirstName] = useState("");
@@ -23,19 +14,40 @@ const SignUpAsStudent = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const role = "student";
+  const navigate = useNavigate();
+
   // placeholder for the sign up as student function
   const signUpAsStudentHandler = async () => {
-    const signUpData = {
-      firstName,
-      lastName,
-      middleInitial,
-      degreeProgram,
-      studentNumber,
-      email,
-      password,
-    };
-    console.log(signUpData);
+    if (
+      !firstName ||
+      !lastName ||
+      !degreeProgram ||
+      !studentNumber ||
+      !email ||
+      !password
+    ) {
+      console.error("Please fill in all fields.");
+      window.alert("Please fill in all fields.");
+      return;
     }
+    try {
+      const signUpData = {
+        firstName,
+        lastName,
+        middleInitial,
+        degreeProgram,
+        studentNumber,
+        email,
+        password,
+        role,
+      };
+      console.log(signUpData);
+      navigate("/verify-email");
+    } catch (error) {
+      console.error("Error signing up:", error);
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center">
@@ -137,6 +149,7 @@ const SignUpAsStudent = () => {
         </div>
       </form>
     </div>
-  );};
+  );
+};
 
 export default SignUpAsStudent;

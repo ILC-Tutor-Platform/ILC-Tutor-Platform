@@ -15,6 +15,7 @@ import TutorProfile from "@/pages/TutorProfile";
 import StudentTracking from "@/pages/StudentTracking";
 import TutorSchedule from "@/pages/TutorSchedule";
 import TutorAnnouncements from "@/pages/TutorAnnouncements";
+import VerifyEmail from "@/pages/VerifyEmail";
 
 
 export const router = createBrowserRouter([
@@ -93,4 +94,8 @@ export const router = createBrowserRouter([
     path: "/signup/tutor",
     element: <SignUpAsTutor />,
   },
+  {
+    path: "/verify-email",
+    element: <VerifyEmail />,
+  }
 ]);

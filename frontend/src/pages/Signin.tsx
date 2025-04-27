@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserAuth } from "../context/AuthContext";
 import Logo from "@/assets/AralLinkLogo.svg";
 import { Input } from "../components/ui/input";
@@ -10,28 +10,42 @@ const Signin = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isStudent, setIsStudent] = useState(true);
 
   const navigate = useNavigate();
 
   const authContext = UserAuth();
   const { session, signInUser } = authContext || {};
-  console.log(session);
+
+  useEffect(() => {
+    if (session) {
+      console.log(session); // Log session only when it changes
+    }
+  }, [session]); // Runs only when session changes
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    if (!email || !password) {
+      console.error("Please fill in all fields.");
+      window.alert("Please fill in all fields.");
+      setLoading(false);
+      return;
+    }
     try {
-      const result = await signInUser(email, password);
+      const signInData = {
+        email,
+        password,
+      };
+      console.log(signInData);
 
-      // Check if signup was successful
-      if (result.success) {
-        navigate("/dashboard");
+      if (isStudent) {
+        navigate("/profile/student");
       } else {
-        setError(result.error || "An unknown error occurred.");
+        navigate("/profile/tutor");
       }
-    } catch (err: any) {
-      console.error("Sign up error:", err);
-      setError("An unexpected error occurred.");
+    } catch (error) {
+      console.error("Error signing in: ", error);
     } finally {
       setLoading(false);
     }
@@ -71,11 +85,21 @@ const Signin = () => {
           </div>
 
           <div className="flex gap-4 justify-center">
-            <Button type="submit" disabled={loading} variant={"yellow-button"}>
+            <Button
+              type="submit"
+              disabled={loading}
+              variant={"yellow-button"}
+              onClick={() => setIsStudent(true)}
+            >
               Sign in as Student
             </Button>
 
-            <Button type="submit" disabled={loading} variant={"yellow-button"}>
+            <Button
+              type="submit"
+              disabled={loading}
+              variant={"yellow-button"}
+              onClick={() => setIsStudent(false)}
+            >
               Sign in as Tutor
             </Button>
           </div>
