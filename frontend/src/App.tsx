@@ -3,7 +3,6 @@ import { Outlet } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import NavbarMobile from "./components/NavbarMobile";
 import Footer from "./components/Footer";
-import StudentDashboardProfile from "@/pages/StudentDashboardProfile";
 
 function App() {
   const [isMobile, setIsMobile] = useState(

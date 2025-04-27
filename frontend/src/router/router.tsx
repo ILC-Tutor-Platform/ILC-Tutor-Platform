@@ -9,10 +9,13 @@ import StudentDashboardProfile from "@/pages/StudentDashboardProfile";
 import TutorTracking from "@/pages/TutorTracking";
 import StudentScheduleTracking from "@/pages/StudentScheduleTracking";
 import StudentAnnouncements from "@/pages/StudentAnnouncements";
+import Tutors from "@/pages/Tutors";
+import IndividualTutor from "@/pages/IndividualTutor";
 import TutorProfile from "@/pages/TutorProfile";
 import StudentTracking from "@/pages/StudentTracking";
 import TutorSchedule from "@/pages/TutorSchedule";
 import TutorAnnouncements from "@/pages/TutorAnnouncements";
+
 
 export const router = createBrowserRouter([
   {
@@ -25,8 +28,12 @@ export const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "/tutor",
-        element: <div>Tutor</div>,
+        path: "/tutors",
+        element: <Tutors />,
+      },
+      {
+        path: "/tutors/:tutorName",
+        element: <IndividualTutor />,
       },
       {
         path: "/profile/student",

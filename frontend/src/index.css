@@ -48,6 +48,7 @@
   --color-ilc-yellow: oklch(77.88% 0.172 66.49);
   --color-ilc-red: oklch(41.57% 0.151 10.48);
   --color-ilc-grey: oklch(74.62% 0.007 17.31);
+  --color-ilc-tutor-card: oklch(97.88% 0.005 95.10);
 }
 
 .dark {
@@ -124,6 +125,7 @@
   --color-ilc-yellow: var(--color-ilc-yellow);
   --color-ilc-red: var(--color-ilc-red);
   --color-ilc-grey: var(--color-ilc-grey);
+  --color-ilc-tutor-card: var(--color-ilc-tutor-card);
 }
 
 @layer base {
