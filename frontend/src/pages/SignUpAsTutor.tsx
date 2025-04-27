@@ -11,12 +11,25 @@ const SignUpAsStudent = () => {
   const [expertise, setExpertise] = useState("");
   const [affiliations, setAffiliations] = useState("");
   const [email, setEmail] = useState("");
+// placeholder for the sign up as tutor function
+  const signUpAsTutorHandler = async () => {
+    const signUpData = {
+      firstName,
+      lastName,
+      middleInitial,
+      expertise,
+      affiliations,
+      email,
+    };
+    console.log(signUpData);
+  }
 
   return (
     <div className="flex min-h-screen items-center">
       <form
         onSubmit={(e) => {
           e.preventDefault();
+          signUpAsTutorHandler();
         }}
         className="grid w-[90%] xl:w-[30%] mx-auto py-15 px-4 xl:px-10 gap-10 rounded-2xl green-shadow-card"
       >

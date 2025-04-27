@@ -4,6 +4,16 @@ import { Button } from "@/components/ui/button";
 import Logo from "@/assets/AralLinkLogo.svg";
 import { Link } from "react-router-dom";
 
+interface SignUp {
+  firstName: string;
+  lastName: string;
+  middleInitial: string;
+  degreeProgram: string;
+  studentNumber: string;
+  email: string;
+  password: string;
+}
+
 const SignUpAsStudent = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -11,12 +21,28 @@ const SignUpAsStudent = () => {
   const [degreeProgram, setDegreeProgram] = useState("");
   const [studentNumber, setStudentNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // placeholder for the sign up as student function
+  const signUpAsStudentHandler = async () => {
+    const signUpData = {
+      firstName,
+      lastName,
+      middleInitial,
+      degreeProgram,
+      studentNumber,
+      email,
+      password,
+    };
+    console.log(signUpData);
+    }
 
   return (
     <div className="flex min-h-screen items-center">
       <form
         onSubmit={(e) => {
           e.preventDefault();
+          signUpAsStudentHandler();
         }}
         className="grid w-[90%] xl:w-[30%] mx-auto py-15 px-4 xl:px-10 gap-10 rounded-2xl green-shadow-card"
       >
@@ -88,6 +114,15 @@ const SignUpAsStudent = () => {
             placeholder="UP Mail"
             autoComplete="email"
           />
+          <Input
+            onChange={(e) => setPassword(e.target.value)}
+            className="p-3 mt-2"
+            type="password"
+            name="password"
+            id="password"
+            placeholder="Create Password"
+            autoComplete="password"
+          />
         </div>
         <div className="flex items-center w-[50%] mx-auto">
           <Button variant={"yellow-button"} type="submit" className="w-full">
@@ -102,7 +137,6 @@ const SignUpAsStudent = () => {
         </div>
       </form>
     </div>
-  );
-};
+  );};
 
 export default SignUpAsStudent;
