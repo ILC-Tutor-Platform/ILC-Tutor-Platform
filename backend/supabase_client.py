@@ -1,14 +1,13 @@
 # Description: This file initializes the supabase client using the credentials fetched from the .env file.
 from supabase import create_client, Client
 from dotenv import load_dotenv
-import os
+from config import get_secret
 
-# load environment variables from .env
-load_dotenv()
+secrets = get_secret()
 
 # Fetch credentials from .env file
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+SUPABASE_URL = secrets.get("SUPABASE_URL")
+SUPABASE_KEY = secrets.get("SUPABASE_SERVICE_ROLE_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("Missing SUPABASE_URL or SUPABASE_KEY")

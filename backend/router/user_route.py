@@ -1,15 +1,18 @@
 from fastapi import Depends, APIRouter, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from database import get_db
-from models import UserDetail, StudentDetail, TutorDetail, UserRoleDetail, TutorAffiliation, TutorAvailability, TutorExpertise, TutorSocials, AdminDetail
+from models import UserDetail, StudentDetail, TutorDetail, TutorAffiliation, TutorAvailability, TutorExpertise, TutorSocials, AdminDetail
 from supabase_client import supabase
 from jose import jwt, JWTError
-import os
+from config import get_secret
 
 router = APIRouter()
 
-JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
+secrets = get_secret()
+
+JWT_SECRET = secrets.get("SUPABASE_JWT_SECRET")
 JWT_ALGORITHM = "HS256"
+
 
 # Role-based access function
 def require_role(allowed_roles: list[int]):
@@ -68,8 +71,9 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
 
         # Fetch user from supabase
         user_detail = db.query(UserDetail).filter(UserDetail.userid == uid).first()
-        if not user_detail:
-            raise HTTPException(status_code=404, detail="User not found in database.")
+        # if not user_detail:
+        #     raise HTTPException(status_code=404, detail="User not found in database.")
+
 
         # Fetch user from Supabase
         all_users = supabase.auth.admin.list_users()
@@ -100,7 +104,6 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
             affiliation = db.query(TutorAffiliation).filter(TutorAffiliation.tutor_id == uid).all()
             expertise = db.query(TutorExpertise).filter(TutorExpertise.tutor_id == uid).all()
             socials = db.query(TutorSocials).filter(TutorSocials.tutor_id == uid).all()
-
             if tutor:
                 response["tutor"] = {
                     "description": tutor.description,
