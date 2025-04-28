@@ -7,6 +7,10 @@ const VerifyEmail = () => {
     );
   };
 
+  const reload = async () => {
+    window.location.reload();
+  };
+
   verifyEmail();
   return (
     <section className="grid justify-center min-h-screen w-full">
@@ -17,7 +21,7 @@ const VerifyEmail = () => {
           If you didn't receive an email, please check your spam folder or try
           resending the verification email.
         </p>
-        <Button>Resend Verification Email</Button>
+        <Button onClick={reload}>Resend Verification Email</Button>
       </div>
     </section>
   );

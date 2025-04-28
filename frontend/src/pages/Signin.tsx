@@ -4,6 +4,7 @@ import { UserAuth } from "../context/AuthContext";
 import Logo from "@/assets/AralLinkLogo.svg";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
+import { Label } from "@/components/ui/label";
 
 const Signin = () => {
   const [email, setEmail] = useState("");
@@ -11,7 +12,8 @@ const Signin = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isStudent, setIsStudent] = useState(true);
-
+  const [isEmptyEmailField, setEmptyEmailField] = useState(false);
+  const [isEmptyPasswordField, setEmptyPasswordField] = useState(false);
   const navigate = useNavigate();
 
   const authContext = UserAuth();
@@ -26,12 +28,21 @@ const Signin = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    if (!email || !password) {
-      console.error("Please fill in all fields.");
-      window.alert("Please fill in all fields.");
+
+    if (!email) {
+      setEmptyEmailField(true);
+      console.error("Email is required.");
       setLoading(false);
       return;
     }
+
+    if (!password) {
+      setEmptyPasswordField(true);
+      console.error("Password is required.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const signInData = {
         email,
@@ -64,24 +75,61 @@ const Signin = () => {
 
         <div className="flex flex-col gap-8 p-8">
           <div className="grid gap-4">
-            <Input
-              onChange={(e) => setEmail(e.target.value)}
-              type="email"
-              name="email"
-              id="email"
-              placeholder="Email address"
-              autoComplete="email"
-            />
+            {isEmptyEmailField ? (
+              <>
+                <Label htmlFor="email" className="font-thin text-red-500">
+                  Email Address is Required
+                </Label>
+                <Input
+                  onChange={(e) => setEmail(e.target.value)}
+                  type="email"
+                  name="email"
+                  id="email"
+                  placeholder="Email address"
+                  autoComplete="email"
+                />
+              </>
+            ) : (
+              <>
+                <Input
+                  onChange={(e) => setEmail(e.target.value)}
+                  type="email"
+                  name="email"
+                  id="email"
+                  placeholder="Email address"
+                  autoComplete="email"
+                />
+              </>
+            )}
 
-            <Input
-              onChange={(e) => setPassword(e.target.value)}
-              className="p-3 mt-2"
-              type="password"
-              name="password"
-              id="password"
-              placeholder="Password"
-              autoComplete="current-password"
-            />
+            {isEmptyPasswordField ? (
+              <>
+                <Label htmlFor="password" className="font-thin text-red-500">
+                  Password is Required
+                </Label>
+                <Input
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="p-3 mt-2"
+                  type="password"
+                  name="password"
+                  id="password"
+                  placeholder="Password"
+                  autoComplete="current-password"
+                />
+              </>
+            ) : (
+              <>
+                <Input
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="p-3 mt-2"
+                  type="password"
+                  name="password"
+                  id="password"
+                  placeholder="Password"
+                  autoComplete="current-password"
+                />
+              </>
+            )}
           </div>
 
           <div className="flex gap-4 justify-center">
