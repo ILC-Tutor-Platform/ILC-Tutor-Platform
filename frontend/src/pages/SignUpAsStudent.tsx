@@ -4,17 +4,18 @@ import { Button } from "@/components/ui/button";
 import Logo from "@/assets/AralLinkLogo.svg";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { isValidaStudentNumber } from "@/utils/errorValidations.ts";
+import { isValidStudentNumber } from "@/utils/errorValidations.ts";
+import DropdownDegreeProgram from "@/components/DropdownDegreeProgram.tsx";
 
 const SignUpAsStudent = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [middleInitial, setMiddleInitial] = useState("");
-  const [degreeProgram, setDegreeProgram] = useState("");
   const [studentNumber, setStudentNumber] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState("");
+  const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
 
   const concatenatedName = `${firstName} ${lastName} ${middleInitial}`;
 
@@ -27,10 +28,11 @@ const SignUpAsStudent = () => {
 
     if (!firstName.trim()) newErrors.firstName = "First name is required.";
     if (!lastName.trim()) newErrors.lastName = "Last name is required.";
-    if (!degreeProgram.trim())
-      newErrors.degreeProgram = "Degree program is required.";
-    if (!isValidaStudentNumber(studentNumber))
+    if (!studentNumber.trim()) {
+      newErrors.studentNumber = "Student number is required.";
+    } else if (!isValidStudentNumber(studentNumber)) {
       newErrors.studentNumber = "Student number must be in format YYYY-12345.";
+    }
     if (!email.trim()) newErrors.email = "Email is required.";
     if (!password.trim()) newErrors.password = "Password is required.";
 
@@ -53,7 +55,7 @@ const SignUpAsStudent = () => {
           datejoined: dateNow(),
           student: {
             student_number: studentNumber,
-            degree_program: degreeProgram,
+            degree_program: selectedProgram,
           },
         },
       };
@@ -116,15 +118,6 @@ const SignUpAsStudent = () => {
           </div>
 
           <Input
-            onChange={(e) => setDegreeProgram(e.target.value)}
-            className="p-3 mt-2"
-            type="text"
-            name="degreeProgram"
-            id="degreeProgram"
-            placeholder="Degree Program"
-          />
-
-          <Input
             onChange={(e) => setStudentNumber(e.target.value)}
             className="p-3 mt-2"
             type="text"
@@ -132,6 +125,13 @@ const SignUpAsStudent = () => {
             id="studentNumber"
             placeholder="Student Number"
           />
+
+          <div>
+            <DropdownDegreeProgram
+              selectedProgram={selectedProgram}
+              onSelectProgram={setSelectedProgram}
+            />
+          </div>
 
           <Input
             onChange={(e) => setEmail(e.target.value)}

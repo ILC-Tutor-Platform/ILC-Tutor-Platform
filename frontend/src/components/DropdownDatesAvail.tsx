@@ -22,13 +22,19 @@ type Checked = DropdownMenuCheckboxItemProps["checked"];
 
 import { useState } from "react";
 
-export function DropdownDatesAvail() {
+export const DropdownDatesAvail = () => {
   const [isDropped, setIsDropped] = useState(false);
   return (
     <DropdownMenu open={isDropped} onOpenChange={setIsDropped}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" onClick={() => setIsDropped(!isDropped)}>
-          <div>{isDropped ? <ChevronUp className="text-ilc-yellow" /> : <ChevronDown className="text-ilc-yellow" />}</div>
+          <div>
+            {isDropped ? (
+              <ChevronUp className="text-ilc-yellow" />
+            ) : (
+              <ChevronDown className="text-ilc-yellow" />
+            )}
+          </div>
           DATES AVAILABLE
         </Button>
       </DropdownMenuTrigger>
@@ -39,7 +45,7 @@ export function DropdownDatesAvail() {
         <div>
           {availableDates.map((date, index) => {
             return (
-              <DropdownMenuCheckboxItem key={index}>
+              <DropdownMenuCheckboxItem key={index} checked={Checked}>
                 {date.day}: {date.time}
               </DropdownMenuCheckboxItem>
             );
@@ -48,4 +54,4 @@ export function DropdownDatesAvail() {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+};
