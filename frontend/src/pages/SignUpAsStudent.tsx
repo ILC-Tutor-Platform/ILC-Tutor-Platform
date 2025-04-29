@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Logo from "@/assets/AralLinkLogo.svg";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { isValidaStudentNumber } from "@/utils/errorValidations.ts";
 
 const SignUpAsStudent = () => {
   const [firstName, setFirstName] = useState("");
@@ -13,35 +14,50 @@ const SignUpAsStudent = () => {
   const [studentNumber, setStudentNumber] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState("");
 
-  const role = "student";
+  const concatenatedName = `${firstName} ${lastName} ${middleInitial}`;
+
+  const dateNow = () => {
+    const date = new Date().toISOString().split("T")[0];
+    return date;
+  };
+  const validateFields = () => {
+    const newErrors = {};
+
+    if (!firstName.trim()) newErrors.firstName = "First name is required.";
+    if (!lastName.trim()) newErrors.lastName = "Last name is required.";
+    if (!degreeProgram.trim())
+      newErrors.degreeProgram = "Degree program is required.";
+    if (!isValidaStudentNumber(studentNumber))
+      newErrors.studentNumber = "Student number must be in format YYYY-12345.";
+    if (!email.trim()) newErrors.email = "Email is required.";
+    if (!password.trim()) newErrors.password = "Password is required.";
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
   const navigate = useNavigate();
 
   // placeholder for the sign up as student function
   const signUpAsStudentHandler = async () => {
-    if (
-      !firstName ||
-      !lastName ||
-      !degreeProgram ||
-      !studentNumber ||
-      !email ||
-      !password
-    ) {
-      console.error("Please fill in all fields.");
-      window.alert("Please fill in all fields.");
-      return;
-    }
+    if (!validateFields()) return;
+
     try {
       const signUpData = {
-        firstName,
-        lastName,
-        middleInitial,
-        degreeProgram,
-        studentNumber,
-        email,
-        password,
-        role,
+        user: {
+          name: concatenatedName,
+          email: email,
+          password: password,
+          datejoined: dateNow(),
+          student: {
+            student_number: studentNumber,
+            degree_program: degreeProgram,
+          },
+        },
       };
+
       console.log(signUpData);
       navigate("/verify-email");
     } catch (error) {

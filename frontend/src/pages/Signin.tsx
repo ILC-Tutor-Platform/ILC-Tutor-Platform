@@ -5,19 +5,33 @@ import Logo from "@/assets/AralLinkLogo.svg";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { Label } from "@/components/ui/label";
+import { isValidUpEmail } from "@/utils/errorValidations.ts";
 
 const Signin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState("");
   const [loading, setLoading] = useState(false);
   const [isStudent, setIsStudent] = useState(true);
-  const [isEmptyEmailField, setEmptyEmailField] = useState(false);
-  const [isEmptyPasswordField, setEmptyPasswordField] = useState(false);
   const navigate = useNavigate();
 
   const authContext = UserAuth();
   const { session, signInUser } = authContext || {};
+
+  const validateFields = () => {
+    const newErrors = {};
+
+    if (!email.trim()) {
+      newErrors.email = "Email is required.";
+    } else if (!isValidUpEmail(email)) {
+      newErrors.email = "Must be a valid UP email.";
+    }
+    if (!password.trim()) newErrors.password = "Password is required.";
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
 
   useEffect(() => {
     if (session) {
@@ -29,16 +43,7 @@ const Signin = () => {
     e.preventDefault();
     setLoading(true);
 
-    if (!email) {
-      setEmptyEmailField(true);
-      console.error("Email is required.");
-      setLoading(false);
-      return;
-    }
-
-    if (!password) {
-      setEmptyPasswordField(true);
-      console.error("Password is required.");
+    if (!validateFields()) {
       setLoading(false);
       return;
     }
@@ -75,61 +80,33 @@ const Signin = () => {
 
         <div className="flex flex-col gap-8 p-8">
           <div className="grid gap-4">
-            {isEmptyEmailField ? (
-              <>
-                <Label htmlFor="email" className="font-thin text-red-500">
-                  Email Address is Required
-                </Label>
-                <Input
-                  onChange={(e) => setEmail(e.target.value)}
-                  type="email"
-                  name="email"
-                  id="email"
-                  placeholder="Email address"
-                  autoComplete="email"
-                />
-              </>
-            ) : (
-              <>
-                <Input
-                  onChange={(e) => setEmail(e.target.value)}
-                  type="email"
-                  name="email"
-                  id="email"
-                  placeholder="Email address"
-                  autoComplete="email"
-                />
-              </>
+            {errors.email && (
+              <Label className="text-md font-thin text-red-500">
+                {errors.email}
+              </Label>
             )}
-
-            {isEmptyPasswordField ? (
-              <>
-                <Label htmlFor="password" className="font-thin text-red-500">
-                  Password is Required
-                </Label>
-                <Input
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="p-3 mt-2"
-                  type="password"
-                  name="password"
-                  id="password"
-                  placeholder="Password"
-                  autoComplete="current-password"
-                />
-              </>
-            ) : (
-              <>
-                <Input
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="p-3 mt-2"
-                  type="password"
-                  name="password"
-                  id="password"
-                  placeholder="Password"
-                  autoComplete="current-password"
-                />
-              </>
+            <Input
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              name="email"
+              id="email"
+              placeholder="Email address"
+              autoComplete="email"
+            />
+            {errors.password && (
+              <Label className="text-md font-thin text-red-500">
+                {errors.password}
+              </Label>
             )}
+            <Input
+              onChange={(e) => setPassword(e.target.value)}
+              className="p-3 mt-2"
+              type="password"
+              name="password"
+              id="password"
+              placeholder="Password"
+              autoComplete="current-password"
+            />
           </div>
 
           <div className="flex gap-4 justify-center">
@@ -158,8 +135,6 @@ const Signin = () => {
               Sign up
             </Link>
           </div>
-
-          {error && <p className="text-red-600 text-center pt-4">{error}</p>}
         </div>
       </form>
     </div>
