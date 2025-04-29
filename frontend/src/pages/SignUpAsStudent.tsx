@@ -4,8 +4,12 @@ import { Button } from "@/components/ui/button";
 import Logo from "@/assets/AralLinkLogo.svg";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { isValidStudentNumber } from "@/utils/errorValidations.ts";
+import {
+  isValidStudentNumber,
+  isValidUpEmail,
+} from "@/utils/errorValidations.ts";
 import DropdownDegreeProgram from "@/components/DropdownDegreeProgram.tsx";
+import { Label } from "@/components/ui/label";
 
 const SignUpAsStudent = () => {
   const [firstName, setFirstName] = useState("");
@@ -16,6 +20,7 @@ const SignUpAsStudent = () => {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState("");
   const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const concatenatedName = `${firstName} ${lastName} ${middleInitial}`;
 
@@ -26,15 +31,23 @@ const SignUpAsStudent = () => {
   const validateFields = () => {
     const newErrors = {};
 
-    if (!firstName.trim()) newErrors.firstName = "First name is required.";
-    if (!lastName.trim()) newErrors.lastName = "Last name is required.";
+    if (!firstName.trim()) newErrors.firstName = "*Required";
+    if (!lastName.trim()) newErrors.lastName = "*Required";
     if (!studentNumber.trim()) {
-      newErrors.studentNumber = "Student number is required.";
+      newErrors.studentNumber = "*Required";
     } else if (!isValidStudentNumber(studentNumber)) {
-      newErrors.studentNumber = "Student number must be in format YYYY-12345.";
+      newErrors.studentNumber = "*Student number must be in format YYYY-12345.";
     }
-    if (!email.trim()) newErrors.email = "Email is required.";
-    if (!password.trim()) newErrors.password = "Password is required.";
+    if (!email.trim()) {
+      newErrors.email = "*Required";
+    } else if (!isValidUpEmail(email)) {
+      newErrors.email = "*Must be a valid UP Email.";
+    }
+    if (!password.trim()) {
+      newErrors.password = "*Required";
+    } else if (password.length < 8) {
+      newErrors.password = "*Password must be at least 8 characters long.";
+    }
 
     setErrors(newErrors);
 
@@ -44,7 +57,11 @@ const SignUpAsStudent = () => {
 
   // placeholder for the sign up as student function
   const signUpAsStudentHandler = async () => {
-    if (!validateFields()) return;
+    setLoading(true);
+    if (!validateFields()) {
+      setLoading(false);
+      return;
+    }
 
     try {
       const signUpData = {
@@ -83,49 +100,66 @@ const SignUpAsStudent = () => {
           </h2>
         </div>
 
-        <div className="grid gap-4">
-          <div
-            className="grid grid-cols-3 gap-4"
-            style={{ gridTemplateColumns: "1fr 1fr 20%" }}
-          >
-            <Input
-              onChange={(e) => setFirstName(e.target.value)}
-              className="p-3 mt-2"
-              type="text"
-              name="firstName"
-              id="firstName"
-              placeholder="First Name"
-              autoComplete="given-name"
-            />
-            <Input
-              onChange={(e) => setLastName(e.target.value)}
-              className="p-3 mt-2"
-              type="text"
-              name="lastName"
-              id="lastName"
-              placeholder="Last Name"
-              autoComplete="family-name"
-            />
-            <Input
-              onChange={(e) => setMiddleInitial(e.target.value)}
-              className="p-3 mt-2"
-              type="text"
-              name="middleInitial"
-              id="middleInitial"
-              placeholder="M.I."
-              autoComplete="additional-name"
-            />
+        <div className="flex flex-col gap-4">
+          <div className="grid">
+            <div className="flex gap-2">
+              <div className="flex flex-col w-full">
+                <span className="h-7 font-thin text-[0.8rem] text-red-500">
+                  {errors.firstName && "*First name is required."}
+                </span>
+                <Input
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="p-3 mt-2"
+                  type="text"
+                  name="setFirstName"
+                  id="setFirstName"
+                  placeholder="First Name"
+                />
+              </div>
+              <div className="flex flex-col w-full">
+                <span className="h-7 font-thin text-[0.8rem] text-red-500">
+                  {errors.lastName && "*Last name is required."}
+                </span>
+                <Input
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="p-3 mt-2"
+                  type="text"
+                  name="lastName"
+                  id="lastName"
+                  placeholder="Last Name"
+                />
+              </div>
+              <div className="flex flex-col w-1/4">
+                <span className="h-7 font-thin text-sm text-red-500">
+                  {errors.middleInitial && "Required"}
+                </span>
+                <Input
+                  onChange={(e) => setMiddleInitial(e.target.value)}
+                  className="p-3 mt-2"
+                  type="text"
+                  name="middleInitial"
+                  id="middleInitial"
+                  placeholder="M.I."
+                />
+              </div>
+            </div>
           </div>
 
-          <Input
-            onChange={(e) => setStudentNumber(e.target.value)}
-            className="p-3 mt-2"
-            type="text"
-            name="studentNumber"
-            id="studentNumber"
-            placeholder="Student Number"
-          />
-
+          <div>
+            {errors.studentNumber && (
+              <Label className="text-[0.8rem] font-thin text-red-500">
+                {errors.studentNumber}
+              </Label>
+            )}
+            <Input
+              onChange={(e) => setStudentNumber(e.target.value)}
+              className="p-3 mt-2"
+              type="text"
+              name="studentNumber"
+              id="studentNumber"
+              placeholder="Student Number"
+            />
+          </div>
           <div>
             <DropdownDegreeProgram
               selectedProgram={selectedProgram}
@@ -133,27 +167,47 @@ const SignUpAsStudent = () => {
             />
           </div>
 
-          <Input
-            onChange={(e) => setEmail(e.target.value)}
-            className="p-3 mt-2"
-            type="email"
-            name="email"
-            id="email"
-            placeholder="UP Mail"
-            autoComplete="email"
-          />
-          <Input
-            onChange={(e) => setPassword(e.target.value)}
-            className="p-3 mt-2"
-            type="password"
-            name="password"
-            id="password"
-            placeholder="Create Password"
-            autoComplete="password"
-          />
+          <div>
+            {errors.email && (
+              <Label className="text-[0.8rem] font-thin text-red-500">
+                {errors.email}
+              </Label>
+            )}
+            <Input
+              onChange={(e) => setEmail(e.target.value)}
+              className="p-3 mt-2"
+              type="email"
+              name="email"
+              id="email"
+              placeholder="UP Mail"
+              autoComplete="email"
+            />
+          </div>
+
+          <div>
+            {errors.password && (
+              <Label className="text-[0.8rem] font-thin text-red-500">
+                {errors.password}
+              </Label>
+            )}
+            <Input
+              onChange={(e) => setPassword(e.target.value)}
+              className="p-3 mt-2"
+              type="password"
+              name="password"
+              id="password"
+              placeholder="Create Password"
+              autoComplete="password"
+            />
+          </div>
         </div>
         <div className="flex items-center w-[50%] mx-auto">
-          <Button variant={"yellow-button"} type="submit" className="w-full">
+          <Button
+            variant={"yellow-button"}
+            type="submit"
+            className="w-full"
+            disabled={loading}
+          >
             Sign up as Student
           </Button>
         </div>
