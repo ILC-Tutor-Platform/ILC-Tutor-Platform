@@ -22,11 +22,11 @@ const Signin = () => {
     const newErrors = {};
 
     if (!email.trim()) {
-      newErrors.email = "Email is required.";
+      newErrors.email = "*Email is required.";
     } else if (!isValidUpEmail(email)) {
-      newErrors.email = "Must be a valid UP email.";
+      newErrors.email = "*Must be a valid UP email.";
     }
-    if (!password.trim()) newErrors.password = "Password is required.";
+    if (!password.trim()) newErrors.password = "*Password is required.";
 
     setErrors(newErrors);
 
@@ -79,34 +79,38 @@ const Signin = () => {
         </div>
 
         <div className="flex flex-col gap-8 p-8">
-          <div className="grid gap-4">
-            {errors.email && (
-              <Label className="text-md font-thin text-red-500">
-                {errors.email}
-              </Label>
-            )}
-            <Input
-              onChange={(e) => setEmail(e.target.value)}
-              type="email"
-              name="email"
-              id="email"
-              placeholder="Email address"
-              autoComplete="email"
-            />
-            {errors.password && (
-              <Label className="text-md font-thin text-red-500">
-                {errors.password}
-              </Label>
-            )}
-            <Input
-              onChange={(e) => setPassword(e.target.value)}
-              className="p-3 mt-2"
-              type="password"
-              name="password"
-              id="password"
-              placeholder="Password"
-              autoComplete="current-password"
-            />
+          <div className="flex flex-col gap-4">
+            <div className="grid gap-2">
+              {errors.email && (
+                <Label className="text-[0.8rem] font-thin text-red-500">
+                  {errors.email}
+                </Label>
+              )}
+              <Input
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                name="email"
+                id="email"
+                placeholder="Email address"
+                autoComplete="email"
+              />
+            </div>
+            <div>
+              {errors.password && (
+                <Label className="text-[0.8rem] font-thin text-red-500">
+                  {errors.password}
+                </Label>
+              )}
+              <Input
+                onChange={(e) => setPassword(e.target.value)}
+                className="p-3 mt-2"
+                type="password"
+                name="password"
+                id="password"
+                placeholder="Password"
+                autoComplete="current-password"
+              />
+            </div>
           </div>
 
           <div className="flex gap-4 justify-center">

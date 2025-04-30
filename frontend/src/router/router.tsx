@@ -17,6 +17,12 @@ import TutorSchedule from "@/pages/TutorSchedule";
 import TutorAnnouncements from "@/pages/TutorAnnouncements";
 import VerifyEmail from "@/pages/VerifyEmail";
 
+/*
+todo:
+- use auth context
+- add auth guards
+- add protected routes based on roles
+*/
 
 export const router = createBrowserRouter([
   {
@@ -97,5 +103,5 @@ export const router = createBrowserRouter([
   {
     path: "/verify-email",
     element: <VerifyEmail />,
-  }
+  },
 ]);
