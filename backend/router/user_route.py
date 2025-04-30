@@ -1,18 +1,21 @@
 from fastapi import Depends, APIRouter, HTTPException, status, Request
 from sqlalchemy.orm import Session
-from database import get_db
+from database.config import get_db
 from models import UserDetail, StudentDetail, TutorDetail, TutorAffiliation, TutorAvailability, TutorExpertise, TutorSocials, AdminDetail
-from supabase_client import supabase
+from constants.supabase_client import supabase
 from jose import jwt, JWTError
-from config import get_secret
+from constants import settings
+import logging 
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 router = APIRouter()
 
-secrets = get_secret()
+SETTINGS = settings.get_settings()
 
-JWT_SECRET = secrets.get("SUPABASE_JWT_SECRET")
+JWT_SECRET = SETTINGS.SUPABASE_JWT_SECRET
 JWT_ALGORITHM = "HS256"
-
 
 # Role-based access function
 def require_role(allowed_roles: list[int]):
@@ -50,6 +53,23 @@ def verify_token(token: str = Depends(get_authorization_token)):
     except JWTError as e:
         raise HTTPException(status_code=401, detail=f"Invalid or expired token: {str(e)}")
 
+@router.get("/")
+def get_all_users(db: Session = Depends(get_db)):
+    try:
+        users = db.query(UserDetail).all()
+        return {"users": [ 
+            {
+                "user_id": user.userid,
+                "name": user.name,
+                "email": user.email,
+                "date_joined": str(user.datejoined)
+            } 
+            for user in users 
+        ]}
+    except Exception as e:
+        logger.error(f"Error retrieving users: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve users: {e}")
+
 # Test routes to check role-based API access 
 @router.get("/student-data")
 def get_student_data(user=Depends(require_role([0]))):
@@ -71,9 +91,6 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
 
         # Fetch user from supabase
         user_detail = db.query(UserDetail).filter(UserDetail.userid == uid).first()
-        # if not user_detail:
-        #     raise HTTPException(status_code=404, detail="User not found in database.")
-
 
         # Fetch user from Supabase
         all_users = supabase.auth.admin.list_users()

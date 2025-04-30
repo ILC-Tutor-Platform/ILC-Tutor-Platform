@@ -1,12 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.pool import QueuePool
-from config import get_secret
+from constants import settings
 
-DATABASE_URL = get_secret().get("DATABASE_URL")
+SETTINGS = settings.get_settings()
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(SETTINGS.DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
