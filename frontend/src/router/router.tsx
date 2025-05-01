@@ -16,12 +16,13 @@ import StudentTracking from "@/pages/StudentTracking";
 import TutorSchedule from "@/pages/TutorSchedule";
 import TutorAnnouncements from "@/pages/TutorAnnouncements";
 import VerifyEmail from "@/pages/VerifyEmail";
+import { ProtectedRoute } from "@/wrapper/ProtectedRoute";
 
 /*
 todo:
-- use auth context
-- add auth guards
-- add protected routes based on roles
+[x] use auth context
+[x] add auth guards
+[] add protected routes based on roles
 */
 
 export const router = createBrowserRouter([
@@ -44,15 +45,19 @@ export const router = createBrowserRouter([
       },
       {
         path: "/profile/student",
-        element: <StudentDashboardProfile />,
+        element: (
+          <ProtectedRoute>
+            <StudentDashboardProfile />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/profile/tutor",
-        element: <TutorProfile />,
-      },
-      {
-        path: "/studentprofile",
-        element: <StudentDashboardProfile />,
+        element: (
+          <ProtectedRoute>
+            <TutorProfile />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/student/tutor-tracking",
@@ -64,23 +69,43 @@ export const router = createBrowserRouter([
       },
       {
         path: "/student/announcements",
-        element: <StudentAnnouncements />,
+        element: (
+          <ProtectedRoute>
+            <StudentAnnouncements />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/tutorprofile/student-tracking",
-        element: <StudentTracking />,
+        element: (
+          <ProtectedRoute>
+            <StudentTracking />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/tutorprofile/schedule",
-        element: <TutorSchedule />,
+        element: (
+          <ProtectedRoute>
+            <TutorSchedule />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/tutorprofile/announcements",
-        element: <TutorAnnouncements />,
+        element: (
+          <ProtectedRoute>
+            <TutorAnnouncements />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/tutorprofile",
-        element: <TutorProfile />,
+        element: (
+          <ProtectedRoute>
+            <TutorProfile />
+          </ProtectedRoute>
+        ),
       },
     ],
   },

@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import NavbarMobile from "./components/NavbarMobile";
 import Footer from "./components/Footer";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 function App() {
   const [isMobile, setIsMobile] = useState(
@@ -25,6 +26,7 @@ function App() {
 
   return (
     <main>
+      <ScrollToTop />
       {isMobile ? <NavbarMobile /> : <Navbar />}
       <div className="min-h-screen">
         <Outlet />

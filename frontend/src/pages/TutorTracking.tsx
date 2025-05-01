@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import StudentSidebar from "../components/StudentSidebar";
 import TutorCard from "../components/ui/TutorCard";
+import { useNavigate } from "react-router-dom";
 
 // Placeholder tutor data for demo
 const tutors = [
@@ -11,22 +12,20 @@ const tutors = [
 
 const TutorTracking = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const sidebarWidth = sidebarOpen ? 7 : 0;
+  const navigate = useNavigate();
 
   useEffect(() => {
+    setSidebarOpen(false); // close on mount
     const navbar = document.querySelector("nav");
     if (navbar) {
-      (navbar as HTMLElement).style.marginLeft = sidebarOpen
-        ? `${sidebarWidth}rem`
-        : "0rem";
+      (navbar as HTMLElement).style.marginLeft = "0rem";
     }
-
     return () => {
       if (navbar) {
         (navbar as HTMLElement).style.marginLeft = "0rem";
       }
     };
-  }, [sidebarOpen]);
+  }, []);
 
   return (
     <div className="min-h-screen font-manrope flex relative">
@@ -37,7 +36,6 @@ const TutorTracking = () => {
 
       <div
         className="transition-all duration-300 ease-in-out flex-1"
-        style={{ marginLeft: `${sidebarWidth}rem` }}
       >
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
           <div
@@ -67,7 +65,7 @@ const TutorTracking = () => {
             </div>
 
             <div className="flex justify-center mt-6">
-              <button className="mt-4 w-2/5 md:w-1/4 lg:w-1/5 h-10 bg-[#307B74] rounded-[1rem] text-white text-base md:text-lg lg:text-xl font-montserrat font-bold break-words cursor-pointer">
+              <button className="mt-4 w-2/5 md:w-1/4 lg:w-1/5 h-10 bg-[#307B74] rounded-[1rem] text-white text-base md:text-lg lg:text-xl font-montserrat font-bold break-words cursor-pointer" onClick={() => navigate('/tutors')}>
                 Browse Tutors
               </button>
             </div>

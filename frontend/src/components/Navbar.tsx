@@ -2,11 +2,14 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import Logo from "@/assets/AralLinkLogo.svg";
 import { useState, useRef } from "react";
+import { UserAuth } from "@/context/AuthContext";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const authContext = UserAuth();
+  const { session, signOut } = authContext || {};
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -16,7 +19,14 @@ const Navbar = () => {
   const handleMouseLeave = () => {
     timeoutRef.current = setTimeout(() => {
       setDropdownOpen(false);
-    }, 200); // Delay in ms before closing
+    }, 200);
+  };
+
+  const handleSignOut = async () => {
+    if (signOut) {
+      await signOut();
+      navigate("/signin");
+    }
   };
 
   return (
@@ -47,45 +57,49 @@ const Navbar = () => {
                 : "hover:text-ilc-yellow underline-offset-[15px] hover:underline"
             }
           >
-            Tutor
+            Tutors
           </NavLink>
         </li>
 
         {/* Profile with Dropdown */}
-        <li
-          className="relative"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          <span className="cursor-pointer hover:text-ilc-yellow underline-offset-[15px] hover:underline">
-            Profile
-          </span>
+        {session && (
+          <>
+            <li
+              className="relative"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              <span className="cursor-pointer hover:text-ilc-yellow underline-offset-[15px] hover:underline">
+                Profile
+              </span>
 
-          {isDropdownOpen && (
-            <div className="absolute top-8 right-0 bg-white shadow-md rounded-md border w-40 z-10">
-              <NavLink
-                to="/profile/student"
-                className="block px-4 py-2 hover:bg-ilc-yellow hover:text-white"
-              >
-                Student
-              </NavLink>
-              <NavLink
-                to="/profile/tutor"
-                className="block px-4 py-2 hover:bg-ilc-yellow hover:text-white"
-              >
-                Tutor
-              </NavLink>
-            </div>
-          )}
-        </li>
+              {isDropdownOpen && (
+                <div className="absolute top-8 right-0 bg-white shadow-md rounded-md border w-40 z-10">
+                  <NavLink
+                    to="/profile/student"
+                    className="block px-4 py-2 hover:bg-ilc-yellow hover:text-white"
+                  >
+                    Student
+                  </NavLink>
+                  <NavLink
+                    to="/profile/tutor"
+                    className="block px-4 py-2 hover:bg-ilc-yellow hover:text-white"
+                  >
+                    Tutor
+                  </NavLink>
+                </div>
+              )}
+            </li>
+          </>
+        )}
 
         <li className="border-[2px] border-gray-300 border-dashed">
           <Button
             variant={"yellow-button"}
             size={"navbar-size"}
-            onClick={() => navigate("/signin")}
+            onClick={handleSignOut}
           >
-            LOG OUT
+            {session ? "Sign out" : "Sign in"}
           </Button>
         </li>
       </ul>

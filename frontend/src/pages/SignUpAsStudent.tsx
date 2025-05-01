@@ -18,7 +18,7 @@ const SignUpAsStudent = () => {
   const [studentNumber, setStudentNumber] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState("");
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +29,7 @@ const SignUpAsStudent = () => {
     return date;
   };
   const validateFields = () => {
-    const newErrors = {};
+    const newErrors: { [key: string]: string } = {};
 
     if (!firstName.trim()) newErrors.firstName = "*Required";
     if (!lastName.trim()) newErrors.lastName = "*Required";

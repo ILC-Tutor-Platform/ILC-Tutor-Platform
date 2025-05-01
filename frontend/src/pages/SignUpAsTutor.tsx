@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Logo from "@/assets/AralLinkLogo.svg";
 import { Link, useNavigate } from "react-router-dom";
+import { isValidUpEmail } from "@/utils/errorValidations.ts";
+import { Label } from "@/components/ui/label";
 
 /*
 todo 1
@@ -33,10 +35,26 @@ form validation:
   - password
 */
 
-const SignUpAsStudent = () => {
+const SignUpAsTutor = () => {
   const navigate = useNavigate();
   const signUpAsTutorHandler = async () => {
     navigate("/verify-email");
+  };
+
+  const data = {
+    user: {
+      name: concatenatedName,
+      email: email,
+      password: password,
+      dateJoined: dateNow,
+    },
+    tutor: {
+      description: description,
+      status: "active",
+    },
+    availability: {
+      availability: ["2025-04-21", ""],
+    },
   };
 
   return (
@@ -71,4 +89,4 @@ const SignUpAsStudent = () => {
   );
 };
 
-export default SignUpAsStudent;
+export default SignUpAsTutor;
