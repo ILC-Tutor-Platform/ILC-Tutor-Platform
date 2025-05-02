@@ -1,11 +1,8 @@
-import { useSidebarStore } from "@/stores/sidebarStore";
-import StudentSidebar from "../components/StudentSidebar";
 import ProfilePlaceholder from "../assets/ProfilePlaceholder.svg";
 import BadgeIcon from "../assets/user2.svg";
 import EditIcon from "../assets/edit.svg";
 
 const StudentDashboardProfile = () => {
-  const { isOpen } = useSidebarStore();
 
   const handleEditClick = (section: string) => {
     console.log(`Edit ${section} clicked`);
@@ -13,7 +10,6 @@ const StudentDashboardProfile = () => {
 
   return (
     <div className="min-h-screen font-manrope relative flex">
-      <StudentSidebar />
       
       <div className="transition-all duration-300 ease-in-out flex-1">
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">

@@ -136,7 +136,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   }
 
   if (loading) {
-    return <SessionLoading />;
+    return <SessionLoading msg="Getting your data" />;
   }
 
   return (

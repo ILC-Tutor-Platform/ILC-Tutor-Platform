@@ -8,7 +8,7 @@ import Announcements from "../assets/megaphone.svg";
 import { Menu } from "lucide-react";
 
 const StudentSidebar = () => {
-  const { isOpen, close } = useSidebarStore(); // 👈 get state from Zustand store
+  const { isOpen, close } = useSidebarStore();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -19,20 +19,22 @@ const StudentSidebar = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const sidebarWidth = isOpen ? (isMobile ? "7rem" : "7rem") : "0rem";
+  const sidebarWidth = isOpen ? (isMobile ? "7rem" : "8rem") : "0rem";
 
   return (
     <aside
-      className="fixed min-h-screen top-0 left-0 bg-[#F9F8F4] border-r border-black/30 transition-all duration-300 ease-in-out flex flex-col items-center"
+      className="fixed min-h-screen top-0 left-0 bg-[#F9F8F4] transition-all duration-300 ease-in-out flex flex-col items-center justify-center shadow-2xl"
       style={{ width: sidebarWidth }}
     >
       {isOpen && (
         <>
           <Menu
-            className="absolute top-6 cursor-pointer"
+            className="absolute top-10 cursor-pointer"
             onClick={close}
+            width={32}
+            height={32}
           />
-          <div className="flex flex-col justify-center items-center gap-8 mt-24">
+          <div className="flex flex-col justify-center items-center gap-8">
             {[
               { label: "Profile", icon: Profile, route: "/profile/student" },
               { label: "Tutor", icon: Tutor, route: "/student/tutor-tracking" },
@@ -54,7 +56,7 @@ const StudentSidebar = () => {
                 className="w-full"
                 onClick={close}
               >
-                <button className="flex flex-col items-center gap-2 w-full text-black hover:text-[#307B74] transition-colors">
+                <button className="flex flex-col items-center gap-2 w-full text-black hover:text-[#307B74] transition-colors cursor-pointer">
                   <img
                     src={item.icon}
                     alt={item.label}
