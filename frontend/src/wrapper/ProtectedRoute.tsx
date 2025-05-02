@@ -4,14 +4,22 @@ import { JSX } from "react";
 
 interface Props {
     children: JSX.Element;
+    allowedRoles: number[];
 }
 
-export const ProtectedRoute = ({children}: Props) => {
-    const { session } = UserAuth();
-
-    if (!session) {
-        console.log("Wala pa ka nag sign in dawgz, redirecting to sign in page");
-        return <Navigate to="/signin" />;
-    }
-  return children;
-}
+export const ProtectedRoute = ({ children, allowedRoles }: Props) => {
+    const { user } = UserAuth();
+  
+    let rolesRaw = user?.user_metadata?.role;
+    const roles: number[] = Array.isArray(rolesRaw)
+      ? rolesRaw.map(Number)
+      : [Number(rolesRaw)].filter((n) => !isNaN(n));
+  
+    const hasAccess = roles.some((role: number) => allowedRoles.includes(role));
+  
+    if (!user) return <Navigate to="/signin" />;
+    if (!hasAccess) return <Navigate to="/" />;
+  
+    return children;
+  };
+  

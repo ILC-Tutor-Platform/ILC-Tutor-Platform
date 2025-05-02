@@ -23,14 +23,14 @@ import PageNotFound from "@/pages/PageNotFound";
 todo:
 [x] use auth context
 [x] add auth guards
-[] add protected routes based on roles
+[x] add protected routes based on roles
 */
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-    errorElement: <PageNotFound/>,
+    errorElement: <PageNotFound />,
     children: [
       {
         index: true,
@@ -47,7 +47,7 @@ export const router = createBrowserRouter([
       {
         path: "/profile/student",
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[0]}>
             <StudentDashboardProfile />
           </ProtectedRoute>
         ),
@@ -55,23 +55,31 @@ export const router = createBrowserRouter([
       {
         path: "/profile/tutor",
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[1]}>
             <TutorProfile />
           </ProtectedRoute>
         ),
       },
       {
-        path: "/student/tutor-tracking",
-        element: <TutorTracking />,
-      },
-      {
-        path: "/student/schedule-tracking",
-        element: <StudentScheduleTracking />,
-      },
-      {
-        path: "/student/announcements",
+        path: "/profile/student/tutor-tracking",
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[0]}>
+            <TutorTracking />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/profile/student/schedule-tracking",
+        element: (
+          <ProtectedRoute allowedRoles={[0]}>
+            <StudentScheduleTracking />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/profile/student/announcements",
+        element: (
+          <ProtectedRoute allowedRoles={[0]}>
             <StudentAnnouncements />
           </ProtectedRoute>
         ),
@@ -79,7 +87,7 @@ export const router = createBrowserRouter([
       {
         path: "/profile/tutor/student-tracking",
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[1]}>
             <StudentTracking />
           </ProtectedRoute>
         ),
@@ -87,7 +95,7 @@ export const router = createBrowserRouter([
       {
         path: "/profile/tutor/schedule",
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[1]}>
             <TutorSchedule />
           </ProtectedRoute>
         ),
@@ -95,7 +103,7 @@ export const router = createBrowserRouter([
       {
         path: "/profile/tutor/announcements",
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[1]}>
             <TutorAnnouncements />
           </ProtectedRoute>
         ),

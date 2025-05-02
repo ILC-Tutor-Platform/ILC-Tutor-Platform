@@ -13,6 +13,7 @@ import type { StudentSignUp } from "@/types";
 
 interface AuthContextType {
   session: Session | null;
+  user: Session['user'] | null;
   signUpNewUser: (
     email: string,
     password: string
@@ -34,6 +35,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<Session['user'] | null>(null);
 
   const signUpNewUser = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({
@@ -105,7 +107,6 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         console.error("Error signing in:", error.message);
         return { success: false, error: error.message };
       }
-
       console.log("User signed in:", data.user);
       setLoading(false);
       return { success: true, data };
@@ -128,6 +129,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         data: { session },
       } = await supabase.auth.getSession();
       await loadingTime(1000); // Simulate loading time
+      setUser(session?.user || null);
       setSession(session);
       setLoading(false); // <- We're done loading
     };
@@ -158,7 +160,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ session, signUpNewUser, signInUser, signOut, signUpStudent }}
+      value={{ session, signUpNewUser, signInUser, signOut, signUpStudent, user }}
     >
       {children}
     </AuthContext.Provider>

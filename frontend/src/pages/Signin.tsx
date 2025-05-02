@@ -51,11 +51,11 @@ const Signin = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
+/*
     if (!validateFields()) {
       setLoading(false);
       return;
-    }
+    }*/
 
     try {
       const { success, error } = await signInUser(email, password);

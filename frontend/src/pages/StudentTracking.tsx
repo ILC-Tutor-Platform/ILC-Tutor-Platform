@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
-import TutorSidebar from "@/components/TutorSidebar";
 
 const StudentTracking = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
-    setSidebarOpen(false); // close on mount
+    setSidebarOpen(false);
     const navbar = document.querySelector("nav");
     if (navbar) {
       (navbar as HTMLElement).style.marginLeft = "0rem";

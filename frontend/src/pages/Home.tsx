@@ -1,9 +1,14 @@
 import Logo from "@/assets/AralLinkLogo.svg";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { UserAuth } from "@/context/AuthContext";
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user } = UserAuth();
+  const roles = user?.user_metadata?.role || [];
+  const name = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || "User";
+  console.log(name, "roles: ", roles)
   return (
     <section className="relative overflow-clip h-screen">
       {/* BOOKS BG ELEMENTS */}

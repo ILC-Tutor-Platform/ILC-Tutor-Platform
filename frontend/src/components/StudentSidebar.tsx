@@ -8,7 +8,7 @@ import Announcements from "../assets/megaphone.svg";
 import { Menu } from "lucide-react";
 
 const StudentSidebar = () => {
-  const { isOpen, close } = useSidebarStore();
+  const { isOpen, close, toggle } = useSidebarStore();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -30,23 +30,23 @@ const StudentSidebar = () => {
         <>
           <Menu
             className="absolute top-10 cursor-pointer"
-            onClick={close}
+            onClick={toggle}
             width={32}
             height={32}
           />
           <div className="flex flex-col justify-center items-center gap-8">
             {[
               { label: "Profile", icon: Profile, route: "/profile/student" },
-              { label: "Tutor", icon: Tutor, route: "/student/tutor-tracking" },
+              { label: "Tutor", icon: Tutor, route: "/profile/student/tutor-tracking" },
               {
                 label: "Schedule",
                 icon: Schedule,
-                route: "/student/schedule-tracking",
+                route: "/profile/student/schedule-tracking",
               },
               {
                 label: "Announcements",
                 icon: Announcements,
-                route: "/student/announcements",
+                route: "/profile/student/announcements",
                 large: true,
               },
             ].map((item) => (
@@ -54,7 +54,7 @@ const StudentSidebar = () => {
                 to={item.route}
                 key={item.label}
                 className="w-full"
-                onClick={close}
+                onClick={toggle}
               >
                 <button className="flex flex-col items-center gap-2 w-full text-black hover:text-[#307B74] transition-colors cursor-pointer">
                   <img
