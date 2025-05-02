@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends
-from database import get_db
+from database.config import get_db
 from sqlalchemy.orm import Session
 from models import UserDetail, StudentDetail, UserRoleDetail, TutorDetail, StatusDetail, TutorSocials, TutorAffiliation, TutorAvailability, TutorExpertise, SubjectDetail
-from supabase_client import supabase
+from constants.supabase_client import supabase
 from schema import StudentSignupSchema, TutorSignupSchema
 
 router = APIRouter()
