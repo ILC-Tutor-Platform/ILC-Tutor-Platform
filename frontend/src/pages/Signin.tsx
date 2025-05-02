@@ -51,7 +51,6 @@ const Signin = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1200));
 
     if (!validateFields()) {
       setLoading(false);
@@ -60,13 +59,12 @@ const Signin = () => {
 
     try {
       const { success, error } = await signInUser(email, password);
-      console.log(email, password);
-
+      await new Promise((resolve) => setTimeout(resolve, 1200));
       if (success) {
         navigate(isStudent ? "/profile/student" : "/profile/tutor");
       } else {
         setErrors({
-          invalidCredentials: "Sign in Failed. Try Again.",
+          invalidCredentials: error,
         });
         console.error("Sign in failed:", error);
       }

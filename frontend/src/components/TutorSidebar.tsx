@@ -44,21 +44,21 @@ const TutorSidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       {(sidebarOpen || isMobile) && (
         <div className="flex flex-col justify-center items-center flex-1 gap-8 mt-24">
           {[
-            { label: "Profile", icon: Profile, route: "/tutorprofile" },
+            { label: "Profile", icon: Profile, route: "/profile/tutor" },
             {
               label: "Students",
               icon: Tutor,
-              route: "/tutorprofile/student-tracking",
+              route: "/profile/tutor/student-tracking",
             },
             {
               label: "Schedule",
               icon: Schedule,
-              route: "/tutorprofile/schedule",
+              route: "/profile/tutor/schedule",
             },
             {
               label: "Announcements",
               icon: Announcements,
-              route: "/tutorprofile/announcements",
+              route: "/profile/tutor/announcements",
               large: true,
             },
           ].map((item) => (

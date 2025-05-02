@@ -32,7 +32,6 @@ const Navbar = () => {
     setLoading(true);
     try {
       await signOut();
-      await new Promise((resolve) => setTimeout(resolve, 1200));
       navigate("/signin");
     } catch (error) {
       console.error("Error signing out:", error);

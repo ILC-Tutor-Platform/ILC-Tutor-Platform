@@ -17,6 +17,7 @@ import TutorSchedule from "@/pages/TutorSchedule";
 import TutorAnnouncements from "@/pages/TutorAnnouncements";
 import VerifyEmail from "@/pages/VerifyEmail";
 import { ProtectedRoute } from "@/wrapper/ProtectedRoute";
+import PageNotFound from "@/pages/PageNotFound";
 
 /*
 todo:
@@ -29,7 +30,7 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-    errorElement: <div>404</div>,
+    errorElement: <PageNotFound/>,
     children: [
       {
         index: true,
@@ -76,7 +77,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/tutorprofile/student-tracking",
+        path: "/profile/tutor/student-tracking",
         element: (
           <ProtectedRoute>
             <StudentTracking />
@@ -84,7 +85,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/tutorprofile/schedule",
+        path: "/profile/tutor/schedule",
         element: (
           <ProtectedRoute>
             <TutorSchedule />
@@ -92,18 +93,10 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/tutorprofile/announcements",
+        path: "/profile/tutor/announcements",
         element: (
           <ProtectedRoute>
             <TutorAnnouncements />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/tutorprofile",
-        element: (
-          <ProtectedRoute>
-            <TutorProfile />
           </ProtectedRoute>
         ),
       },

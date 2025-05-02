@@ -59,7 +59,6 @@ const SignUpAsStudent = () => {
   };
   const navigate = useNavigate();
 
-    // No need to manually query the DOM!
     const handleShowPassword = () => {
       setShowPassword((prev) => !prev);
     };

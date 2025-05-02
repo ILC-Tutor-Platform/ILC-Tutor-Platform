@@ -35,7 +35,6 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Signup
   const signUpNewUser = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({
       email: email,
@@ -75,6 +74,24 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       };
     }
   };
+/*
+  const signInUser = async (email: string, password: string) => {
+    try {
+      const res = await axios.post(`${API_URL}/dev/auth/login/student`, {
+        email: email,
+        password: password
+      });
+      return { success: true, data: res.data }
+    } catch (error: any) {
+      return {
+        success: false,
+        error:
+          error.response?.data?.detail || "An error occurred during sign in.",
+      };
+    }
+  }*/
+
+
 
   // Sign in
   const signInUser = async (email: string, password: string) => {

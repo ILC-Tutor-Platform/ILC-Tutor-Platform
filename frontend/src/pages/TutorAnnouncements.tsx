@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import StudentSidebar from "../components/TutorSidebar";
 
 const TutorAnnouncements = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -21,11 +20,6 @@ const TutorAnnouncements = () => {
 
   return (
     <div className="min-h-screen font-manrope relative flex">
-      <StudentSidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-      />
-
       <div
         className="transition-all duration-300 ease-in-out flex-1"
         style={{ marginLeft: `${sidebarWidth}rem` }}

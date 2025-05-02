@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import StudentSidebar from "../components/StudentSidebar";
 
 interface Schedule {
   tutor: string;
@@ -51,10 +50,6 @@ const StudentScheduleTracking = () => {
 
   return (
     <div className="min-h-screen font-manrope relative flex">
-      <StudentSidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-      />
 
       <div
         className="transition-all duration-300 ease-in-out flex-1"
