@@ -21,18 +21,17 @@ const Navbar = () => {
   const handleSignOut = async () => {
     setLoading(true);
     try {
-      await signOut(); // clears Supabase session
-      useRoleStore.getState().clearRoles(); // clear Zustand role state
+      await signOut();
+      useRoleStore.getState().clearRoles();
       console.log("User signed out successfully!");
   
-      // Delay briefly to ensure all states update
       setTimeout(() => {
         setLoading(false);
         navigate("/signin");
-      }, 100);
+      }, 500);
     } catch (error) {
       console.error("Error signing out:", error);
-      setLoading(false); // fail-safe
+      setLoading(false);
     }
   };
   

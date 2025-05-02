@@ -17,6 +17,12 @@ export const ProtectedRoute = ({ children, allowedRoles }: Props) => {
   
     const hasAccess = roles.some((role: number) => allowedRoles.includes(role));
   
+    if (!user || !user.user_metadata) {
+      return (
+        console.log("No user session found. Redirecting ..."),
+        <Navigate to="/signin" />
+      );
+    }
     if (!hasAccess) return (
       window.alert("You do not have permission to access this page. Redirecting ..."),
       <Navigate to="/" />

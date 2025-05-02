@@ -177,10 +177,7 @@ useEffect(() => {
     if (error) {
       console.error("Error signing out:", error.message);
     }
-
-    setSession(null);
     setLoading(false);
-    console.log("User signed out");
   }
 
   if (loading) {
