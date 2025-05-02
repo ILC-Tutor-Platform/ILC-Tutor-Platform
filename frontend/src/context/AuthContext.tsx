@@ -8,6 +8,8 @@ import {
 import { supabase } from "../supabaseClient";
 import { Session } from "@supabase/supabase-js";
 import SessionLoading from "@/components/Loading";
+import axios from "axios";
+import type { StudentSignUp } from "@/types";
 
 interface AuthContextType {
   session: Session | null;
@@ -20,7 +22,12 @@ interface AuthContextType {
     password: string
   ) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
+  signUpStudent: (
+    user: StudentSignUp
+  ) => Promise<{ success: boolean; error?: string }>;
 }
+
+const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -44,6 +51,31 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     return { success: true, data };
   };
 
+  const signUpStudent = async (user: StudentSignUp) => {
+    try {
+      const res = await axios.post(`${API_URL}/auth/signup/student`, {
+        user: {
+          name: user.user.name,
+          email: user.user.email,
+          password: user.user.password,
+          dateJoined: user.user.dateJoined,
+        },
+        student: {
+          student_number: user.student.student_number,
+          degree_program: user.student.degree_program,
+        },
+      });
+      return { success: true, data: res.data };
+    } catch (error: any) {
+      console.error("Sign up failed:", error);
+      return {
+        success: false,
+        error:
+          error.response?.data?.detail || "An error occurred during sign up",
+      };
+    }
+  };
+
   // Sign in
   const signInUser = async (email: string, password: string) => {
     try {
@@ -58,7 +90,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       }
 
       console.log("User signed in:", data.user);
-      setLoading(false)
+      setLoading(false);
       return { success: true, data };
     } catch (error) {
       console.error("Unexpected error during sign in:", error);
@@ -109,7 +141,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ session, signUpNewUser, signInUser, signOut }}
+      value={{ session, signUpNewUser, signInUser, signOut, signUpStudent }}
     >
       {children}
     </AuthContext.Provider>

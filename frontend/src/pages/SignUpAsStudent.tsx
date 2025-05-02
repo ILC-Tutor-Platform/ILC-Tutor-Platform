@@ -10,6 +10,7 @@ import {
 } from "@/utils/errorValidations.ts";
 import DropdownDegreeProgram from "@/components/DropdownDegreeProgram.tsx";
 import { Label } from "@/components/ui/label";
+import { UserAuth } from "@/context/AuthContext";
 
 const SignUpAsStudent = () => {
   const [firstName, setFirstName] = useState("");
@@ -21,6 +22,8 @@ const SignUpAsStudent = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const authContext = UserAuth();
+  const { signUpStudent } = authContext || {};
 
   const concatenatedName = `${firstName} ${lastName} ${middleInitial}`;
 
@@ -55,33 +58,44 @@ const SignUpAsStudent = () => {
   };
   const navigate = useNavigate();
 
-  // placeholder for the sign up as student function
   const signUpAsStudentHandler = async () => {
     setLoading(true);
+
     if (!validateFields()) {
       setLoading(false);
       return;
     }
 
-    try {
-      const signUpData = {
-        user: {
-          name: concatenatedName,
-          email: email,
-          password: password,
-          datejoined: dateNow(),
-          student: {
-            student_number: studentNumber,
-            degree_program: selectedProgram,
-          },
-        },
-      };
-
-      console.log(signUpData);
-      navigate("/verify-email");
-    } catch (error) {
-      console.error("Error signing up:", error);
+    if (!signUpStudent) {
+      console.error("signUpStudent function not found in AuthContext");
+      setLoading(false);
+      return;
     }
+
+    const payload = {
+      user: {
+        name: concatenatedName,
+        email,
+        password,
+        dateJoined: dateNow(),
+      },
+      student: {
+        student_number: studentNumber,
+        degree_program: selectedProgram || "",
+      },
+    };
+
+    const { success, error } = await signUpStudent(payload);
+
+    if (success) {
+      navigate("/verify-email");
+    } else {
+      setErrors({ general: error || "Signup failed" });
+      setLoading(false);
+      return;
+    }
+
+    setLoading(false);
   };
 
   return (
