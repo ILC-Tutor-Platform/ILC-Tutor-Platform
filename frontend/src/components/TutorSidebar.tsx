@@ -34,45 +34,49 @@ const TutorSidebar = () => {
             width={32}
             height={32}
           />
-        <div className="flex flex-col justify-center items-center flex-1 gap-8">
-          {[
-            { label: "Profile", icon: Profile, route: "/profile/tutor" },
-            {
-              label: "Students",
-              icon: Tutor,
-              route: "/profile/tutor/student-tracking",
-            },
-            {
-              label: "Schedule",
-              icon: Schedule,
-              route: "/profile/tutor/schedule",
-            },
-            {
-              label: "Announcements",
-              icon: Announcements,
-              route: "/profile/tutor/announcements",
-              large: true,
-            },
-          ].map((item) => (
-            <Link to={item.route} key={item.label} className="w-full">
-              <button className="flex flex-col items-center gap-2 w-full text-black hover:text-[#307B74] transition-colors">
-                <img
-                  src={item.icon}
-                  alt={item.label}
-                  className={item.large ? "w-6 h-6" : "w-5 h-5"}
-                  onClick={toggle}
-                />
-                <span
-                  className={`${
-                    item.large ? "text-xs" : "text-sm"
-                  } font-medium text-center`}
-                >
-                  {item.label}
-                </span>
-              </button>
-            </Link>
-          ))}
-        </div>
+          <div className="flex flex-col justify-center items-center flex-1 gap-8">
+            {[
+              { label: "Profile", icon: Profile, route: "/profile/tutor" },
+              {
+                label: "Students",
+                icon: Tutor,
+                route: "/profile/tutor/student-tracking",
+              },
+              {
+                label: "Schedule",
+                icon: Schedule,
+                route: "/profile/tutor/schedule",
+              },
+              {
+                label: "Announcements",
+                icon: Announcements,
+                route: "/profile/tutor/announcements",
+                large: true,
+              },
+            ].map((item) => (
+              <Link
+                to={item.route}
+                key={item.label}
+                className="w-full"
+                onClick={toggle}
+              >
+                <button className="flex flex-col items-center gap-2 w-full text-black hover:text-[#307B74] transition-colors">
+                  <img
+                    src={item.icon}
+                    alt={item.label}
+                    className={item.large ? "w-6 h-6" : "w-5 h-5"}
+                  />
+                  <span
+                    className={`${
+                      item.large ? "text-xs" : "text-sm"
+                    } font-medium text-center`}
+                  >
+                    {item.label}
+                  </span>
+                </button>
+              </Link>
+            ))}
+          </div>
         </>
       )}
     </aside>

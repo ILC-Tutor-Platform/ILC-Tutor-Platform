@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { useSidebarStore } from "@/stores/sidebarStore";
 
 const TutorAnnouncements = () => {
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     setSidebarOpen(false); // close on mount

@@ -8,27 +8,34 @@ import { useSidebarStore } from "@/stores/sidebarStore";
 import { Menu } from "lucide-react";
 import SessionLoading from "./Loading";
 import TutorSidebar from "./TutorSidebar";
+import { useRoleStore } from "@/stores/roleStore";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const authContext = UserAuth();
-  const { session, signOut, user } = authContext || {};
+  const { session, signOut } = authContext || {};
   const { toggle } = useSidebarStore();
   const [loading, setLoading] = useState(false);
-
-  let roles = user?.user_metadata?.role;
-  const hasRole = (roles: number[], target: number) => roles.includes(target);
+  const { hasRole } = useRoleStore();
 
   const handleSignOut = async () => {
     setLoading(true);
     try {
-      await signOut();
-      navigate("/signin");
+      await signOut(); // clears Supabase session
+      useRoleStore.getState().clearRoles(); // clear Zustand role state
+      console.log("User signed out successfully!");
+  
+      // Delay briefly to ensure all states update
+      setTimeout(() => {
+        setLoading(false);
+        navigate("/signin");
+      }, 100);
     } catch (error) {
       console.error("Error signing out:", error);
-      setLoading(false);
+      setLoading(false); // fail-safe
     }
   };
+  
 
   return (
     <>
@@ -46,8 +53,8 @@ const Navbar = () => {
               width={32}
               height={32}
             />
-            {hasRole(roles, 0) && <StudentSidebar />}
-            {hasRole(roles, 1) && <TutorSidebar />}
+            {hasRole(0) && <StudentSidebar />}
+            {hasRole(1) && <TutorSidebar />}
           </span>
         )}
         <NavLink to={"/"}>
@@ -80,43 +87,40 @@ const Navbar = () => {
             </NavLink>
           </li>
 
-          {/* Profile with Dropdown */}
           {session && (
-            <>
-              <li>
-                {hasRole(roles, 0) && (
-                  <NavLink
-                    to={"/profile/student"}
-                    className={({ isActive }) =>
-                      isActive
-                        ? "text-ilc-yellow underline underline-offset-[15px]"
-                        : "hover:text-ilc-yellow underline-offset-[15px] hover:underline"
-                    }
-                  >
-                    Profile
-                  </NavLink>
-                )}
-                {hasRole(roles, 1) && (
-                  <NavLink
-                    to={"/profile/tutor"}
-                    className={({ isActive }) =>
-                      isActive
-                        ? "text-ilc-yellow underline underline-offset-[15px]"
-                        : "hover:text-ilc-yellow underline-offset-[15px] hover:underline"
-                    }
-                  >
-                    Profile
-                  </NavLink>
-                )}
-              </li>
-            </>
+            <li>
+              {hasRole(0) && (
+                <NavLink
+                  to={"/profile/student"}
+                  className={({ isActive }) =>
+                    isActive
+                      ? "text-ilc-yellow underline underline-offset-[15px]"
+                      : "hover:text-ilc-yellow underline-offset-[15px] hover:underline"
+                  }
+                >
+                  Profile
+                </NavLink>
+              )}
+              {hasRole(1) && (
+                <NavLink
+                  to={"/profile/tutor"}
+                  className={({ isActive }) =>
+                    isActive
+                      ? "text-ilc-yellow underline underline-offset-[15px]"
+                      : "hover:text-ilc-yellow underline-offset-[15px] hover:underline"
+                  }
+                >
+                  Profile
+                </NavLink>
+              )}
+            </li>
           )}
 
           <li className="border-[2px] border-gray-300 border-dashed">
             <Button
               variant={"yellow-button"}
               size={"navbar-size"}
-              onClick={handleSignOut}
+              onClick={session ? handleSignOut : () => navigate("/signin")}
             >
               {session ? "Sign out" : "Sign in"}
             </Button>

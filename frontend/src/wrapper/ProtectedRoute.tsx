@@ -17,8 +17,10 @@ export const ProtectedRoute = ({ children, allowedRoles }: Props) => {
   
     const hasAccess = roles.some((role: number) => allowedRoles.includes(role));
   
-    if (!user) return <Navigate to="/signin" />;
-    if (!hasAccess) return <Navigate to="/" />;
+    if (!hasAccess) return (
+      window.alert("You do not have permission to access this page. Redirecting ..."),
+      <Navigate to="/" />
+    );
   
     return children;
   };

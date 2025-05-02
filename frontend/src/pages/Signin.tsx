@@ -48,10 +48,9 @@ const Signin = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSignIn = async (isStudent: boolean) => {
     setLoading(true);
-/*
+    /*
     if (!validateFields()) {
       setLoading(false);
       return;
@@ -59,8 +58,8 @@ const Signin = () => {
 
     try {
       const { success, error } = await signInUser(email, password);
-      await new Promise((resolve) => setTimeout(resolve, 1200));
       if (success) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         navigate(isStudent ? "/profile/student" : "/profile/tutor");
       } else {
         setErrors({
@@ -84,7 +83,10 @@ const Signin = () => {
       ) : (
         <div className="flex h-screen items-center w-full">
           <form
-            onSubmit={handleSignIn}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSignIn(isStudent);
+            }}
             className="flex flex-col w-[90%] md:gap-15 xl:w-[30%] mx-auto py-7 md:px-10 rounded-2xl green-shadow-card"
           >
             <div className="grid gap-10">

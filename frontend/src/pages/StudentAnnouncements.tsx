@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 const StudentAnnouncements = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     setSidebarOpen(false); // close on mount

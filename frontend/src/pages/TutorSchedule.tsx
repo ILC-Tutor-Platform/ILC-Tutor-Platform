@@ -8,7 +8,7 @@ interface Schedule {
 }
 
 const TutorSchedule = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [, setSidebarOpen] = useState(true);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
 
   useEffect(() => {

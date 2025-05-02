@@ -10,6 +10,7 @@ import { Session } from "@supabase/supabase-js";
 import SessionLoading from "@/components/Loading";
 import axios from "axios";
 import type { StudentSignUp } from "@/types";
+import { useRoleStore } from "@/stores/roleStore";
 
 interface AuthContextType {
   session: Session | null;
@@ -103,13 +104,14 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         password: password,
       });
 
-      if (error) {
-        console.error("Error signing in:", error.message);
-        return { success: false, error: error.message };
-      }
-      console.log("User signed in:", data.user);
+      await loadingTime(1200); // Simulate loading time
+
+      if (error) return {success: false, error: error.message}
+      
+
       setLoading(false);
-      return { success: true, data };
+      return { success: true, session: data.session };
+
     } catch (error) {
       console.error("Unexpected error during sign in:", error);
       return {
@@ -123,35 +125,62 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
   };
 
-  useEffect(() => {
-    const init = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      await loadingTime(1000); // Simulate loading time
-      setUser(session?.user || null);
-      setSession(session);
-      setLoading(false); // <- We're done loading
-    };
+useEffect(() => {
+  const { setRoles, clearRoles } = useRoleStore.getState();
 
-    init();
-
+  const init = async () => {
     const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
+      data: { session },
+    } = await supabase.auth.getSession();
+    await loadingTime(1000); // Simulate loading time
 
-    return () => {
-      subscription.unsubscribe(); // Clean up
-    };
-  }, []);
+    setUser(session?.user || null);
+    setSession(session);
+
+    if (session?.user) {
+      const rawRoles = session.user.user_metadata?.role;
+      const parsedRoles = Array.isArray(rawRoles)
+        ? rawRoles.map(Number)
+        : [Number(rawRoles)].filter((n) => !isNaN(n));
+      setRoles(parsedRoles);
+    }
+
+    setLoading(false); // We're done loading
+  };
+
+  init();
+
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    setSession(session);
+    setUser(session?.user || null);
+
+    if (session?.user) {
+      const rawRoles = session.user.user_metadata?.role;
+      const parsedRoles = Array.isArray(rawRoles)
+        ? rawRoles.map(Number)
+        : [Number(rawRoles)].filter((n) => !isNaN(n));
+      setRoles(parsedRoles);
+    } else {
+      clearRoles();
+    }
+  });
+
+  return () => {
+    subscription.unsubscribe(); // Clean up
+  };
+}, []);
 
   async function signOut() {
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("Error signing out:", error.message);
     }
+
+    setSession(null);
+    setLoading(false);
+    console.log("User signed out");
   }
 
   if (loading) {
