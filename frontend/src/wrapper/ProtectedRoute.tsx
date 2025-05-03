@@ -27,6 +27,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: Props) => {
     if (!hasAccess) {
       toast.error("You don't have an account associated with this role. Redirecting", {
         duration: 3000,
+        position: "top-center",
         style: {
           backgroundColor: "#ffffff",
           color: "#8A1538",
