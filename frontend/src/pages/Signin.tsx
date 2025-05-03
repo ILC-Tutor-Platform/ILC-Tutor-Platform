@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { isValidUpEmail } from "@/utils/errorValidations.ts";
 import SessionLoading from "@/components/Loading";
 import { toast } from "sonner";
+import { useRoleStore } from "@/stores/roleStore";
 
 const Signin = () => {
   const [email, setEmail] = useState("");
@@ -24,6 +25,7 @@ const Signin = () => {
 
   const authContext = UserAuth();
   const { signInUser } = authContext || {};
+  const { roles } = useRoleStore();
 
   // No need to manually query the DOM!
   const handleShowPassword = () => {
@@ -48,20 +50,34 @@ const Signin = () => {
 
     return Object.keys(newErrors).length === 0;
   };
-
-  const handleSignIn = async (isStudent: boolean) => {
-    setLoading(true);
-    /*
+  /*
+     *
     if (!validateFields()) {
       setLoading(false);
       return;
     }*/
 
+  const handleSignIn = async () => {
+    setLoading(true);
+
     try {
       const { success, error } = await signInUser(email, password);
+
       if (success) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        navigate(isStudent ? "/profile/student" : "/profile/tutor");
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+        const { roles, setActiveRole } = useRoleStore.getState();
+        if (roles.length === 1) {
+          const role = roles[0];
+          setActiveRole(role);
+          if (role === 0) navigate("/profile/student");
+          else if (role === 1) navigate("/profile/tutor");
+          else if (role === 2) navigate("/profile/admin");
+          else navigate("/unknown-role");
+        } else if (roles.length > 1) {
+          navigate("/choose-role");
+        } else {
+          navigate("/signin");
+        }
         toast.success("Signed in successfully!", {
           className: "green-shadow-card text-black",
           duration: 3000,
@@ -72,12 +88,10 @@ const Signin = () => {
             border: "0px",
             padding: "1.5rem",
             boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
-          }
+          },
         });
       } else {
-        setErrors({
-          invalidCredentials: error,
-        });
+        setErrors({ invalidCredentials: error });
         console.error("Sign in failed:", error);
       }
     } catch (error) {
@@ -98,7 +112,7 @@ const Signin = () => {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              handleSignIn(isStudent);
+              handleSignIn();
             }}
             className="flex flex-col w-[90%] md:gap-10 xl:w-[30%] mx-auto py-7 md:px-10 rounded-2xl green-shadow-card"
           >
@@ -164,21 +178,14 @@ const Signin = () => {
                 </div>
               </div>
 
-              <div className="flex gap-4 justify-center">
+              <div className="flex w-full">
                 <Button
+                  type="submit"
                   disabled={loading}
                   variant={"yellow-button"}
-                  onClick={() => setIsStudent(true)}
+                  className="w-full"
                 >
-                  Sign in as Student
-                </Button>
-
-                <Button
-                  disabled={loading}
-                  variant={"yellow-button"}
-                  onClick={() => setIsStudent(false)}
-                >
-                  Sign in as Tutor
+                  Sign in
                 </Button>
               </div>
 

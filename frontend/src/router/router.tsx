@@ -18,6 +18,8 @@ import TutorAnnouncements from "@/pages/TutorAnnouncements";
 import VerifyEmail from "@/pages/VerifyEmail";
 import { ProtectedRoute } from "@/wrapper/ProtectedRoute";
 import PageNotFound from "@/pages/PageNotFound";
+import ChooseRole from "@/pages/ChooseRole";
+import RedirectIfAuthenticated from "@/wrapper/RedirectIfAuthenticated";
 
 /*
 todo:
@@ -112,22 +114,46 @@ export const router = createBrowserRouter([
   },
   {
     path: "/signin",
-    element: <Signin />,
+    element: (
+      <RedirectIfAuthenticated>
+        <Signin />
+      </RedirectIfAuthenticated>
+    ),
   },
   {
     path: "/signup",
-    element: <SignupAs />,
+    element: (
+      <RedirectIfAuthenticated>
+        <SignupAs />
+      </RedirectIfAuthenticated>
+    ),
   },
   {
     path: "/signup/student",
-    element: <SignUpAsStudent />,
+    element: (
+      <RedirectIfAuthenticated>
+        <SignUpAsStudent />
+      </RedirectIfAuthenticated>
+    ),
   },
   {
     path: "/signup/tutor",
-    element: <SignUpAsTutor />,
+    element: (
+      <RedirectIfAuthenticated>
+        <SignUpAsTutor />
+      </RedirectIfAuthenticated>
+    ),
   },
   {
     path: "/verify-email",
-    element: <VerifyEmail />,
+    element: (
+      <RedirectIfAuthenticated>
+        <VerifyEmail />
+      </RedirectIfAuthenticated>
+    ),
+  },
+  {
+    path: "/choose-role",
+    element: <ChooseRole />,
   },
 ]);

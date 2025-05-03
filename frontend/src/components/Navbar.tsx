@@ -16,8 +16,7 @@ const Navbar = () => {
   const { session, signOut } = authContext || {};
   const { toggle } = useSidebarStore();
   const [loading, setLoading] = useState(false);
-  const { hasRole } = useRoleStore();
-
+  const activeRole = useRoleStore((state) => state.activeRole);
   const handleSignOut = async () => {
     setLoading(true);
     try {
@@ -34,7 +33,7 @@ const Navbar = () => {
             backgroundColor: "#ffffff",
             color: "#307B74",
             fontSize: "16px",
-            boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)"
+            boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
           },
         });
       }, 500);
@@ -54,8 +53,8 @@ const Navbar = () => {
             width={32}
             height={32}
           />
-          {hasRole(0) && <StudentSidebar />}
-          {hasRole(1) && <TutorSidebar />}
+          {activeRole === 0 && <StudentSidebar />}
+          {activeRole === 1 && <TutorSidebar />}
         </span>
       )}
       <NavLink to={"/"}>
@@ -90,7 +89,7 @@ const Navbar = () => {
 
         {session && (
           <li>
-            {hasRole(0) && (
+            {activeRole === 0 && (
               <NavLink
                 to={"/profile/student"}
                 className={({ isActive }) =>
@@ -102,7 +101,7 @@ const Navbar = () => {
                 Profile
               </NavLink>
             )}
-            {hasRole(1) && (
+            {activeRole === 1 && (
               <NavLink
                 to={"/profile/tutor"}
                 className={({ isActive }) =>

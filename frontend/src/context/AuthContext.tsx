@@ -14,18 +14,18 @@ import { useRoleStore } from "@/stores/roleStore";
 
 interface AuthContextType {
   session: Session | null;
-  user: Session['user'] | null;
+  user: Session["user"] | null;
   signUpNewUser: (
     email: string,
-    password: string
+    password: string,
   ) => Promise<{ success: boolean; error?: string }>;
   signInUser: (
     email: string,
-    password: string
+    password: string,
   ) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   signUpStudent: (
-    user: StudentSignUp
+    user: StudentSignUp,
   ) => Promise<{ success: boolean; error?: string }>;
 }
 
@@ -36,7 +36,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<Session['user'] | null>(null);
+  const [user, setUser] = useState<Session["user"] | null>(null);
 
   const signUpNewUser = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({
@@ -77,7 +77,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       };
     }
   };
-/*
+  /*
   const signInUser = async (email: string, password: string) => {
     try {
       const res = await axios.post(`${API_URL}/dev/auth/login/student`, {
@@ -94,8 +94,6 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     }
   }*/
 
-
-
   // Sign in
   const signInUser = async (email: string, password: string) => {
     try {
@@ -106,12 +104,10 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
       await loadingTime(1200); // Simulate loading time
 
-      if (error) return {success: false, error: error.message}
-      
+      if (error) return { success: false, error: error.message };
 
       setLoading(false);
       return { success: true, session: data.session };
-
     } catch (error) {
       console.error("Unexpected error during sign in:", error);
       return {
@@ -125,52 +121,52 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
   };
 
-useEffect(() => {
-  const { setRoles, clearRoles } = useRoleStore.getState();
+  useEffect(() => {
+    const { setRoles, clearRoles } = useRoleStore.getState();
 
-  const init = async () => {
+    const init = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      await loadingTime(1000); // Simulate loading time
+
+      setUser(session?.user || null);
+      setSession(session);
+
+      if (session?.user) {
+        const rawRoles = session.user.user_metadata?.role;
+        const parsedRoles = Array.isArray(rawRoles)
+          ? rawRoles.map(Number)
+          : [Number(rawRoles)].filter((n) => !isNaN(n));
+        setRoles(parsedRoles);
+      }
+
+      setLoading(false); // We're done loading
+    };
+
+    init();
+
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    await loadingTime(1000); // Simulate loading time
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user || null);
 
-    setUser(session?.user || null);
-    setSession(session);
+      if (session?.user) {
+        const rawRoles = session.user.user_metadata?.role;
+        const parsedRoles = Array.isArray(rawRoles)
+          ? rawRoles.map(Number)
+          : [Number(rawRoles)].filter((n) => !isNaN(n));
+        setRoles(parsedRoles);
+      } else {
+        clearRoles();
+      }
+    });
 
-    if (session?.user) {
-      const rawRoles = session.user.user_metadata?.role;
-      const parsedRoles = Array.isArray(rawRoles)
-        ? rawRoles.map(Number)
-        : [Number(rawRoles)].filter((n) => !isNaN(n));
-      setRoles(parsedRoles);
-    }
-
-    setLoading(false); // We're done loading
-  };
-
-  init();
-
-  const {
-    data: { subscription },
-  } = supabase.auth.onAuthStateChange((_event, session) => {
-    setSession(session);
-    setUser(session?.user || null);
-
-    if (session?.user) {
-      const rawRoles = session.user.user_metadata?.role;
-      const parsedRoles = Array.isArray(rawRoles)
-        ? rawRoles.map(Number)
-        : [Number(rawRoles)].filter((n) => !isNaN(n));
-      setRoles(parsedRoles);
-    } else {
-      clearRoles();
-    }
-  });
-
-  return () => {
-    subscription.unsubscribe(); // Clean up
-  };
-}, []);
+    return () => {
+      subscription.unsubscribe(); // Clean up
+    };
+  }, []);
 
   async function signOut() {
     const { error } = await supabase.auth.signOut();
@@ -186,7 +182,14 @@ useEffect(() => {
 
   return (
     <AuthContext.Provider
-      value={{ session, signUpNewUser, signInUser, signOut, signUpStudent, user }}
+      value={{
+        session,
+        signUpNewUser,
+        signInUser,
+        signOut,
+        signUpStudent,
+        user,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -10,20 +10,19 @@ import StudentSidebar from "./StudentSidebar";
 import logo from "@/assets/AralLinkLogo.svg";
 import TutorSidebar from "./TutorSidebar";
 import { toast } from "sonner";
+import { useRoleStore } from "@/stores/roleStore";
 
 const NavbarMobile = () => {
   const navigate = useNavigate();
   const authContext = UserAuth();
-  const { session, signOut, user } = authContext || {};
+  const { session, signOut } = authContext || {};
   const { toggle, close } = useSidebarStore();
-
-  let roles = user?.user_metadata?.role;
-  const hasRole = (roles: number[], target: number) => roles.includes(target);
-
+  const activeRole = useRoleStore((state) => state.activeRole);
   const handleSignOut = async () => {
     try {
       await signOut();
       navigate("/signin");
+      console.log("Signed out successfully!");
       toast.success("Signed out successfully!", {
         duration: 3000,
         style: {
@@ -45,8 +44,8 @@ const NavbarMobile = () => {
           {session && (
             <span>
               <Menu className="cursor-pointer" onClick={toggle} />
-              {hasRole(roles, 0) && <StudentSidebar />}
-              {hasRole(roles, 1) && <TutorSidebar />}
+              {activeRole === 0 && <StudentSidebar />}
+              {activeRole === 1 && <TutorSidebar />}
             </span>
           )}
           <Link to={"/"} onClick={close}>
@@ -59,24 +58,24 @@ const NavbarMobile = () => {
             {session && (
               <>
                 <li>
-                  {hasRole(roles, 0) && (
+                  {activeRole === 0 && (
                     <Link to={"/profile/student/announcements"}>
                       <img src={bell} alt="" />
                     </Link>
                   )}
-                  {hasRole(roles, 1) && (
+                  {activeRole === 1 && (
                     <Link to={"/profile/tutor/announcements"}>
                       <img src={bell} alt="" />
                     </Link>
                   )}
                 </li>
                 <li>
-                  {hasRole(roles, 0) && (
+                  {activeRole === 0 && (
                     <Link to={"/profile/student"}>
                       <img src={profile} alt="" />
                     </Link>
                   )}
-                  {hasRole(roles, 1) && (
+                  {activeRole === 1 && (
                     <Link to={"/profile/tutor"}>
                       <img src={profile} alt="" />
                     </Link>

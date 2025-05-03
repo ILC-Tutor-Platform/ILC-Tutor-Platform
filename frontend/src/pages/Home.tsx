@@ -1,15 +1,12 @@
 import Logo from "@/assets/AralLinkLogo.svg";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useRoleStore } from "@/stores/roleStore";
+import { useRoleStore } from "../stores/roleStore";
 
 const Home = () => {
   const navigate = useNavigate();
-  const roles = useRoleStore((state) => state.roles);
-
-  console.log("Current roles: ", roles)
-
-
+  const activeRole = useRoleStore((state) => state.activeRole);
+  console.log("Current role: ", activeRole);
   return (
     <section className="relative overflow-clip h-screen">
       {/* BOOKS BG ELEMENTS */}

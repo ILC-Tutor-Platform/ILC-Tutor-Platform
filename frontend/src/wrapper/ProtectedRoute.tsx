@@ -1,41 +1,44 @@
-import { Navigate } from "react-router-dom"
-import { UserAuth } from "@/context/AuthContext"
+import { Navigate } from "react-router-dom";
+import { UserAuth } from "@/context/AuthContext";
+import { useRoleStore } from "@/stores/roleStore";
 import { JSX } from "react";
-import { toast } from "sonner"
+import { toast } from "sonner";
 
 interface Props {
-    children: JSX.Element;
-    allowedRoles: number[];
+  children: JSX.Element;
+  allowedRoles: number[];
 }
 
 export const ProtectedRoute = ({ children, allowedRoles }: Props) => {
-    const { user } = UserAuth();
-  
-    let rolesRaw = user?.user_metadata?.role;
-    const roles: number[] = Array.isArray(rolesRaw)
-      ? rolesRaw.map(Number)
-      : [Number(rolesRaw)].filter((n) => !isNaN(n));
-  
-    const hasAccess = roles.some((role: number) => allowedRoles.includes(role));
-  
-    if (!user || !user.user_metadata) {
-      return (
-        console.log("No user session found. Redirecting ..."),
-        <Navigate to="/signin" />
-      );
-    }
-    if (!hasAccess) {
-      toast.error("You don't have an account associated with this role. Redirecting", {
-        duration: 3000,
-        position: "top-center",
-        style: {
-          backgroundColor: "#ffffff",
-          color: "#8A1538",
-          fontSize: "16px",
-        },
-      });
-      return <Navigate to="/" />;
-    }
-  
-    return children;
-  };
+  const { user } = UserAuth();
+  const { activeRole } = useRoleStore();
+
+  if (!user || !user.user_metadata) {
+    console.log("No user session found. Redirecting to /signin...");
+    return <Navigate to="/signin" />;
+  }
+
+  // Still haven't selected a role yet
+  if (activeRole === null) {
+    console.log("No active role set. Redirecting to /choose-role...");
+    return <Navigate to="/choose-role" />;
+  }
+
+  const hasAccess = allowedRoles.includes(activeRole);
+
+  if (!hasAccess) {
+    const fallback =
+      activeRole === 0 ? "student" : activeRole === 1 ? "tutor" : "admin";
+    toast.error("You don't have access to this page. Redirecting...", {
+      duration: 3000,
+      style: {
+        backgroundColor: "#ffffff",
+        color: "#8A1538",
+        fontSize: "16px",
+      },
+    });
+    return <Navigate to={`/profile/${fallback}`} />;
+  }
+
+  return children;
+};
