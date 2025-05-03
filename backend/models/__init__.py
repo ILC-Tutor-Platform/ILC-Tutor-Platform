@@ -1,4 +1,4 @@
-from database import Base
+from database.config import Base
 
 # Student info
 from .student.student_detail import StudentDetail

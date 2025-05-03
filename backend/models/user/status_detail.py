@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Date, String, Integer
+from sqlalchemy import Column, String, Integer
 from models import Base
-from database import engine
 
 class StatusDetail(Base):
     __tablename__ = "status_detail"
