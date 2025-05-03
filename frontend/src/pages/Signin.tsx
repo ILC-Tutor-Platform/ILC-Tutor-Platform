@@ -7,6 +7,7 @@ import { Button } from "../components/ui/button";
 import { Label } from "@/components/ui/label";
 import { isValidUpEmail } from "@/utils/errorValidations.ts";
 import SessionLoading from "@/components/Loading";
+import { toast } from "sonner";
 
 const Signin = () => {
   const [email, setEmail] = useState("");
@@ -61,6 +62,18 @@ const Signin = () => {
       if (success) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
         navigate(isStudent ? "/profile/student" : "/profile/tutor");
+        toast.success("Signed in successfully!", {
+          className: "green-shadow-card text-black",
+          duration: 3000,
+          style: {
+            background: "#ffffff",
+            color: "#307B74",
+            fontSize: "16px",
+            border: "0px",
+            padding: "1.5rem",
+            boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
+          }
+        });
       } else {
         setErrors({
           invalidCredentials: error,
@@ -87,7 +100,7 @@ const Signin = () => {
               e.preventDefault();
               handleSignIn(isStudent);
             }}
-            className="flex flex-col w-[90%] md:gap-15 xl:w-[30%] mx-auto py-7 md:px-10 rounded-2xl green-shadow-card"
+            className="flex flex-col w-[90%] md:gap-10 xl:w-[30%] mx-auto py-7 md:px-10 rounded-2xl green-shadow-card"
           >
             <div className="grid gap-10">
               <img src={Logo} alt="Logo" className="w-35 h-auto mx-auto" />

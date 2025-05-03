@@ -1,6 +1,7 @@
 import { Navigate } from "react-router-dom"
 import { UserAuth } from "@/context/AuthContext"
 import { JSX } from "react";
+import { toast } from "sonner"
 
 interface Props {
     children: JSX.Element;
@@ -23,11 +24,17 @@ export const ProtectedRoute = ({ children, allowedRoles }: Props) => {
         <Navigate to="/signin" />
       );
     }
-    if (!hasAccess) return (
-      window.alert("You do not have permission to access this page. Redirecting ..."),
-      <Navigate to="/" />
-    );
+    if (!hasAccess) {
+      toast.error("You don't have an account associated with this role. Redirecting", {
+        duration: 3000,
+        style: {
+          backgroundColor: "#ffffff",
+          color: "#8A1538",
+          fontSize: "16px",
+        },
+      });
+      return <Navigate to="/" />;
+    }
   
     return children;
   };
-  

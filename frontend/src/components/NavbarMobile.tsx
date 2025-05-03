@@ -9,6 +9,7 @@ import { UserAuth } from "@/context/AuthContext";
 import StudentSidebar from "./StudentSidebar";
 import logo from "@/assets/AralLinkLogo.svg";
 import TutorSidebar from "./TutorSidebar";
+import { toast } from "sonner";
 
 const NavbarMobile = () => {
   const navigate = useNavigate();
@@ -23,6 +24,15 @@ const NavbarMobile = () => {
     try {
       await signOut();
       navigate("/signin");
+      toast.success("Signed out successfully!", {
+        duration: 3000,
+        style: {
+          backgroundColor: "#ffffff",
+          color: "#307B74",
+          fontSize: "16px",
+          boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
+        },
+      });
     } catch (error) {
       console.error("Error signing out:", error);
     }
