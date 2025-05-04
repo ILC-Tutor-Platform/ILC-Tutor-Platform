@@ -50,6 +50,9 @@ def verify_email(email: str, db: Session = Depends(get_db)):
         else:
             return {"message": "Email not yet verified", "email": user.email}
 
+    except HTTPException:
+        raise
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
