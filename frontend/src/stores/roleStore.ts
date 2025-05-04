@@ -24,7 +24,7 @@ export const useRoleStore = create<RoleStore>()(
         }
         set({ activeRole: role });
       },
-      clearRoles: () => set({ roles: [] }),
+      clearRoles: () => set({ roles: [], activeRole: null }),
       hasRole: (target) => get().roles.includes(target),
     }),
     {
