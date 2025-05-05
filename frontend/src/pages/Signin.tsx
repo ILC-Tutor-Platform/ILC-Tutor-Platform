@@ -9,7 +9,6 @@ import { isValidUpEmail } from "@/utils/errorValidations.ts";
 import SessionLoading from "@/components/Loading";
 import { toast } from "sonner";
 import { useRoleStore } from "@/stores/roleStore";
-import jwt_decode from "jwt-decode";
 
 const Signin = () => {
   const [email, setEmail] = useState("");
@@ -57,22 +56,23 @@ const Signin = () => {
 
   const handleSignIn = async () => {
     setLoading(true);
-
     try {
-      const { success, error, session } = await signInUser(email, password);
+      const { success, error } = await signInUser(email, password);
 
-      if (success && session) {
+      if (success) {
         await new Promise((resolve) => setTimeout(resolve, 1200));
-        console.log(success);
 
-        const decoded = jwt-decode<{user_metadata: any; role: string[]}>(
-          session.access_token
-        );
+        const res = await axios.get(`${API_URL}auth/me`, {
+          withCredentials: true,
+        });
 
-        const rawRoles = decoded.role || [];
-        const parsedRoles = rawRoles.map((r) => Number(r)).filter((n) => !isNaN(n));
+        const { uid, role, name } = res.data;
 
-        const { roles, setActiveRole } = useRoleStore.getState();
+        const parsedRoles = role
+          .map((r: string | number) => (typeof r === "string" ? Number(r) : r))
+          .filter((n: number) => !isNaN(n));
+
+        const { setRoles, setActiveRole } = useRoleStore.getState();
         setRoles(parsedRoles);
 
         if (parsedRoles.length === 1) {
@@ -87,6 +87,7 @@ const Signin = () => {
         } else {
           navigate("/signin");
         }
+
         toast.success("Signed in successfully!", {
           className: "green-shadow-card text-black",
           duration: 3000,

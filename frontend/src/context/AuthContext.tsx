@@ -12,9 +12,14 @@ import type { StudentSignUp } from "@/types";
 
 interface AuthContextType {
   user: { uid: string; name: string; role: number[] } | null;
-  signInUser: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signInUser: (
+    email: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
-  signUpStudent: (user: StudentSignUp) => Promise<{ success: boolean; error?: string }>;
+  signUpStudent: (
+    user: StudentSignUp,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
@@ -25,18 +30,20 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthContextType["user"]>(null);
   const [loading, setLoading] = useState(true);
 
-
   const { setRoles, clearRoles } = useRoleStore.getState();
 
   const signInUser = async (email: string, password: string) => {
     try {
-      const res = await axios.post(`${API_URL}auth/login`, {
-        email,
-        password,
-      }, {
-        withCredentials: true, // Important if using HttpOnly cookies
-      });
-
+      const res = await axios.post(
+        `${API_URL}auth/login`,
+        {
+          email,
+          password,
+        },
+        {
+          withCredentials: true, // Important if using HttpOnly cookies
+        },
+      );
 
       const { uid, role, name } = res.data;
 
@@ -49,13 +56,11 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         success: false,
         error: error.response?.data?.detail || "Login failed.",
       };
-
     }
   };
 
   const signOut = async () => {
     try {
-
       await axios.post(`${API_URL}auth/logout`, {}, { withCredentials: true });
       setUser(null);
       clearRoles();
@@ -74,10 +79,8 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
           dateJoined: user.user.dateJoined,
         },
         student: {
-
           student_number: user.student.student_number,
           degree_program: user.student.degree_program,
-
         },
       });
       return { success: true };
@@ -86,7 +89,6 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         success: false,
         error: error.response?.data?.detail || "Sign up failed.",
       };
-
     }
   };
 
@@ -95,7 +97,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await axios.get(`${API_URL}`, {
+        const res = await axios.get(`${API_URL}auth/me`, {
           withCredentials: true,
         });
 
@@ -110,20 +112,16 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-
     checkAuth();
   }, []);
 
   if (loading) return <SessionLoading msg="Checking your identity..." />;
 
   return (
-
     <AuthContext.Provider value={{ user, signInUser, signOut, signUpStudent }}>
-
       {children}
     </AuthContext.Provider>
   );
-
 };
 
 export const UserAuth = () => {
@@ -133,4 +131,3 @@ export const UserAuth = () => {
   }
   return context;
 };
-
