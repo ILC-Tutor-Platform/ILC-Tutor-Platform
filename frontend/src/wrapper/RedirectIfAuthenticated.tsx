@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { UserAuth } from "../context/AuthContext";
-import { useRoleStore } from "../stores/roleStore"; 
+import { useRoleStore } from "../stores/roleStore";
 import { ReactNode } from "react";
 
 type Props = {

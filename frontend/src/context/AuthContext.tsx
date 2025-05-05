@@ -1,32 +1,20 @@
 import {
   createContext,
-  useState,
   useContext,
-  ReactNode,
+  useState,
   useEffect,
+  ReactNode,
 } from "react";
-import { supabase } from "../supabaseClient";
-import { Session } from "@supabase/supabase-js";
-import SessionLoading from "@/components/Loading";
 import axios from "axios";
-import type { StudentSignUp } from "@/types";
 import { useRoleStore } from "@/stores/roleStore";
+import SessionLoading from "@/components/Loading";
+import type { StudentSignUp } from "@/types";
 
 interface AuthContextType {
-  session: Session | null;
-  user: Session["user"] | null;
-  signUpNewUser: (
-    email: string,
-    password: string,
-  ) => Promise<{ success: boolean; error?: string }>;
-  signInUser: (
-    email: string,
-    password: string,
-  ) => Promise<{ success: boolean; error?: string }>;
+  user: { uid: string; name: string; role: number[] } | null;
+  signInUser: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
-  signUpStudent: (
-    user: StudentSignUp,
-  ) => Promise<{ success: boolean; error?: string }>;
+  signUpStudent: (user: StudentSignUp) => Promise<{ success: boolean; error?: string }>;
 }
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
@@ -34,23 +22,46 @@ const API_URL = import.meta.env.VITE_BACKEND_URL;
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<AuthContextType["user"]>(null);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<Session["user"] | null>(null);
 
-  const signUpNewUser = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-    });
 
-    if (error) {
-      console.error("Error signing up:", error.message);
-      return { success: false, error: error.message };
+  const { setRoles, clearRoles } = useRoleStore.getState();
+
+  const signInUser = async (email: string, password: string) => {
+    try {
+      const res = await axios.post(`${API_URL}auth/login`, {
+        email,
+        password,
+      }, {
+        withCredentials: true, // Important if using HttpOnly cookies
+      });
+
+
+      const { uid, role, name } = res.data;
+
+      // Store in state + global store
+      setUser({ uid, name, role });
+      setRoles(role.map(Number));
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.detail || "Login failed.",
+      };
+
     }
+  };
 
-    console.log("User signed up:", data.user);
-    return { success: true, data };
+  const signOut = async () => {
+    try {
+
+      await axios.post(`${API_URL}auth/logout`, {}, { withCredentials: true });
+      setUser(null);
+      clearRoles();
+    } catch (error) {
+      console.error("Sign out error", error);
+    }
   };
 
   const signUpStudent = async (user: StudentSignUp) => {
@@ -63,137 +74,56 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
           dateJoined: user.user.dateJoined,
         },
         student: {
+
           student_number: user.student.student_number,
           degree_program: user.student.degree_program,
+
         },
       });
-      return { success: true, data: res.data };
-    } catch (error: any) {
-      console.error("Sign up failed:", error);
-      return {
-        success: false,
-        error:
-          error.response?.data?.detail || "An error occurred during sign up",
-      };
-    }
-  };
-  /*
-  const signInUser = async (email: string, password: string) => {
-    try {
-      const res = await axios.post(`${API_URL}/dev/auth/login/student`, {
-        email: email,
-        password: password
-      });
-      return { success: true, data: res.data }
+      return { success: true };
     } catch (error: any) {
       return {
         success: false,
-        error:
-          error.response?.data?.detail || "An error occurred during sign in.",
+        error: error.response?.data?.detail || "Sign up failed.",
       };
-    }
-  }*/
 
-  // Sign in
-  const signInUser = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
-
-      await loadingTime(1200); // Simulate loading time
-
-      if (error) return { success: false, error: error.message };
-
-      setLoading(false);
-      return { success: true, session: data.session };
-    } catch (error) {
-      console.error("Unexpected error during sign in:", error);
-      return {
-        success: false,
-        error: "An unexpected error occurred. Please try again.",
-      };
     }
   };
 
-  const loadingTime = (ms: number) => {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  };
+  // Optional: auto-load user from backend (if using cookies)
 
   useEffect(() => {
-    const { setRoles, clearRoles } = useRoleStore.getState();
+    const checkAuth = async () => {
+      try {
+        const res = await axios.get(`${API_URL}`, {
+          withCredentials: true,
+        });
 
-    const init = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      await loadingTime(1000); // Simulate loading time
-
-      setUser(session?.user || null);
-      setSession(session);
-
-      if (session?.user) {
-        const rawRoles = session.user.user_metadata?.role;
-        const parsedRoles = Array.isArray(rawRoles)
-          ? rawRoles.map(Number)
-          : [Number(rawRoles)].filter((n) => !isNaN(n));
-        setRoles(parsedRoles);
-      }
-
-      setLoading(false); // We're done loading
-    };
-
-    init();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user || null);
-
-      if (session?.user) {
-        const rawRoles = session.user.user_metadata?.role;
-        const parsedRoles = Array.isArray(rawRoles)
-          ? rawRoles.map(Number)
-          : [Number(rawRoles)].filter((n) => !isNaN(n));
-        setRoles(parsedRoles);
-      } else {
+        const { uid, role, name } = res.data;
+        setUser({ uid, name, role });
+        setRoles(role.map(Number));
+      } catch {
+        setUser(null);
         clearRoles();
+      } finally {
+        setLoading(false);
       }
-    });
-
-    return () => {
-      subscription.unsubscribe(); // Clean up
     };
+
+
+    checkAuth();
   }, []);
 
-  async function signOut() {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error signing out:", error.message);
-    }
-    setLoading(false);
-  }
-
-  if (loading) {
-    return <SessionLoading msg="Getting your data" />;
-  }
+  if (loading) return <SessionLoading msg="Checking your identity..." />;
 
   return (
-    <AuthContext.Provider
-      value={{
-        session,
-        signUpNewUser,
-        signInUser,
-        signOut,
-        signUpStudent,
-        user,
-      }}
-    >
+
+    <AuthContext.Provider value={{ user, signInUser, signOut, signUpStudent }}>
+
       {children}
     </AuthContext.Provider>
   );
+
 };
 
 export const UserAuth = () => {
@@ -203,3 +133,4 @@ export const UserAuth = () => {
   }
   return context;
 };
+

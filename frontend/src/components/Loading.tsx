@@ -7,7 +7,7 @@ interface SessionLoadingProps {
 
 export default function SessionLoading({ msg }: SessionLoadingProps) {
   return (
-    <div className="flex mt-36 h-screen md:items-center md:mt-0 justify-center bg-white">
+    <div className="flex h-screen items-center justify-center bg-white">
       <div className="w-full max-w-md rounded-lg p-8">
         <div className="flex flex-col items-center space-y-6">
           <div className="text-center">

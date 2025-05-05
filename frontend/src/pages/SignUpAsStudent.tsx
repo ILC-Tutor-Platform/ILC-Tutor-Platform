@@ -59,9 +59,9 @@ const SignUpAsStudent = () => {
   };
   const navigate = useNavigate();
 
-    const handleShowPassword = () => {
-      setShowPassword((prev) => !prev);
-    };
+  const handleShowPassword = () => {
+    setShowPassword((prev) => !prev);
+  };
 
   const signUpAsStudentHandler = async () => {
     setLoading(true);
@@ -204,37 +204,34 @@ const SignUpAsStudent = () => {
           </div>
 
           <div>
-                {errors.password && (
-                  <Label className="text-[0.8rem] font-thin text-red-500">
-                    {errors.password}
-                  </Label>
-                )}
-                <Input
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="p-3 mt-2"
-                  type={showPassword ? "text" : "password"} // Controlled by state!
-                  name="password"
-                  id="password"
-                  placeholder="Password"
-                  autoComplete="current-password"
-                />
+            {errors.password && (
+              <Label className="text-[0.8rem] font-thin text-red-500">
+                {errors.password}
+              </Label>
+            )}
+            <Input
+              onChange={(e) => setPassword(e.target.value)}
+              className="p-3 mt-2"
+              type={showPassword ? "text" : "password"} // Controlled by state!
+              name="password"
+              id="password"
+              placeholder="Password"
+              autoComplete="current-password"
+            />
 
-                <div className="flex items-center mt-2">
-                  <input
-                    type="checkbox"
-                    id="showPassword"
-                    checked={showPassword}
-                    onChange={handleShowPassword}
-                    className="mr-2"
-                  />
-                  <label
-                    htmlFor="showPassword"
-                    className="text-sm text-ilc-grey"
-                  >
-                    Show Password
-                  </label>
-                </div>
-              </div>
+            <div className="flex items-center mt-2">
+              <input
+                type="checkbox"
+                id="showPassword"
+                checked={showPassword}
+                onChange={handleShowPassword}
+                className="mr-2"
+              />
+              <label htmlFor="showPassword" className="text-sm text-ilc-grey">
+                Show Password
+              </label>
+            </div>
+          </div>
         </div>
         <div className="flex items-center w-[50%] mx-auto">
           <Button

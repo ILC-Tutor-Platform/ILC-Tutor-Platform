@@ -9,6 +9,7 @@ import { isValidUpEmail } from "@/utils/errorValidations.ts";
 import SessionLoading from "@/components/Loading";
 import { toast } from "sonner";
 import { useRoleStore } from "@/stores/roleStore";
+import jwt_decode from "jwt-decode";
 
 const Signin = () => {
   const [email, setEmail] = useState("");
@@ -19,15 +20,12 @@ const Signin = () => {
     invalidCredentials?: string;
   }>({});
   const [loading, setLoading] = useState(false);
-  const [isStudent, setIsStudent] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const authContext = UserAuth();
   const { signInUser } = authContext || {};
-  const { roles } = useRoleStore();
 
-  // No need to manually query the DOM!
   const handleShowPassword = () => {
     setShowPassword((prev) => !prev);
   };
@@ -61,19 +59,30 @@ const Signin = () => {
     setLoading(true);
 
     try {
-      const { success, error } = await signInUser(email, password);
+      const { success, error, session } = await signInUser(email, password);
 
-      if (success) {
+      if (success && session) {
         await new Promise((resolve) => setTimeout(resolve, 1200));
+        console.log(success);
+
+        const decoded = jwt-decode<{user_metadata: any; role: string[]}>(
+          session.access_token
+        );
+
+        const rawRoles = decoded.role || [];
+        const parsedRoles = rawRoles.map((r) => Number(r)).filter((n) => !isNaN(n));
+
         const { roles, setActiveRole } = useRoleStore.getState();
-        if (roles.length === 1) {
-          const role = roles[0];
+        setRoles(parsedRoles);
+
+        if (parsedRoles.length === 1) {
+          const role = parsedRoles[0];
           setActiveRole(role);
           if (role === 0) navigate("/profile/student");
           else if (role === 1) navigate("/profile/tutor");
           else if (role === 2) navigate("/profile/admin");
           else navigate("/unknown-role");
-        } else if (roles.length > 1) {
+        } else if (parsedRoles.length > 1) {
           navigate("/choose-role");
         } else {
           navigate("/signin");
@@ -153,7 +162,7 @@ const Signin = () => {
                   <Input
                     onChange={(e) => setPassword(e.target.value)}
                     className="p-3 mt-2"
-                    type={showPassword ? "text" : "password"} // Controlled by state!
+                    type={showPassword ? "text" : "password"}
                     name="password"
                     id="password"
                     placeholder="Password"
