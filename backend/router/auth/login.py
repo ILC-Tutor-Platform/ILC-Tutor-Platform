@@ -42,8 +42,8 @@ async def login(credentials: LoginRequest):
         name = auth_response.user.user_metadata.get("name")
 
         return LoginResponse(
-            access_token=True,
-            refresh_token=True,
+            access_token=auth_response.session.access_token,
+            refresh_token=auth_response.session.refresh_token,
             uid=auth_response.user.id,
             role=role,
             name=name
