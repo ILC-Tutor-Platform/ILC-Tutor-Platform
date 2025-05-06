@@ -26,7 +26,7 @@ class RefreshResponse(BaseModel):
     uid: str
     
 @router.post("/auth/login", response_model=LoginResponse)
-async def login(credentials: LoginRequest, respone: Response):
+async def login(credentials: LoginRequest, response: Response):
     try:
         auth_response = supabase.auth.sign_in_with_password({
             "email": credentials.email, 
