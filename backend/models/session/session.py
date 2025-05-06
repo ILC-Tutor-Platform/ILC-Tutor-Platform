@@ -15,4 +15,6 @@ class Session(Base):
     status = Column(String, nullable=False)
     time_started = Column(Time, nullable=False)
     time_ended = Column(Time, nullable=False)
-    duration = Column(Integer, nullable=False)    
+    duration = Column(Integer, nullable=False)
+    modality = Column(String, nullable=False)
+    room = Column(String, nullable=True)
