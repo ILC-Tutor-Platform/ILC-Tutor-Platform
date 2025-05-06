@@ -9,9 +9,14 @@ import axios from "axios";
 import { useRoleStore } from "@/stores/roleStore";
 import SessionLoading from "@/components/Loading";
 import type { StudentSignUp } from "@/types";
+import { useAuthStore } from "@/stores/authStore";
+import { useTokenStore } from "@/stores/authStore";
+import type { UserPayload } from "@/types";
+import { api } from "@/utils/axios";
+
 
 interface AuthContextType {
-  user: { uid: string; name: string; role: number[] } | null;
+  user: UserPayload | null;
   signInUser: (
     email: string,
     password: string,
@@ -20,6 +25,8 @@ interface AuthContextType {
   signUpStudent: (
     user: StudentSignUp,
   ) => Promise<{ success: boolean; error?: string }>;
+  refreshSession: () => Promise<boolean>;
+  isAuthenticated: boolean;
 }
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
@@ -27,46 +34,71 @@ const API_URL = import.meta.env.VITE_BACKEND_URL;
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<AuthContextType["user"]>(null);
   const [loading, setLoading] = useState(true);
-
   const { setRoles, clearRoles } = useRoleStore.getState();
+  
+  const user = useAuthStore((state) => state.user);
+  const { setUser, setRefreshToken, clearAuth } = useAuthStore.getState();
+  const { accessToken, setAccessToken } = useTokenStore.getState();
 
-let accessToken: string | null = null; // module-level
+  const isAuthenticated = Boolean(user && accessToken);
 
+  // sign in user
+  const signInUser = async (email: string, password: string) => {
+    try {
+      const res = await axios.post(`${API_URL}auth/login`, { email, password });
+      const { access_token, refresh_token, uid, role, name } = res.data;
 
-const signInUser = async (email: string, password: string) => {
-  try {
-    const res = await axios.post(`${API_URL}auth/login`, { email, password });
-    const { access_token, uid, role, name } = res.data;
+      setAccessToken(access_token);
+      setRefreshToken(refresh_token);
 
-    accessToken = access_token; // store in memory only
+      const userData = { uid, name, role };
+      setUser(userData);
+      setRoles(role.map(Number));
+      
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.detail || "Login failed.",
+      };
+    }
+  };
 
-    setUser({ uid, name, role });
-    setRoles(role.map(Number));
-    return { success: true };
-  } catch (error: any) {
-    return {
-      success: false,
-      error: error.response?.data?.detail || "Login failed.",
-    };
-  }
-};
+  // refresh token
+  const refreshSession = async (): Promise<boolean> => {
+    try {
+      const refreshToken = useAuthStore.getState().refreshToken;
+      if (!refreshToken) {
+        return false;
+      }
+
+      const res = await axios.post(`${API_URL}auth/login/refresh`, {
+        refresh_token: refreshToken,
+      });
+      
+      const { access_token } = res.data;
+      setAccessToken(access_token);
+      
+      return true;
+    } catch (error) {
+      clearAuth();
+      setAccessToken(null);
+      clearRoles();
+      return false;
+    }
+  };
 
 
   const signOut = async () => {
-    try {
-      await axios.post(`${API_URL}auth/logout`, {}, { withCredentials: true });
-      setUser(null);
+      clearAuth();
+      setAccessToken(null);
       clearRoles();
-    } catch (error) {
-      console.error("Sign out error", error);
-    }
   };
 
   const signUpStudent = async (user: StudentSignUp) => {
     try {
-      const res = await axios.post(`${API_URL}/auth/signup/student`, {
+      await axios.post(`${API_URL}/auth/signup/student`, {
         user: {
           name: user.user.name,
           email: user.user.email,
@@ -87,36 +119,35 @@ const signInUser = async (email: string, password: string) => {
     }
   };
 
-  // Optional: auto-load user from backend (if using cookies)
-
   useEffect(() => {
     const checkAuth = async () => {
+      try {
+        const storedRefreshToken = useAuthStore.getState().refreshToken;
+        const storedUser = useAuthStore.getState().user;
+        
+        if (!storedRefreshToken || !storedUser) {
+          setLoading(false);
+          return;
+        }
 
-  if (!accessToken) {
-    setLoading(false);
-    return;
-  }
-
-  try {
-    const res = await axios.get(`${API_URL}auth/me`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    const { uid, role, name } = res.data;
-
-    setUser({ uid, name, role });
-    setRoles(role.map(Number));
-  } catch {
-    setUser(null);
-    clearRoles();
-
-  } finally {
-    setLoading(false);
-  }
-};
-
+        const refreshSuccess = await refreshSession();
+        
+        if (refreshSuccess) {
+          setRoles(storedUser.role.map(Number));
+        } else {
+          clearAuth();
+          setAccessToken(null);
+          clearRoles();
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        clearAuth();
+        setAccessToken(null);
+        clearRoles();
+      } finally {
+        setLoading(false);
+      }
+    };
 
     checkAuth();
   }, []);
@@ -124,7 +155,16 @@ const signInUser = async (email: string, password: string) => {
   if (loading) return <SessionLoading msg="Checking your identity..." />;
 
   return (
-    <AuthContext.Provider value={{ user, signInUser, signOut, signUpStudent }}>
+    <AuthContext.Provider 
+      value={{ 
+        user, 
+        signInUser, 
+        signOut, 
+        signUpStudent, 
+        refreshSession,
+        isAuthenticated
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

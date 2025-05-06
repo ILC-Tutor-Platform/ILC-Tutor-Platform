@@ -9,43 +9,59 @@ import { Menu } from "lucide-react";
 import TutorSidebar from "./TutorSidebar";
 import { useRoleStore } from "@/stores/roleStore";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const authContext = UserAuth();
-  const { session, signOut } = authContext || {};
   const { toggle } = useSidebarStore();
   const [loading, setLoading] = useState(false);
   const activeRole = useRoleStore((state) => state.activeRole);
+  const { isAuthenticated, user, signOut, refreshSession } = UserAuth();
+  const [sessionChecked, setSessionChecked] = useState(false);
+
+    useEffect(() => {
+      const checkSession = async () => {
+        if (isAuthenticated && user) {
+          await refreshSession();
+        }
+        setSessionChecked(true);
+      };
+  
+      checkSession();
+      const refreshInterval = setInterval(() => {
+        if (isAuthenticated) {
+          refreshSession();
+        }
+      }, 15 * 60 * 1000);
+  
+      return () => clearInterval(refreshInterval);
+    }, [isAuthenticated, refreshSession]);
+
   const handleSignOut = async () => {
-    setLoading(true);
     try {
       await signOut();
-      useRoleStore.getState().clearRoles();
-      console.log("User signed out successfully!");
-
-      setTimeout(() => {
-        setLoading(false);
-        navigate("/signin");
-        toast.success("Signed out successfully!", {
-          duration: 3000,
-          style: {
-            backgroundColor: "#ffffff",
-            color: "#307B74",
-            fontSize: "16px",
-            boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
-          },
-        });
-      }, 500);
+      setLoading(true);
+      navigate("/signin");
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      console.log("Signed out successfully!");
+      toast.success("Signed out successfully!", {
+        duration: 3000,
+        style: {
+          backgroundColor: "#ffffff",
+          color: "#307B74",
+          fontSize: "16px",
+          boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
+        },
+      });
+      setLoading(false);
     } catch (error) {
       console.error("Error signing out:", error);
-      setLoading(false);
     }
   };
 
   return (
     <nav className="flex items-center justify-between px-20 py-7 shadow-md sticky top-0 bg-white z-50">
-      {session && (
+      {isAuthenticated && user && (
         <span className="absolute left-7">
           <Menu
             className="cursor-pointer"
@@ -87,7 +103,7 @@ const Navbar = () => {
           </NavLink>
         </li>
 
-        {session && (
+        {isAuthenticated && user && (
           <li>
             {activeRole === 0 && (
               <NavLink
@@ -120,9 +136,9 @@ const Navbar = () => {
           <Button
             variant={"yellow-button"}
             size={"navbar-size"}
-            onClick={session ? handleSignOut : () => navigate("/signin")}
+            onClick={isAuthenticated && user ? handleSignOut : () => navigate("/signin")}
           >
-            {session ? "Sign out" : "Sign in"}
+            {isAuthenticated && user ? "Sign out" : "Sign in"}
           </Button>
         </li>
       </ul>

@@ -16,7 +16,7 @@ import StudentTracking from "@/pages/StudentTracking";
 import TutorSchedule from "@/pages/TutorSchedule";
 import TutorAnnouncements from "@/pages/TutorAnnouncements";
 import VerifyEmail from "@/pages/VerifyEmail";
-import { ProtectedRoute } from "@/wrapper/ProtectedRoute";
+import ProtectedRoute from "@/wrapper/ProtectedRoute";
 import PageNotFound from "@/pages/PageNotFound";
 import ChooseRole from "@/pages/ChooseRole";
 import RedirectIfAuthenticated from "@/wrapper/RedirectIfAuthenticated";

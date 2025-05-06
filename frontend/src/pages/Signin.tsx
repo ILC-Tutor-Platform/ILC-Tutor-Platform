@@ -9,6 +9,7 @@ import { isValidUpEmail } from "@/utils/errorValidations.ts";
 import SessionLoading from "@/components/Loading";
 import { toast } from "sonner";
 import { useRoleStore } from "@/stores/roleStore";
+import { useAuthStore } from "@/stores/authStore";
 
 const Signin = () => {
   const [email, setEmail] = useState("");
@@ -54,62 +55,72 @@ const Signin = () => {
       return;
     }*/
 
-  const handleSignIn = async () => {
-    setLoading(true);
-    try {
-      const { success, error } = await signInUser(email, password);
-
-      if (success) {
-        await new Promise((resolve) => setTimeout(resolve, 1200));
-
-        const res = await axios.get(`${API_URL}auth/me`, {
-          withCredentials: true,
-        });
-
-        const { uid, role, name } = res.data;
-
-        const parsedRoles = role
-          .map((r: string | number) => (typeof r === "string" ? Number(r) : r))
-          .filter((n: number) => !isNaN(n));
-
-        const { setRoles, setActiveRole } = useRoleStore.getState();
-        setRoles(parsedRoles);
-
-        if (parsedRoles.length === 1) {
-          const role = parsedRoles[0];
-          setActiveRole(role);
-          if (role === 0) navigate("/profile/student");
-          else if (role === 1) navigate("/profile/tutor");
-          else if (role === 2) navigate("/profile/admin");
-          else navigate("/unknown-role");
-        } else if (parsedRoles.length > 1) {
-          navigate("/choose-role");
-        } else {
-          navigate("/signin");
+      const handleSignIn = async () => {
+        setLoading(true);
+        try {
+          // Use the signInUser function from our auth context
+          // This already handles storing tokens and updating user state
+          const { success, error } = await signInUser(email, password);
+      
+          if (success) {
+            // Since signInUser already sets the user and roles, we don't need to call /auth/me again
+            // Our auth context already handles this, so we can just get the current user from the store
+            const user = useAuthStore.getState().user;
+            
+            if (!user || !user.role || user.role.length === 0) {
+              throw new Error("User or roles not found after successful login");
+            }
+      
+            // Get roles from the user object that was already set during signInUser
+            const parsedRoles = user.role
+              .map((r) => (typeof r === "string" ? Number(r) : r))
+              .filter((n) => !isNaN(n));
+      
+            // Set the active role
+            const { setActiveRole } = useRoleStore.getState();
+            
+            // Navigate based on roles
+            if (parsedRoles.length === 1) {
+              const role = parsedRoles[0];
+              setActiveRole(role);
+              
+              // Navigate based on the specific role
+              if (role === 0) navigate("/profile/student");
+              else if (role === 1) navigate("/profile/tutor");
+              else if (role === 2) navigate("/profile/admin");
+              else navigate("/unknown-role");
+            } else if (parsedRoles.length > 1) {
+              navigate("/choose-role");
+            } else {
+              navigate("/signin");
+            }
+      
+            // Show success toast
+            toast.success("Signed in successfully!", {
+              className: "green-shadow-card text-black",
+              duration: 3000,
+              style: {
+                background: "#ffffff",
+                color: "#307B74",
+                fontSize: "16px",
+                border: "0px",
+                padding: "1.5rem",
+                boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
+              },
+            });
+          } else {
+            setErrors({ invalidCredentials: error });
+            console.error("Sign in failed:", error);
+          }
+        } catch (error) {
+          console.error("Error signing in: ", error);
+          setErrors({ 
+            invalidCredentials: error instanceof Error ? error.message : "An unexpected error occurred" 
+          });
+        } finally {
+          setLoading(false);
         }
-
-        toast.success("Signed in successfully!", {
-          className: "green-shadow-card text-black",
-          duration: 3000,
-          style: {
-            background: "#ffffff",
-            color: "#307B74",
-            fontSize: "16px",
-            border: "0px",
-            padding: "1.5rem",
-            boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
-          },
-        });
-      } else {
-        setErrors({ invalidCredentials: error });
-        console.error("Sign in failed:", error);
-      }
-    } catch (error) {
-      console.error("Error signing in: ", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      };
 
   return (
     <>

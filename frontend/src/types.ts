@@ -11,3 +11,9 @@ export interface StudentSignUp {
         degree_program: string;
     }
 }
+
+export interface UserPayload {
+    uid: string;
+    name: string;
+    role: number[];
+}

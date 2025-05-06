@@ -11,16 +11,41 @@ import logo from "@/assets/AralLinkLogo.svg";
 import TutorSidebar from "./TutorSidebar";
 import { toast } from "sonner";
 import { useRoleStore } from "@/stores/roleStore";
+import { useEffect, useState } from "react";
 
 const NavbarMobile = () => {
   const navigate = useNavigate();
-  const authContext = UserAuth();
-  const { session, signOut } = authContext || {};
+  const { isAuthenticated, user, signOut, refreshSession } = UserAuth();
   const { toggle, close } = useSidebarStore();
   const activeRole = useRoleStore((state) => state.activeRole);
+  const [sessionChecked, setSessionChecked] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      if (isAuthenticated && user) {
+        await refreshSession();
+      }
+      setSessionChecked(true);
+    };
+
+    checkSession();
+    
+    // Optional: Set up periodic token refresh if needed
+    const refreshInterval = setInterval(() => {
+      if (isAuthenticated) {
+        refreshSession();
+      }
+    }, 15 * 60 * 1000);
+
+    return () => clearInterval(refreshInterval);
+  }, [isAuthenticated, refreshSession]);
+
   const handleSignOut = async () => {
     try {
       await signOut();
+      setLoading(true);
+      await new Promise((resolve) => setTimeout(resolve, 1200));
       navigate("/signin");
       console.log("Signed out successfully!");
       toast.success("Signed out successfully!", {
@@ -32,6 +57,7 @@ const NavbarMobile = () => {
           boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
         },
       });
+      setLoading(false);
     } catch (error) {
       console.error("Error signing out:", error);
     }
@@ -41,7 +67,7 @@ const NavbarMobile = () => {
     <>
       <nav className="flex justify-between items-center shadow-md sticky top-0 bg-white py-5 px-5 z-50">
         <div className="flex items-center gap-4">
-          {session && (
+          {isAuthenticated && user && (
             <span>
               <Menu className="cursor-pointer" onClick={toggle} />
               {activeRole === 0 && <StudentSidebar />}
@@ -55,7 +81,7 @@ const NavbarMobile = () => {
 
         <div>
           <ul className="flex items-center gap-4">
-            {session && (
+            {isAuthenticated && user && (
               <>
                 <li>
                   {activeRole === 0 && (
@@ -65,6 +91,11 @@ const NavbarMobile = () => {
                   )}
                   {activeRole === 1 && (
                     <Link to={"/profile/tutor/announcements"}>
+                      <img src={bell} alt="" />
+                    </Link>
+                  )}
+                  {activeRole === 2 && (
+                    <Link to={"/profile/admin/announcements"}>
                       <img src={bell} alt="" />
                     </Link>
                   )}
@@ -80,10 +111,15 @@ const NavbarMobile = () => {
                       <img src={profile} alt="" />
                     </Link>
                   )}
+                  {activeRole === 2 && (
+                    <Link to={"/profile/admin"}>
+                      <img src={profile} alt="" />
+                    </Link>
+                  )}
                 </li>
               </>
             )}
-            {!session && (
+            {(!isAuthenticated || !user) && (
               <li>
                 <NavLink
                   to={"/tutors"}
@@ -100,12 +136,12 @@ const NavbarMobile = () => {
             <li className="border-[2px] border-gray-300 border-dashed">
               <Button
                 onClick={() =>
-                  session ? handleSignOut() : navigate("/signin")
+                  isAuthenticated && user ? handleSignOut() : navigate("/signin")
                 }
                 variant={"yellow-button"}
                 className="text-xs"
               >
-                {session ? "Sign out" : "Sign in"}
+                {isAuthenticated && user ? "Sign out" : "Sign in"}
               </Button>
             </li>
           </ul>
