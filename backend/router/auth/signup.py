@@ -4,14 +4,19 @@ from sqlalchemy.orm import Session
 from models import UserDetail, StudentDetail, UserRoleDetail, TutorDetail, StatusDetail, TutorSocials, TutorAffiliation, TutorAvailability, TutorExpertise, SubjectDetail
 from constants.supabase_client import supabase
 from schema import StudentSignupSchema, TutorSignupSchema
+from pydantic import BaseModel
 
 router = APIRouter()
+
+class EmailPayload(BaseModel):
+    email: str
 
 # ----------- SIGN UP ----------------
 # Verifies a user’s email after signup.
 @router.post("/auth/verify-email")
-def verify_email(email: str, db: Session = Depends(get_db)):
+def verify_email(payload: EmailPayload, db: Session = Depends(get_db)):
     try:
+        email = payload.email
         # Get all users from supabase
         users = supabase.auth.admin.list_users()
 
