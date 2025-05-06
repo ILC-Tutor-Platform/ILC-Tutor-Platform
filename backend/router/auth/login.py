@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from constants.supabase_client import supabase
 from pydantic import BaseModel
+from constants.logger import logger
 
 router = APIRouter()
 
@@ -45,6 +46,7 @@ async def login(credentials: LoginRequest):
         )
     
     except Exception as e:
+        logger.error(f"Login failed: {e}")
         raise HTTPException(status_code=401, detail="Authentication failed")
     
 @router.post("/auth/login/tutor", response_model=LoginResponse)
@@ -71,6 +73,7 @@ async def login(credentials: LoginRequest):
         )
     
     except Exception as e:
+        logger.error(f"Login failed: {e}")
         raise HTTPException(status_code=401, detail="Authentication failed")
 
 @router.post("/auth/login/admin", response_model=LoginResponse)
@@ -97,6 +100,7 @@ async def login(credentials: LoginRequest):
         )
     
     except Exception as e:
+        logger.error(f"Login failed: {e}")
         raise HTTPException(status_code=401, detail="Authentication failed")
     
 @router.post("/auth/login/refresh", response_model=RefreshResponse)
@@ -115,5 +119,6 @@ async def refresh_token(payload: RefreshRequest):
         )
     
     except Exception as e:
+        logger.error(f"Refresh failed: {e}")
         raise HTTPException(status_code=401, detail="Token refresh failed")
     

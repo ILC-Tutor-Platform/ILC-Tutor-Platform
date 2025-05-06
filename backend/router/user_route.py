@@ -5,10 +5,7 @@ from models import UserDetail, StudentDetail, TutorDetail, TutorAffiliation, Tut
 from constants.supabase_client import supabase
 from jose import jwt, JWTError
 from constants import settings
-import logging 
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+from constants.logger import logger
 
 router = APIRouter()
 
@@ -21,7 +18,8 @@ JWT_ALGORITHM = "HS256"
 def require_role(allowed_roles: list[int]):
     def checker(user=Depends(verify_token)):
         if not any(str(role) in user["role"] for role in allowed_roles):
-            raise HTTPException(status_code=403, detail="Permission denied: The user's role is not allowed to access this endpoint.")
+            logger.error("The user's role is not allowed to access this endpoint.")
+            raise HTTPException(status_code=403, detail="Permission denied")
         return user
     return checker
 
@@ -38,25 +36,31 @@ def get_authorization_token(request: Request):
     return auth_header.split(" ")[1] 
 
 def verify_token(token: str = Depends(get_authorization_token)): 
+    """
+    Verify JWT token and extract user information.
+    """
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM], audience="authenticated")
         user_id = payload.get("sub")
         role = payload.get("user_metadata", {}).get("role", [])
 
         if user_id is None:
-            raise HTTPException(status_code=401, detail="Invalid token: No subject.")
-        
+            logger.error("Token is missing user subject.")
+            raise HTTPException(status_code=401, detail="Invalid token: Missing required fields.")
+
         return {
             "user_id": user_id,
             "role": role
         }
     except JWTError as e:
+        logger.error(f"Token verification failed: {str(e)}")
         raise HTTPException(status_code=401, detail=f"Invalid or expired token: {str(e)}")
 
 @router.get("/")
 def get_all_users(db: Session = Depends(get_db)):
     try:
         users = db.query(UserDetail).all()
+        logger.info("Fetching users from Supabase")
         return {"users": [ 
             {
                 "user_id": user.userid,
@@ -68,7 +72,7 @@ def get_all_users(db: Session = Depends(get_db)):
         ]}
     except Exception as e:
         logger.error(f"Error retrieving users: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to retrieve users: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error during authentication")
 
 # Test routes to check role-based API access 
 @router.get("/student-data")
@@ -88,13 +92,15 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
     try:
         uid = user["user_id"] 
         roles = user["role"]
+        
+        logger.info(f"uid: {uid}")
 
         # Fetch user from supabase
         user_detail = db.query(UserDetail).filter(UserDetail.userid == uid).first()
+        # all_users = supabase.auth.admin.list_users()
 
         # Fetch user from Supabase
-        all_users = supabase.auth.admin.list_users()
-        user = next((u for u in all_users if u.id == uid), None)
+        # user = next((u for u in all_users if u.id == uid), None)
         role_ids = [int(r) for r in roles]
 
         response = {
@@ -142,7 +148,8 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
         return response
 
     except Exception:
-        raise HTTPException(status_code=500, detail="User does not exist.")
+        logger.error("User requested is not found.")
+        raise HTTPException(status_code=500, detail="User not found.")
 
 @router.patch("/users/profile/update")
 def update_user_profile(
@@ -152,15 +159,15 @@ def update_user_profile(
 
     uid = user["user_id"]
     role = user["role"]
-
     try:
+        logger.info(f"Updating user {uid}")
         # Check if user exists in Supabase Auth
-        all_users = supabase.auth.admin.list_users()
-        user = next((u for u in all_users if u.id == uid), None)
-
+        # all_users = supabase.auth.admin.list_users()
+        # user = next((u for u in all_users if u.id == uid), None)
         if not user:
-            raise HTTPException(status_code=404, detail="User not found in database.")
-
+            logger.error("User not found in database.")
+            raise HTTPException(status_code=404, detail="User not found.")
+        
         # User table
         if "user" in data:
             user_fields = {
@@ -173,6 +180,7 @@ def update_user_profile(
 
         # Student table
         if "student" in data:
+            logger.info("Updating student info...")
             if "0" in role:
                 student_fields = {
                     "student_number": data["student"].get("student_number"),
@@ -182,7 +190,8 @@ def update_user_profile(
                 if student_fields:
                     supabase.table("student_detail").update(student_fields).eq("student_id", uid).execute()
             else:
-                raise HTTPException(status_code=403, detail="Only students can update student fields.")
+                logger.error("Only students can update student fields.")
+                raise HTTPException(status_code=403, detail="Permission denied.")
 
         # Tutor table
         if "tutor" in data:
@@ -195,7 +204,8 @@ def update_user_profile(
                 if tutor_fields:
                     supabase.table("tutor_detail").update(tutor_fields).eq("tutor_id", uid).execute()
             else:
-                raise HTTPException(status_code=403, detail="Only tutors can update tutor fields.")
+                logger.error("Only tutors can update tutor fields.")
+                raise HTTPException(status_code=403, detail="Permission denied")
 
         # Admin table
         if "admin" in data:
@@ -207,7 +217,8 @@ def update_user_profile(
                 if admin_fields:
                     supabase.table("admin_detail").update(admin_fields).eq("admin_id", uid).execute()
             else:
-                raise HTTPException(status_code=403, detail="Only an admin can update admin fields.")
+                logger.error("Only an admin can update admin fields.")
+                raise HTTPException(status_code=403, detail="Permission denied")
         
         if "subject" in data:
             if "1" in role:
@@ -219,7 +230,8 @@ def update_user_profile(
                         "subject_name": name
                     }).execute()
             else:
-                raise HTTPException(status_code=403, detail="Only tutors can update tutor fields.")
+                logger.error("Only tutors can update subjects.")
+                raise HTTPException(status_code=403, detail="Permission denied")
         
         if "expertise" in data:
             if "1" in role:
@@ -231,7 +243,8 @@ def update_user_profile(
                         "expertise": topic
                     }).execute()
             else:
-                raise HTTPException(status_code=403, detail="Only tutors can update tutor fields.")    
+                logger.error("Only tutors can update expertise.")
+                raise HTTPException(status_code=403, detail="Permission denied") 
 
         if "availability" in data:
             if "1" in role:
@@ -253,7 +266,8 @@ def update_user_profile(
                             "available_time_to": time_to[i]
                         }).execute()
             else:
-                raise HTTPException(status_code=403, detail="Only tutors can update tutor fields.")    
+                logger.error("Only tutors can update tutor availability.")
+                raise HTTPException(status_code=403, detail="Permission denied")    
 
 
         if "affiliation" in data:
@@ -266,7 +280,8 @@ def update_user_profile(
                         "affiliations": affiliation
                     }).execute()
             else:
-                raise HTTPException(status_code=403, detail="Only tutors can update tutor fields.")    
+                logger.error("Only tutors can update tutor affiliation.")
+                raise HTTPException(status_code=403, detail="Permission denied")    
 
         if "socials" in data:
             if "1" in role:
@@ -281,10 +296,12 @@ def update_user_profile(
                         "socials": link
                     }).execute()
             else:
-                raise HTTPException(status_code=403, detail="Only tutors can update tutor fields.")    
+                logger.error("Only tutors can update tutor socials.")
+                raise HTTPException(status_code=403, detail="Permission denied")        
 
         return {"message": "Profile updated successfully."}
     except Exception as e:
+        logger.error(f"User detail cannot be updated. Error: {str(e)}")
         raise HTTPException(status_code=400, detail="Update user failed.")
     
 # Delete user data from table
