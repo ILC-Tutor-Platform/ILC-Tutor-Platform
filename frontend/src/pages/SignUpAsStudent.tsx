@@ -11,6 +11,7 @@ import {
 import DropdownDegreeProgram from "@/components/DropdownDegreeProgram.tsx";
 import { Label } from "@/components/ui/label";
 import { UserAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 const SignUpAsStudent = () => {
   const [firstName, setFirstName] = useState("");
@@ -25,7 +26,7 @@ const SignUpAsStudent = () => {
   const authContext = UserAuth();
   const { signUpStudent } = authContext || {};
   const [showPassword, setShowPassword] = useState(false);
-
+  const navigate = useNavigate();
   const concatenatedName = `${firstName} ${lastName} ${middleInitial}`;
 
   const dateNow = () => {
@@ -57,7 +58,6 @@ const SignUpAsStudent = () => {
 
     return Object.keys(newErrors).length === 0;
   };
-  const navigate = useNavigate();
 
   const handleShowPassword = () => {
     setShowPassword((prev) => !prev);
@@ -82,7 +82,7 @@ const SignUpAsStudent = () => {
         name: concatenatedName,
         email,
         password,
-        dateJoined: dateNow(),
+        datejoined: dateNow(),
       },
       student: {
         student_number: studentNumber,
@@ -93,7 +93,25 @@ const SignUpAsStudent = () => {
     const { success, error } = await signUpStudent(payload);
 
     if (success) {
-      navigate("/verify-email");
+      console.log("User signed up successfully:", concatenatedName);
+      navigate("/signin");
+      // Show success toast
+      toast.success(
+        "Please check your email. We sent you a confirmation. Thank you.",
+        {
+          className: "green-shadow-card text-black",
+          duration: 3000,
+          style: {
+            background: "#ffffff",
+            color: "#307B74",
+            fontSize: "16px",
+            border: "0px",
+            padding: "1.5rem",
+            boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
+          },
+        },
+      );
+      setLoading(false);
     } else {
       setErrors({ general: error || "Signup failed" });
       setLoading(false);

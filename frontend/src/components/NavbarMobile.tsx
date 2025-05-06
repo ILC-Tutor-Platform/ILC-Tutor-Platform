@@ -30,7 +30,7 @@ const NavbarMobile = () => {
     };
 
     checkSession();
-    
+
     // Optional: Set up periodic token refresh if needed
     const refreshInterval = setInterval(() => {
       if (isAuthenticated) {
@@ -45,7 +45,6 @@ const NavbarMobile = () => {
     try {
       await signOut();
       setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 1200));
       navigate("/signin");
       console.log("Signed out successfully!");
       toast.success("Signed out successfully!", {

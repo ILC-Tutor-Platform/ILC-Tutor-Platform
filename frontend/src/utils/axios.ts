@@ -5,13 +5,28 @@ import { useRoleStore } from '../stores/roleStore';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
-// Create axios instance with interceptors
+// Create an axios instance
+
 export const api = axios.create({
   baseURL: API_URL,
-  withCredentials: true,
+  withCredentials: false,
 });
 
-// Add request interceptor to attach the token to requests
+// Utility function to refresh the access token
+const refreshAccessToken = async () => {
+  const refreshToken = useAuthStore.getState().refreshToken;
+  if (!refreshToken) {
+    throw new Error('No refresh token available');
+  }
+
+  const response = await axios.post(`${API_URL}auth/login/refresh`, {
+    refresh_token: refreshToken,
+  });
+
+  return response.data.access_token;
+};
+
+// Request interceptor to add the access token to requests
 api.interceptors.request.use(
   (config) => {
     const token = useTokenStore.getState().accessToken;
@@ -23,44 +38,38 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Add response interceptor to handle token refresh
+// Response interceptor to handle 401 errors and token refresh
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
-    // If error is 401 and we haven't retried yet
+
+    // If the error is 401 and this is the first retry attempt
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
+
       try {
-        // Attempt to refresh the token
-        const refreshToken = useAuthStore.getState().refreshToken;
-        if (!refreshToken) {
-          throw new Error('No refresh token available');
-        }
-        
-        const response = await axios.post(`${API_URL}auth/login/refresh`, {
-          refresh_token: refreshToken,
-        });
-        
-        const { access_token } = response.data;
-        
-        // Update the token in memory
-        useTokenStore.getState().setAccessToken(access_token);
-        
-        // Retry the original request
-        originalRequest.headers.Authorization = `Bearer ${access_token}`;
-        return axios(originalRequest);
+        // Try to refresh the access token
+        const accessToken = await refreshAccessToken();
+
+        // Update the token and retry the original request
+        useTokenStore.getState().setAccessToken(accessToken);
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        return axios(originalRequest);  // Retry original request
       } catch (refreshError) {
-        // If refresh failed, sign out user
+        // If token refresh fails, clear user authentication data
         useAuthStore.getState().clearAuth();
         useTokenStore.getState().setAccessToken(null);
         useRoleStore.getState().clearRoles();
         return Promise.reject(refreshError);
+
       }
     }
-    
+
+    // Default error handling
+
     return Promise.reject(error);
   }
 );
+

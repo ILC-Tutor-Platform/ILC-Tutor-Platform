@@ -8,3 +8,8 @@ SETTINGS = settings.get_settings()
 supabase: Client = create_client(
     SETTINGS.SUPABASE_URL, 
     SETTINGS.SUPABASE_KEY)
+
+# Initialize supabase client with service role
+supabase_admin: Client = create_client(
+    SETTINGS.SUPABASE_URL, 
+    SETTINGS.SUPABASE_SERVICE_ROLE_KEY)

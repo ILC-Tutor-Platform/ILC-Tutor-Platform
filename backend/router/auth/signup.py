@@ -2,8 +2,9 @@ from fastapi import APIRouter, HTTPException, Depends
 from database.config import get_db
 from sqlalchemy.orm import Session
 from models import UserDetail, StudentDetail, UserRoleDetail, TutorDetail, StatusDetail, TutorSocials, TutorAffiliation, TutorAvailability, TutorExpertise, SubjectDetail
-from constants.supabase_client import supabase
+from constants.supabase_client import supabase_admin
 from schema import StudentSignupSchema, TutorSignupSchema
+from constants.logger import logger
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -15,16 +16,30 @@ class EmailPayload(BaseModel):
 # Verifies a user’s email after signup.
 @router.post("/auth/verify-email")
 def verify_email(payload: EmailPayload, db: Session = Depends(get_db)):
-    try
+    try:
         email = payload.email
-        # Get all users from supabase
-        users = supabase.auth.admin.list_users()
-
-        # Find user by email
-        user = next((u for u in users if u.email == email), None)
+        logger.info(f"Starting email verification for: {email}")
+        
+        try:
+            # Make sure to use the service role key in your Supabase client
+            users = supabase_admin.auth.admin.list_users()
+            logger.info(f"Successfully retrieved users from Supabase")
+            
+            # Find user by email
+            user = next((u for u in users if u.email == email), None)
+        except Exception as supabase_error:
+            logger.error(f"Supabase admin API error: {str(supabase_error)}")
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Error connecting to authentication service: {str(supabase_error)}"
+            )
 
         if not user:
+            logger.info(f"User with email {email} not found")
             raise HTTPException(status_code=404, detail="User not found")
+            
+        # Log user details for debugging (remove in production)
+        logger.info(f"User found: {user.id}, Email confirmed: {user.email_confirmed_at is not None}")
 
         role = user.user_metadata.get("role", [])
         # Check if user is already verified
@@ -55,11 +70,12 @@ def verify_email(payload: EmailPayload, db: Session = Depends(get_db)):
         else:
             return {"message": "Email not yet verified", "email": user.email}
 
-    except HTTPException:
-        raise
-    
+    except HTTPException as he:
+        # Re-raise HTTP exceptions
+        raise he
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Unexpected error in email verification: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Verification failed: {str(e)}")
 
 def add_detail(user, role, db):
     # Add user to student_detail table
@@ -152,6 +168,8 @@ def create_tutor_profile(user, db, tutor_status):
 
     db.add(UserRoleDetail(user_id=user.id, role_id="1"))
     db.commit()    
+
+
 #Register a student and send verification email
 @router.post("/auth/signup/student")
 def signup_student(payload: StudentSignupSchema):
@@ -173,11 +191,12 @@ def signup_student(payload: StudentSignupSchema):
             if "0" not in current_role:
                 current_role.append("0")
             else: 
+                logger.info("User is already a student.")
                 return {"message": "User is already a student."}
 
 
             # Ensure you are updating user metadata correctly
-            supabase.auth.admin.update_user_by_id(
+            supabase_admin.auth.admin.update_user_by_id(
                 existing_user.id,
                 {
                     "user_metadata": {  
@@ -205,6 +224,7 @@ def signup_student(payload: StudentSignupSchema):
             return {"message": "Student registered successfully. Email verification sent."}
 
     except Exception as e:
+        logger.error(f"Signup failed. {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/auth/signup/tutor")
@@ -242,7 +262,7 @@ def signup_tutor(payload: TutorSignupSchema):
                 return {"message": "User is already a tutor."}
 
             # Ensure you are updating user metadata correctly
-            supabase.auth.admin.update_user_by_id(
+            supabase_admin.auth.admin.update_user_by_id(
                 existing_user.id,
                 {
                     "user_metadata": {  
@@ -283,8 +303,8 @@ def signup_tutor(payload: TutorSignupSchema):
             
             return {"message": "Tutor registered successfully. Email verification sent."}
 
-
     except Exception as e:
+        logger.error(f"Signup failed. {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
 
 # Check if the user already exists in supabase auth
@@ -292,7 +312,7 @@ def get_existing_user(user):
     # Check if the user already exists
     try:
         # Fetch all users 
-        response = supabase.auth.admin.list_users()
+        response = supabase_admin.auth.admin.list_users()
         user_list = response.users if hasattr(response, 'users') else response  # fallback for some clients
         
         # Look for matching email (case-insensitive just in case)
@@ -305,4 +325,5 @@ def get_existing_user(user):
         existing_user = None
 
     return existing_user
+
 

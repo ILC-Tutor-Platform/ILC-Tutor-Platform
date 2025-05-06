@@ -3,6 +3,7 @@ from constants.supabase_client import supabase
 from pydantic import BaseModel
 from typing import List
 from fastapi import Header
+from constants.logger import logger
 
 router = APIRouter()
 
@@ -32,13 +33,14 @@ async def login(credentials: LoginRequest):
             "email": credentials.email, 
             "password": credentials.password
         })
-
         user = auth_response.user
-        
+        print("Login response:", user)
+
         if not user:
             raise HTTPException(status_code=401, detail="Invalid credentials.")
         
-        role = auth_response.user.user_metadata.get("role", [])
+        role_data = auth_response.user.user_metadata.get("role", [])
+        role = role_data if isinstance(role_data, list) else [role_data]
         name = auth_response.user.user_metadata.get("name")
 
         return LoginResponse(
@@ -52,7 +54,8 @@ async def login(credentials: LoginRequest):
     except HTTPException: 
         raise
 
-    except Exception:
+    except Exception as e:
+        logger.error(f"Login failed: {e}")
         raise HTTPException(status_code=401, detail="Authentication failed")
 
 @router.post("/auth/login/admin", response_model=LoginResponse)
@@ -69,23 +72,17 @@ async def login(credentials: LoginRequest):
             raise HTTPException(status_code=401, detail="Invalid credentials")
         
         role = auth_response.user.user_metadata.get("role", [])
-        name = auth_response.user_metadata.get("name")
-        print(name)
         if "2" not in role:
             raise HTTPException(status_code=403, detail="User is not a tutor")
 
         return LoginResponse(
             access_token=auth_response.session.access_token,
             refresh_token=auth_response.session.refresh_token,
-            uid=auth_response.user.id,
-            role=role,
-            name=name
+            uid=auth_response.user.id
         )
     
-    except HTTPException: 
-        raise
-
-    except Exception:
+    except Exception as e:
+        logger.error(f"Login failed: {e}")
         raise HTTPException(status_code=401, detail="Authentication failed")
     
 @router.post("/auth/login/refresh", response_model=RefreshResponse)
@@ -103,35 +100,7 @@ async def refresh_token(payload: RefreshRequest):
             uid=session.user.id
         )
     
-    except HTTPException: 
-        raise
-
-    except Exception:
+    except Exception as e:
+        logger.error(f"Refresh failed: {e}")
         raise HTTPException(status_code=401, detail="Token refresh failed")
-   
-
-@router.get("/auth/me")
-async def get_current_user(authorization: str = Header(None)):
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
-
-    access_token = authorization.replace("Bearer ", "")
-
-    try:
-        user_response = supabase.auth.get_user(access_token)
-        user = user_response.user
-
-        if not user:
-            raise HTTPException(status_code=401, detail="Invalid or expired token")
-
-        return {
-            "id": user.id,
-            "email": user.email,
-            "name": user.user_metadata.get("name"),
-            "role": user.user_metadata.get("role"),
-
-        }
-
-    except Exception:
-        raise HTTPException(status_code=401, detail="Authentication failed")
-
+    

@@ -4,7 +4,7 @@ export interface StudentSignUp {
         name: string;
         email: string;
         password: string;
-        dateJoined: string;
+        datejoined: string;
     }
     student: {
         student_number: string;

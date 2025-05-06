@@ -14,7 +14,6 @@ import { useTokenStore } from "@/stores/authStore";
 import type { UserPayload } from "@/types";
 import { api } from "@/utils/axios";
 
-
 interface AuthContextType {
   user: UserPayload | null;
   signInUser: (
@@ -36,7 +35,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { setRoles, clearRoles } = useRoleStore.getState();
-  
+
   const user = useAuthStore((state) => state.user);
   const { setUser, setRefreshToken, clearAuth } = useAuthStore.getState();
   const { accessToken, setAccessToken } = useTokenStore.getState();
@@ -46,7 +45,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   // sign in user
   const signInUser = async (email: string, password: string) => {
     try {
-      const res = await axios.post(`${API_URL}auth/login`, { email, password });
+      const res = await api.post(`auth/login`, { email, password });
       const { access_token, refresh_token, uid, role, name } = res.data;
 
       setAccessToken(access_token);
@@ -55,7 +54,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       const userData = { uid, name, role };
       setUser(userData);
       setRoles(role.map(Number));
-      
+
       return { success: true };
     } catch (error: any) {
       return {
@@ -76,39 +75,49 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       const res = await axios.post(`${API_URL}auth/login/refresh`, {
         refresh_token: refreshToken,
       });
-      
+
       const { access_token } = res.data;
       setAccessToken(access_token);
-      
+
       return true;
     } catch (error) {
       clearAuth();
       setAccessToken(null);
       clearRoles();
+      console.error("Error refreshing session:", error);
       return false;
     }
   };
 
-
   const signOut = async () => {
-      clearAuth();
-      setAccessToken(null);
-      clearRoles();
+    clearAuth();
+    setAccessToken(null);
+    clearRoles();
   };
 
   const signUpStudent = async (user: StudentSignUp) => {
     try {
-      await axios.post(`${API_URL}/auth/signup/student`, {
+      await api.post(`auth/signup/student`, {
         user: {
           name: user.user.name,
           email: user.user.email,
           password: user.user.password,
-          dateJoined: user.user.dateJoined,
+          datejoined: user.user.datejoined,
         },
         student: {
           student_number: user.student.student_number,
           degree_program: user.student.degree_program,
         },
+      });
+
+      console.log("User signed up successfully:", user.user.name);
+      console.log("User signed up successfully:", user.student.student_number);
+      console.log("User signed up successfully:", user.student.degree_program);
+      console.log("User signed up successfully:", user.user.datejoined);
+
+      useAuthStore.getState().setUser({
+        email: user.user.email,
+        name: user.user.name,
       });
       return { success: true };
     } catch (error: any) {
@@ -124,14 +133,14 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       try {
         const storedRefreshToken = useAuthStore.getState().refreshToken;
         const storedUser = useAuthStore.getState().user;
-        
+
         if (!storedRefreshToken || !storedUser) {
           setLoading(false);
           return;
         }
 
         const refreshSuccess = await refreshSession();
-        
+
         if (refreshSuccess) {
           setRoles(storedUser.role.map(Number));
         } else {
@@ -155,14 +164,14 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   if (loading) return <SessionLoading msg="Checking your identity..." />;
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        signInUser, 
-        signOut, 
-        signUpStudent, 
+    <AuthContext.Provider
+      value={{
+        user,
+        signInUser,
+        signOut,
+        signUpStudent,
         refreshSession,
-        isAuthenticated
+        isAuthenticated,
       }}
     >
       {children}
