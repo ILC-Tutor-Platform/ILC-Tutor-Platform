@@ -15,7 +15,7 @@ class EmailPayload(BaseModel):
 # Verifies a user’s email after signup.
 @router.post("/auth/verify-email")
 def verify_email(payload: EmailPayload, db: Session = Depends(get_db)):
-    try:
+    try
         email = payload.email
         # Get all users from supabase
         users = supabase.auth.admin.list_users()
