@@ -15,4 +15,6 @@ class Session(Base):
     status = Column(String, nullable=False)
     time_started = Column(Time, nullable=False)
     time_ended = Column(Time, nullable=False)
-    duration = Column(Integer, nullable=False)    
+    duration = Column(Integer, nullable=False)
+    mode = Column(String, nullable=False)  # e.g. online, offline
+    room = Column(String, nullable=True)

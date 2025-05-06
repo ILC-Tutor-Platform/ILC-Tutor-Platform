@@ -32,32 +32,27 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   const { setRoles, clearRoles } = useRoleStore.getState();
 
-  const signInUser = async (email: string, password: string) => {
-    try {
-      const res = await axios.post(
-        `${API_URL}auth/login`,
-        {
-          email,
-          password,
-        },
-        {
-          withCredentials: true, // Important if using HttpOnly cookies
-        },
-      );
+let accessToken: string | null = null; // module-level
 
-      const { uid, role, name } = res.data;
 
-      // Store in state + global store
-      setUser({ uid, name, role });
-      setRoles(role.map(Number));
-      return { success: true };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.response?.data?.detail || "Login failed.",
-      };
-    }
-  };
+const signInUser = async (email: string, password: string) => {
+  try {
+    const res = await axios.post(`${API_URL}auth/login`, { email, password });
+    const { access_token, uid, role, name } = res.data;
+
+    accessToken = access_token; // store in memory only
+
+    setUser({ uid, name, role });
+    setRoles(role.map(Number));
+    return { success: true };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.response?.data?.detail || "Login failed.",
+    };
+  }
+};
+
 
   const signOut = async () => {
     try {
@@ -96,21 +91,32 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const res = await axios.get(`${API_URL}auth/me`, {
-          withCredentials: true,
-        });
 
-        const { uid, role, name } = res.data;
-        setUser({ uid, name, role });
-        setRoles(role.map(Number));
-      } catch {
-        setUser(null);
-        clearRoles();
-      } finally {
-        setLoading(false);
-      }
-    };
+  if (!accessToken) {
+    setLoading(false);
+    return;
+  }
+
+  try {
+    const res = await axios.get(`${API_URL}auth/me`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const { uid, role, name } = res.data;
+
+    setUser({ uid, name, role });
+    setRoles(role.map(Number));
+  } catch {
+    setUser(null);
+    clearRoles();
+
+  } finally {
+    setLoading(false);
+  }
+};
+
 
     checkAuth();
   }, []);
