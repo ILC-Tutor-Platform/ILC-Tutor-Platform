@@ -39,7 +39,7 @@ const TutorTracking = () => {
     }
     return () => {
       if (navbar) {
-        (navbar as HTMLElement).style.marginLeft = "0rem";
+        (navbar as HTMLElement).style.marginLeft = '0rem';
       }
     };
   }, []);
@@ -50,11 +50,11 @@ const TutorTracking = () => {
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
           <div
             style={{
-              color: "#8A1538",
-              fontFamily: "Montserrat",
-              fontWeight: "700",
-              wordWrap: "break-word",
-              marginBottom: "1.5rem",
+              color: '#8A1538',
+              fontFamily: 'Montserrat',
+              fontWeight: '700',
+              wordWrap: 'break-word',
+              marginBottom: '1.5rem',
             }}
             className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
           >

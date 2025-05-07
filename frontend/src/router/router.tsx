@@ -30,7 +30,7 @@ todo:
 
 export const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <App />,
     errorElement: <PageNotFound />,
     children: [
@@ -39,11 +39,11 @@ export const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "/tutors",
+        path: '/tutors',
         element: <Tutors />,
       },
       {
-        path: "/tutors/:tutorName",
+        path: '/tutors/:tutorName',
         element: <IndividualTutor />,
       },
       {

@@ -15,8 +15,8 @@ const StudentSidebar = () => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const sidebarWidth = isOpen ? (isMobile ? "7rem" : "8rem") : "0rem";

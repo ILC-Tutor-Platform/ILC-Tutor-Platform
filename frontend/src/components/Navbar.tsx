@@ -83,11 +83,11 @@ const Navbar = () => {
       <ul className="flex gap-10 items-center relative">
         <li>
           <NavLink
-            to={"/"}
+            to={'/'}
             className={({ isActive }) =>
               isActive
-                ? "text-ilc-yellow underline underline-offset-[15px]"
-                : "hover:text-ilc-yellow underline-offset-[15px] hover:underline"
+                ? 'text-ilc-yellow underline underline-offset-[15px]'
+                : 'hover:text-ilc-yellow underline-offset-[15px] hover:underline'
             }
           >
             Home
@@ -95,11 +95,11 @@ const Navbar = () => {
         </li>
         <li>
           <NavLink
-            to={"/tutors"}
+            to={'/tutors'}
             className={({ isActive }) =>
               isActive
-                ? "text-ilc-yellow underline underline-offset-[15px]"
-                : "hover:text-ilc-yellow underline-offset-[15px] hover:underline"
+                ? 'text-ilc-yellow underline underline-offset-[15px]'
+                : 'hover:text-ilc-yellow underline-offset-[15px] hover:underline'
             }
           >
             Tutors

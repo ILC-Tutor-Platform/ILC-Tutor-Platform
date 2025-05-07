@@ -11,7 +11,7 @@ const TutorAnnouncements = () => {
     }
     return () => {
       if (navbar) {
-        (navbar as HTMLElement).style.marginLeft = "0rem";
+        (navbar as HTMLElement).style.marginLeft = '0rem';
       }
     };
   }, []);
@@ -25,10 +25,10 @@ const TutorAnnouncements = () => {
           <div
             className="flex items-center gap-2 md:gap-4 mb-4 md:mb-6"
             style={{
-              color: "#8A1538",
-              fontFamily: "Montserrat",
+              color: '#8A1538',
+              fontFamily: 'Montserrat',
               fontWeight: 700,
-              wordWrap: "break-word",
+              wordWrap: 'break-word',
             }}
           >
             <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl">

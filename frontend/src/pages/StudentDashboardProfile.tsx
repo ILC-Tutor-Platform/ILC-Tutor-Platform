@@ -15,8 +15,8 @@ const StudentDashboardProfile = () => {
           <div
             className="flex items-center gap-2 md:gap-4 mb-4 md:mb-6"
             style={{
-              color: "#8A1538",
-              fontFamily: "Montserrat",
+              color: '#8A1538',
+              fontFamily: 'Montserrat',
               fontWeight: 700,
             }}
           >
