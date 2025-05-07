@@ -1,0 +1,106 @@
+service: arallink-backend-dev
+frameworkVersion: "4"
+
+custom:
+  stage: ${opt:stage, 'development'}
+  pythonRequirements:
+    fileName: requirements.txt
+    dockerizePip: linux
+    no-deploy:
+      - requests
+      - boto3
+      - botocore
+    layer:
+      name: arallink-backend-${self:custom.stage}-python-requirements
+      compatibleRuntimes:
+        - python3.11
+    useDownloadCache: false
+    useStaticCache: false
+    slim: true
+    slimPatternsAppendDefaults: false
+    slimPatterns:
+      - "/*.py[c|o]"
+      - "/pycache*"
+
+provider:
+  name: aws
+  runtime: python3.11
+  region: ap-southeast-1
+  profile: dev-arallink
+  timeout: 30
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - ssm:GetParameter
+      Resource: arn:aws:ssm:${self:provider.region}:${aws:accountId}:parameter/arallink-backend/*
+  environment:
+    ENV: ${self:custom.stage}
+    SUPABASE_URL: ${ssm:/arallink-backend/supabase-url}
+    SUPABASE_KEY: ${ssm:/arallink-backend/supabase-key}
+    SUPABASE_SERVICE_ROLE_KEY: ${ssm:/arallink-backend/supabase-service-role-key}  
+    SUPABASE_JWT_SECRET: ${ssm:/arallink-backend/supabase-jwt-secret}
+    DATABASE_URL: ${ssm:/arallink-backend/database-url}
+functions:
+  app:
+    name: ${self:service}-${self:custom.stage}-app
+    handler: main.handler
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+    events:
+      - http:
+          path: /
+          method: get
+          cors: true
+      - http:
+          path: /{proxy+}
+          method: any
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization  # This is where the JWT will be sent
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Forwarded-For
+              - X-Forwarded-Port
+              - Accept
+              - Origin
+              - Referer
+              - User-Agent
+            allowCredentials: true
+
+package:
+  individually: false
+  include:
+    - main.py
+    - database/**
+    - constants/**
+    - router/**
+    - schema/**
+    - models/**
+
+  exclude:
+    - requirements.txt
+    - "**/__pycache__/**"
+    - "**/*.pyc"
+    - .venv/**
+    - node_modules/**
+    - uv.lock
+    - .DS_Store
+    - .serverless/**
+    - .idea/**
+    - venv/**
+    - package.json
+    - package-lock.json
+    - Pipfile
+    - Pipfile.lock
+    - log.txt
+    - README.md
+    - ruff.toml
+    - scripts/**
+    - resources/**
+    - .env.*
+
+plugins:
+  - serverless-python-requirements
