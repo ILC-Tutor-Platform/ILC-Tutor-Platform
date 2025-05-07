@@ -1,20 +1,20 @@
-import { useState, useEffect } from "react";
-import TutorSidebar from "@/components/TutorSidebar";
+import TutorSidebar from '@/components/TutorSidebar';
+import { useEffect, useState } from 'react';
 
 const StudentTracking = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const sidebarWidth = sidebarOpen ? 7 : 0;
 
   useEffect(() => {
-    const navbar = document.querySelector("nav");
+    const navbar = document.querySelector('nav');
     if (navbar) {
       (navbar as HTMLElement).style.marginLeft = sidebarOpen
         ? `${sidebarWidth}rem`
-        : "0rem";
+        : '0rem';
     }
     return () => {
       if (navbar) {
-        (navbar as HTMLElement).style.marginLeft = "0rem";
+        (navbar as HTMLElement).style.marginLeft = '0rem';
       }
     };
   }, [sidebarOpen]);
@@ -31,11 +31,11 @@ const StudentTracking = () => {
           <div
             className="flex items-center gap-2 md:gap-4 mb-4 md:mb-6"
             style={{
-              color: "#8A1538",
-              fontFamily: "Montserrat",
+              color: '#8A1538',
+              fontFamily: 'Montserrat',
               fontWeight: 700,
-              wordWrap: "break-word",
-              fontSize: "2rem",
+              wordWrap: 'break-word',
+              fontSize: '2rem',
             }}
           >
             <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl">

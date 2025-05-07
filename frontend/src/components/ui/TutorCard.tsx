@@ -1,6 +1,6 @@
-import { FaCalendarAlt, FaBriefcase } from "react-icons/fa";
-import { Button } from "./button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { FaBriefcase, FaCalendarAlt } from 'react-icons/fa';
+import { Button } from './button';
 
 interface TutorCardProps {
   name: string;
@@ -22,9 +22,9 @@ const TutorCard = ({
   return (
     <div
       className={`bg-ilc-tutor-card mx-auto w-full md:w-[90%] lg:w-full rounded-[15px] p-5 shadow-md flex flex-col gap-3 transform transition-transform duration-300 hover:scale-105 cursor-pointer ${
-        className || ""
+        className || ''
       }`}
-      style={{ boxShadow: "0px 4px 4px rgba(48, 123, 116, 0.3)" }}
+      style={{ boxShadow: '0px 4px 4px rgba(48, 123, 116, 0.3)' }}
       onClick={onClick}
     >
       {/* Profile + Name */}

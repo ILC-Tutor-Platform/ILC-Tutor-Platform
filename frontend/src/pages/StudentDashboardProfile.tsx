@@ -1,23 +1,23 @@
-import { useState, useEffect } from "react";
-import StudentSidebar from "../components/StudentSidebar";
-import ProfilePlaceholder from "../assets/ProfilePlaceholder.svg";
-import BadgeIcon from "../assets/user2.svg";
-import EditIcon from "../assets/edit.svg";
+import { useEffect, useState } from 'react';
+import EditIcon from '../assets/edit.svg';
+import ProfilePlaceholder from '../assets/ProfilePlaceholder.svg';
+import BadgeIcon from '../assets/user2.svg';
+import StudentSidebar from '../components/StudentSidebar';
 
 const StudentDashboardProfile = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const sidebarWidth = sidebarOpen ? 7 : 0;
 
   useEffect(() => {
-    const navbar = document.querySelector("nav");
+    const navbar = document.querySelector('nav');
     if (navbar) {
       (navbar as HTMLElement).style.marginLeft = sidebarOpen
         ? `${sidebarWidth}rem`
-        : "0rem";
+        : '0rem';
     }
     return () => {
       if (navbar) {
-        (navbar as HTMLElement).style.marginLeft = "0rem";
+        (navbar as HTMLElement).style.marginLeft = '0rem';
       }
     };
   }, [sidebarOpen]);
@@ -41,10 +41,10 @@ const StudentDashboardProfile = () => {
           <div
             className="flex items-center gap-2 md:gap-4 mb-4 md:mb-6"
             style={{
-              color: "#8A1538",
-              fontFamily: "Montserrat",
+              color: '#8A1538',
+              fontFamily: 'Montserrat',
               fontWeight: 700,
-              wordWrap: "break-word",
+              wordWrap: 'break-word',
             }}
           >
             <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
@@ -74,7 +74,7 @@ const StudentDashboardProfile = () => {
               <button
                 className="mt-3 text-center text-base md:text-lg lg:text-xl text-black font-normal underline bg-none border-none cursor-pointer"
                 onClick={() => {
-                  console.log("Update Photo clicked");
+                  console.log('Update Photo clicked');
                 }}
               >
                 Update Photo
@@ -85,7 +85,7 @@ const StudentDashboardProfile = () => {
               <div className="flex-1 min-w-[17rem] max-w-[30rem] h-[15rem] md:min-w-[20rem] md:max-w-[32rem] md:h-[16rem] bg-white shadow-lg rounded-lg border border-opacity-10 relative">
                 <button
                   className="absolute top-2 right-2 bg-none border-none cursor-pointer"
-                  onClick={() => handleEditClick("left section")}
+                  onClick={() => handleEditClick('left section')}
                 >
                   <img
                     src={EditIcon}
@@ -98,7 +98,7 @@ const StudentDashboardProfile = () => {
               <div className="flex-1 min-w-[17rem] max-w-[30rem] h-[15rem] md:min-w-[20rem] md:max-w-[32rem] md:h-[16rem] bg-white shadow-lg rounded-lg border border-opacity-10 relative">
                 <button
                   className="absolute top-2 right-2 bg-none border-none cursor-pointer"
-                  onClick={() => handleEditClick("right section")}
+                  onClick={() => handleEditClick('right section')}
                 >
                   <img
                     src={EditIcon}

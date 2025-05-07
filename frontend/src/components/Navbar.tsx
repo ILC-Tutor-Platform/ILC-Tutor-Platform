@@ -1,7 +1,7 @@
-import { NavLink, useNavigate } from "react-router-dom";
-import { Button } from "./ui/button";
-import Logo from "@/assets/AralLinkLogo.svg";
-import { useState, useRef } from "react";
+import Logo from '@/assets/AralLinkLogo.svg';
+import { useRef, useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { Button } from './ui/button';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -21,18 +21,18 @@ const Navbar = () => {
 
   return (
     <nav className="flex items-center justify-between px-20 py-7 shadow-md sticky top-0 bg-white z-50">
-      <NavLink to={"/"}>
+      <NavLink to={'/'}>
         <img src={Logo} alt="Logo" className="w-35 h-auto" />
       </NavLink>
 
       <ul className="flex gap-10 items-center relative">
         <li>
           <NavLink
-            to={"/"}
+            to={'/'}
             className={({ isActive }) =>
               isActive
-                ? "text-ilc-yellow underline underline-offset-[15px]"
-                : "hover:text-ilc-yellow underline-offset-[15px] hover:underline"
+                ? 'text-ilc-yellow underline underline-offset-[15px]'
+                : 'hover:text-ilc-yellow underline-offset-[15px] hover:underline'
             }
           >
             Home
@@ -40,11 +40,11 @@ const Navbar = () => {
         </li>
         <li>
           <NavLink
-            to={"/tutors"}
+            to={'/tutors'}
             className={({ isActive }) =>
               isActive
-                ? "text-ilc-yellow underline underline-offset-[15px]"
-                : "hover:text-ilc-yellow underline-offset-[15px] hover:underline"
+                ? 'text-ilc-yellow underline underline-offset-[15px]'
+                : 'hover:text-ilc-yellow underline-offset-[15px] hover:underline'
             }
           >
             Tutor
@@ -81,9 +81,9 @@ const Navbar = () => {
 
         <li className="border-[2px] border-gray-300 border-dashed">
           <Button
-            variant={"yellow-button"}
-            size={"navbar-size"}
-            onClick={() => navigate("/signin")}
+            variant={'yellow-button'}
+            size={'navbar-size'}
+            onClick={() => navigate('/signin')}
           >
             LOG OUT
           </Button>

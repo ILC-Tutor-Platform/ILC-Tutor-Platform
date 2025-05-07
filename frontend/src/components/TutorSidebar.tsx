@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import Profile from "../assets/user.svg";
-import Tutor from "../assets/coach.svg";
-import Schedule from "../assets/calendar.svg";
-import Announcements from "../assets/megaphone.svg";
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import Schedule from '../assets/calendar.svg';
+import Tutor from '../assets/coach.svg';
+import Announcements from '../assets/megaphone.svg';
+import Profile from '../assets/user.svg';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -17,12 +17,12 @@ const TutorSidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const sidebarWidth =
-    sidebarOpen && !isMobile ? "7rem" : isMobile ? "5rem" : "0rem";
+    sidebarOpen && !isMobile ? '7rem' : isMobile ? '5rem' : '0rem';
 
   return (
     <aside
@@ -44,21 +44,21 @@ const TutorSidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       {(sidebarOpen || isMobile) && (
         <div className="flex flex-col justify-center items-center flex-1 gap-8 mt-24">
           {[
-            { label: "Profile", icon: Profile, route: "/tutorprofile" },
+            { label: 'Profile', icon: Profile, route: '/tutorprofile' },
             {
-              label: "Students",
+              label: 'Students',
               icon: Tutor,
-              route: "/tutorprofile/student-tracking",
+              route: '/tutorprofile/student-tracking',
             },
             {
-              label: "Schedule",
+              label: 'Schedule',
               icon: Schedule,
-              route: "/tutorprofile/schedule",
+              route: '/tutorprofile/schedule',
             },
             {
-              label: "Announcements",
+              label: 'Announcements',
               icon: Announcements,
-              route: "/tutorprofile/announcements",
+              route: '/tutorprofile/announcements',
               large: true,
             },
           ].map((item) => (
@@ -67,11 +67,11 @@ const TutorSidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 <img
                   src={item.icon}
                   alt={item.label}
-                  className={item.large ? "w-6 h-6" : "w-5 h-5"}
+                  className={item.large ? 'w-6 h-6' : 'w-5 h-5'}
                 />
                 <span
                   className={`${
-                    item.large ? "text-xs" : "text-sm"
+                    item.large ? 'text-xs' : 'text-sm'
                   } font-medium text-center`}
                 >
                   {item.label}

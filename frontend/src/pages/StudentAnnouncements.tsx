@@ -1,21 +1,20 @@
-import { useEffect, useState } from "react";
-import StudentSidebar from "../components/StudentSidebar";
-import BadgeIcon from "../assets/user2.svg";
+import { useEffect, useState } from 'react';
+import StudentSidebar from '../components/StudentSidebar';
 
 const StudentAnnouncements = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const sidebarWidth = sidebarOpen ? 7 : 0;
 
   useEffect(() => {
-    const navbar = document.querySelector("nav");
+    const navbar = document.querySelector('nav');
     if (navbar) {
       (navbar as HTMLElement).style.marginLeft = sidebarOpen
         ? `${sidebarWidth}rem`
-        : "0rem";
+        : '0rem';
     }
     return () => {
       if (navbar) {
-        (navbar as HTMLElement).style.marginLeft = "0rem";
+        (navbar as HTMLElement).style.marginLeft = '0rem';
       }
     };
   }, [sidebarOpen]);
@@ -35,11 +34,11 @@ const StudentAnnouncements = () => {
           <div
             className="flex items-center gap-2 md:gap-4 mb-4 md:mb-6"
             style={{
-              color: "#8A1538",
-              fontSize: "2rem",
-              fontFamily: "Montserrat",
+              color: '#8A1538',
+              fontSize: '2rem',
+              fontFamily: 'Montserrat',
               fontWeight: 700,
-              wordWrap: "break-word",
+              wordWrap: 'break-word',
             }}
           >
             <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl">

@@ -1,14 +1,14 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { UserAuth } from "../context/AuthContext";
-import Logo from "@/assets/AralLinkLogo.svg";
-import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
+import Logo from '@/assets/AralLinkLogo.svg';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { UserAuth } from '../context/AuthContext';
 
 const Signin = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -25,15 +25,15 @@ const Signin = () => {
 
       // Check if signup was successful
       if (result.success) {
-        navigate("/dashboard");
+        navigate('/dashboard');
       } else {
         // Handle known error from result
-        setError(result.error || "An unknown error occurred.");
+        setError(result.error || 'An unknown error occurred.');
       }
     } catch (err: any) {
       // Handle unexpected errors
-      console.error("Sign up error:", err); // Log for debugging purposes
-      setError("An unexpected error occurred.");
+      console.error('Sign up error:', err); // Log for debugging purposes
+      setError('An unexpected error occurred.');
     } finally {
       setLoading(false); // End loading state, regardless of success or failure
     }
@@ -73,11 +73,11 @@ const Signin = () => {
           </div>
 
           <div className="flex gap-4 justify-center">
-            <Button type="submit" disabled={loading} variant={"yellow-button"}>
+            <Button type="submit" disabled={loading} variant={'yellow-button'}>
               Sign in as Student
             </Button>
 
-            <Button type="submit" disabled={loading} variant={"yellow-button"}>
+            <Button type="submit" disabled={loading} variant={'yellow-button'}>
               Sign in as Tutor
             </Button>
           </div>

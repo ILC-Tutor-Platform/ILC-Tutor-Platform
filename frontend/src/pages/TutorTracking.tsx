@@ -1,12 +1,30 @@
-import { useEffect, useState } from "react";
-import StudentSidebar from "../components/StudentSidebar";
-import TutorCard from "../components/ui/TutorCard";
+import { useEffect, useState } from 'react';
+import StudentSidebar from '../components/StudentSidebar';
+import TutorCard from '../components/ui/TutorCard';
 
 // Placeholder tutor data for demo
 const tutors = [
-  { id: 1, name: "Name", subject: "Subject/s", available: "Dates Available", expertise: "Expertise" },
-  { id: 2, name: "Name", subject: "Subject/s", available: "Dates Available", expertise: "Expertise" },
-  { id: 3, name: "Name", subject: "Subject/s", available: "Dates Available", expertise: "Expertise" },
+  {
+    id: 1,
+    name: 'Name',
+    subject: 'Subject/s',
+    available: 'Dates Available',
+    expertise: 'Expertise',
+  },
+  {
+    id: 2,
+    name: 'Name',
+    subject: 'Subject/s',
+    available: 'Dates Available',
+    expertise: 'Expertise',
+  },
+  {
+    id: 3,
+    name: 'Name',
+    subject: 'Subject/s',
+    available: 'Dates Available',
+    expertise: 'Expertise',
+  },
 ];
 
 const TutorTracking = () => {
@@ -14,16 +32,16 @@ const TutorTracking = () => {
   const sidebarWidth = sidebarOpen ? 7 : 0;
 
   useEffect(() => {
-    const navbar = document.querySelector("nav");
+    const navbar = document.querySelector('nav');
     if (navbar) {
       (navbar as HTMLElement).style.marginLeft = sidebarOpen
         ? `${sidebarWidth}rem`
-        : "0rem";
+        : '0rem';
     }
 
     return () => {
       if (navbar) {
-        (navbar as HTMLElement).style.marginLeft = "0rem";
+        (navbar as HTMLElement).style.marginLeft = '0rem';
       }
     };
   }, [sidebarOpen]);
@@ -42,11 +60,11 @@ const TutorTracking = () => {
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
           <div
             style={{
-              color: "#8A1538",
-              fontFamily: "Montserrat",
-              fontWeight: "700",
-              wordWrap: "break-word",
-              marginBottom: "1.5rem",
+              color: '#8A1538',
+              fontFamily: 'Montserrat',
+              fontWeight: '700',
+              wordWrap: 'break-word',
+              marginBottom: '1.5rem',
             }}
             className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
           >

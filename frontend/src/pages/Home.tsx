@@ -1,6 +1,6 @@
-import Logo from "@/assets/AralLinkLogo.svg";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import Logo from '@/assets/AralLinkLogo.svg';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -24,9 +24,9 @@ const Home = () => {
 
         <div>
           <Button
-            variant={"yellow-button-outline"}
+            variant={'yellow-button-outline'}
             className="px-10 py-5 md:py-7 md:text-xl font-bold rounded-3xl"
-            onClick={() => navigate("/tutors")}
+            onClick={() => navigate('/tutors')}
           >
             BROWSE TUTORS
           </Button>

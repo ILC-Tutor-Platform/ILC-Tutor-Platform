@@ -1,25 +1,24 @@
-import { createBrowserRouter } from "react-router-dom";
-import App from "@/App";
-import Signin from "@/pages/Signin";
-import SignupAs from "@/pages/SignUpAs";
-import Home from "@/pages/Home";
-import SignUpAsTutor from "@/pages/SignUpAsTutor";
-import SignUpAsStudent from "@/pages/SignUpAsStudent";
-import StudentDashboardProfile from "@/pages/StudentDashboardProfile";
-import TutorTracking from "@/pages/TutorTracking";
-import StudentScheduleTracking from "@/pages/StudentScheduleTracking";
-import StudentAnnouncements from "@/pages/StudentAnnouncements";
-import Tutors from "@/pages/Tutors";
-import IndividualTutor from "@/pages/IndividualTutor";
-import TutorProfile from "@/pages/TutorProfile";
-import StudentTracking from "@/pages/StudentTracking";
-import TutorSchedule from "@/pages/TutorSchedule";
-import TutorAnnouncements from "@/pages/TutorAnnouncements";
-
+import App from '@/App';
+import Home from '@/pages/Home';
+import IndividualTutor from '@/pages/IndividualTutor';
+import Signin from '@/pages/Signin';
+import SignupAs from '@/pages/SignUpAs';
+import SignUpAsStudent from '@/pages/SignUpAsStudent';
+import SignUpAsTutor from '@/pages/SignUpAsTutor';
+import StudentAnnouncements from '@/pages/StudentAnnouncements';
+import StudentDashboardProfile from '@/pages/StudentDashboardProfile';
+import StudentScheduleTracking from '@/pages/StudentScheduleTracking';
+import StudentTracking from '@/pages/StudentTracking';
+import TutorAnnouncements from '@/pages/TutorAnnouncements';
+import TutorProfile from '@/pages/TutorProfile';
+import Tutors from '@/pages/Tutors';
+import TutorSchedule from '@/pages/TutorSchedule';
+import TutorTracking from '@/pages/TutorTracking';
+import { createBrowserRouter } from 'react-router-dom';
 
 export const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <App />,
     errorElement: <div>404</div>,
     children: [
@@ -28,69 +27,69 @@ export const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "/tutors",
+        path: '/tutors',
         element: <Tutors />,
       },
       {
-        path: "/tutors/:tutorName",
+        path: '/tutors/:tutorName',
         element: <IndividualTutor />,
       },
       {
-        path: "/profile/student",
+        path: '/profile/student',
         element: <StudentDashboardProfile />,
       },
       {
-        path: "/profile/tutor",
+        path: '/profile/tutor',
         element: <TutorProfile />,
       },
       {
-        path: "/studentprofile",
+        path: '/studentprofile',
         element: <StudentDashboardProfile />,
       },
       {
-        path: "/student/tutor-tracking",
+        path: '/student/tutor-tracking',
         element: <TutorTracking />,
       },
       {
-        path: "/student/schedule-tracking",
+        path: '/student/schedule-tracking',
         element: <StudentScheduleTracking />,
       },
       {
-        path: "/student/announcements",
+        path: '/student/announcements',
         element: <StudentAnnouncements />,
       },
       {
-        path: "/tutorprofile/student-tracking",
+        path: '/tutorprofile/student-tracking',
         element: <StudentTracking />,
       },
       {
-        path: "/tutorprofile/schedule",
+        path: '/tutorprofile/schedule',
         element: <TutorSchedule />,
       },
       {
-        path: "/tutorprofile/announcements",
+        path: '/tutorprofile/announcements',
         element: <TutorAnnouncements />,
       },
       {
-        path: "/tutorprofile",
+        path: '/tutorprofile',
         element: <TutorProfile />,
       },
     ],
   },
   {
-    path: "/signin",
+    path: '/signin',
     element: <Signin />,
   },
   {
-    path: "/signup",
+    path: '/signup',
     element: <SignupAs />,
   },
   {
-    path: "/signup/student",
+    path: '/signup/student',
     element: <SignUpAsStudent />,
   },
   {
-    path: "/signup/tutor",
+    path: '/signup/tutor',
     element: <SignUpAsTutor />,
   },
 ]);

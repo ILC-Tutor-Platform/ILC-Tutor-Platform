@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import TutorSidebar from "../components/TutorSidebar";
+import { useEffect, useState } from 'react';
+import TutorSidebar from '../components/TutorSidebar';
 
 interface Schedule {
   student: string;
   scheduleDateTime: string;
   subject: string;
-  status: "PENDING" | "APPROVED" | "DECLINED";
+  status: 'PENDING' | 'APPROVED' | 'DECLINED';
 }
 
 const TutorSchedule = () => {
@@ -14,15 +14,15 @@ const TutorSchedule = () => {
   const sidebarWidth = sidebarOpen ? 7 : 0; // 7rem
 
   useEffect(() => {
-    const navbar = document.querySelector("nav");
+    const navbar = document.querySelector('nav');
     if (navbar) {
       (navbar as HTMLElement).style.marginLeft = sidebarOpen
         ? `${sidebarWidth}rem`
-        : "0rem";
+        : '0rem';
     }
     return () => {
       if (navbar) {
-        (navbar as HTMLElement).style.marginLeft = "0rem";
+        (navbar as HTMLElement).style.marginLeft = '0rem';
       }
     };
   }, [sidebarOpen]);
@@ -30,22 +30,22 @@ const TutorSchedule = () => {
   useEffect(() => {
     const mockData: Schedule[] = [
       {
-        student: "Name",
-        scheduleDateTime: "Date & Time",
-        subject: "Subject",
-        status: "APPROVED",
+        student: 'Name',
+        scheduleDateTime: 'Date & Time',
+        subject: 'Subject',
+        status: 'APPROVED',
       },
       {
-        student: "Name",
-        scheduleDateTime: "Date & Time",
-        subject: "Subject",
-        status: "PENDING",
+        student: 'Name',
+        scheduleDateTime: 'Date & Time',
+        subject: 'Subject',
+        status: 'PENDING',
       },
       {
-        student: "Name",
-        scheduleDateTime: "Date & Time",
-        subject: "Subject",
-        status: "DECLINED",
+        student: 'Name',
+        scheduleDateTime: 'Date & Time',
+        subject: 'Subject',
+        status: 'DECLINED',
       },
     ];
     setSchedules(mockData);
@@ -63,11 +63,11 @@ const TutorSchedule = () => {
           <div
             className="flex items-center gap-2 md:gap-4 mb-4 md:mb-6"
             style={{
-              color: "#8A1538",
-              fontFamily: "Montserrat",
+              color: '#8A1538',
+              fontFamily: 'Montserrat',
               fontWeight: 700,
-              wordWrap: "break-word",
-              fontSize: "2rem",
+              wordWrap: 'break-word',
+              fontSize: '2rem',
             }}
           >
             <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
@@ -100,11 +100,11 @@ const TutorSchedule = () => {
                   <div>
                     <span
                       className={`border text-xs px-3 py-1 rounded-full ${
-                        schedule.status === "APPROVED"
-                          ? "border-[#307B74] text-[#307B74]"
-                          : schedule.status === "DECLINED"
-                          ? "border-[#8A1538] text-[#8A1538]"
-                          : "border-gray-400 text-gray-500"
+                        schedule.status === 'APPROVED'
+                          ? 'border-[#307B74] text-[#307B74]'
+                          : schedule.status === 'DECLINED'
+                            ? 'border-[#8A1538] text-[#8A1538]'
+                            : 'border-gray-400 text-gray-500'
                       }`}
                     >
                       {schedule.status}

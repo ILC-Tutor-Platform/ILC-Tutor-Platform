@@ -1,16 +1,16 @@
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import Logo from "@/assets/AralLinkLogo.svg";
-import { Link } from "react-router-dom";
+import Logo from '@/assets/AralLinkLogo.svg';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const SignUpAsStudent = () => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [middleInitial, setMiddleInitial] = useState("");
-  const [degreeProgram, setDegreeProgram] = useState("");
-  const [studentNumber, setStudentNumber] = useState("");
-  const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [middleInitial, setMiddleInitial] = useState('');
+  const [degreeProgram, setDegreeProgram] = useState('');
+  const [studentNumber, setStudentNumber] = useState('');
+  const [email, setEmail] = useState('');
 
   return (
     <div className="flex min-h-screen items-center">
@@ -30,7 +30,7 @@ const SignUpAsStudent = () => {
         <div className="grid gap-4">
           <div
             className="grid grid-cols-3 gap-4"
-            style={{ gridTemplateColumns: "1fr 1fr 20%" }}
+            style={{ gridTemplateColumns: '1fr 1fr 20%' }}
           >
             <Input
               onChange={(e) => setFirstName(e.target.value)}
@@ -90,7 +90,7 @@ const SignUpAsStudent = () => {
           />
         </div>
         <div className="flex items-center w-[50%] mx-auto">
-          <Button variant={"yellow-button"} type="submit" className="w-full">
+          <Button variant={'yellow-button'} type="submit" className="w-full">
             Sign up as Student
           </Button>
         </div>
