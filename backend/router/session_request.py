@@ -77,8 +77,8 @@ def get_sessions_by_user(user= Depends(verify_token), db: Session = Depends(get_
 def get_session(session_id: str , db: Session = Depends(get_db), user=Depends(require_role([1]))):
     if user:
         try:
-            session = db.query(Session).filter(Session.session_id == session_id).first()
-            if not session:
+            sessions = db.query(Session).filter(Session.session_id == session_id).first()
+            if not sessions:
                 raise HTTPException(status_code=404, detail="Session not found")
             
             logger.info("Fetching sessions from Supabase")
