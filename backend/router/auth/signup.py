@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from models import UserDetail, StudentDetail, UserRoleDetail, TutorDetail, StatusDetail, TutorSocials, TutorAffiliation, TutorAvailability, TutorExpertise, SubjectDetail
 from constants.supabase_client import supabase
 from schema import StudentSignupSchema, TutorSignupSchema
+from constants.logger import logger
 
 router = APIRouter()
 
@@ -19,6 +20,7 @@ def verify_email(email: str, db: Session = Depends(get_db)):
         user = next((u for u in users if u.email == email), None)
 
         if not user:
+            logger.info("User does not exist.")
             raise HTTPException(status_code=404, detail="User not found")
 
         role = user.user_metadata.get("role", [])
@@ -51,6 +53,7 @@ def verify_email(email: str, db: Session = Depends(get_db)):
             return {"message": "Email not yet verified", "email": user.email}
 
     except Exception as e:
+        logger.error(f"Email verification failed: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 def add_detail(user, role, db):
@@ -144,6 +147,7 @@ def create_tutor_profile(user, db, tutor_status):
 
     db.add(UserRoleDetail(user_id=user.id, role_id="1"))
     db.commit()    
+
 #Register a student and send verification email
 @router.post("/auth/signup/student")
 def signup_student(payload: StudentSignupSchema):
@@ -165,6 +169,7 @@ def signup_student(payload: StudentSignupSchema):
             if "0" not in current_role:
                 current_role.append("0")
             else: 
+                logger.info("User is already a student.")
                 return {"message": "User is already a student."}
 
 
@@ -197,6 +202,7 @@ def signup_student(payload: StudentSignupSchema):
             return {"message": "Student registered successfully. Email verification sent."}
 
     except Exception as e:
+        logger.error(f"Signup failed. {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/auth/signup/tutor")
@@ -275,8 +281,8 @@ def signup_tutor(payload: TutorSignupSchema):
             
             return {"message": "Tutor registered successfully. Email verification sent."}
 
-
     except Exception as e:
+        logger.error(f"Signup failed. {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
 
 # Check if the user already exists in supabase auth
