@@ -13,11 +13,34 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run ESLint
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run ESLint with auto-fix
         run: |
           cd frontend
           npm install
           npm run lint:fix
+
+      - name: Commit and push changes if needed
+        run: |
+          cd frontend
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add .
+            git commit -m "chore: auto-fix lint issues"
+            git push
+          else
+            echo "No lint fixes to commit"
+          fi
 
   push-to-external-repo:
     runs-on: ubuntu-latest
