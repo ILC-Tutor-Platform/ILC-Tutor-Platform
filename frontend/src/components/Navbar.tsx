@@ -14,10 +14,9 @@ import { useEffect } from "react";
 const Navbar = () => {
   const navigate = useNavigate();
   const { toggle } = useSidebarStore();
-  const [loading, setLoading] = useState(false);
   const activeRole = useRoleStore((state) => state.activeRole);
   const { isAuthenticated, user, signOut, refreshSession } = UserAuth();
-  const [sessionChecked, setSessionChecked] = useState(false);
+  const [, setSessionChecked] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -43,7 +42,6 @@ const Navbar = () => {
   const handleSignOut = async () => {
     try {
       await signOut();
-      setLoading(true);
       await new Promise((resolve) => setTimeout(resolve, 1200));
       navigate("/signin");
       console.log("Signed out successfully!");
@@ -56,7 +54,6 @@ const Navbar = () => {
           boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
         },
       });
-      setLoading(false);
     } catch (error) {
       console.error("Error signing out:", error);
     }

@@ -9,6 +9,7 @@ import { Plus, X, Calendar, Briefcase, BookOpen, Share2 } from "lucide-react";
 import { api } from "@/utils/axios";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/authStore";
+import { set } from "date-fns";
 
 const SignUpAsTutor = () => {
   const navigate = useNavigate();
@@ -202,24 +203,10 @@ const SignUpAsTutor = () => {
   const signUpAsTutorHandler = async () => {
     setLoading(true);
     if (validateForm()) {
+      setLoading(true);
       const formData = prepareFormData();
       try {
-        const response = await api.post("auth/signup/tutor", formData);
-        const success = response.status === 200;
-        if (success) {
-          console.log("About to set user:", {
-            email: email,
-            name: concatenatedName,
-          });
-
-          useAuthStore.getState().setUser({
-            email: email,
-            name: concatenatedName,
-          });
-
-          console.log("Stored user:", useAuthStore.getState().user);
-        }
-        console.log("User signed up successfully:", formData);
+        await api.post("auth/signup/tutor", formData);
         toast.success(
           "Please check your email. We sent you a confirmation. Thank you.",
           {

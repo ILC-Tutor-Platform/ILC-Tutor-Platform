@@ -18,8 +18,7 @@ const NavbarMobile = () => {
   const { isAuthenticated, user, signOut, refreshSession } = UserAuth();
   const { toggle, close } = useSidebarStore();
   const activeRole = useRoleStore((state) => state.activeRole);
-  const [sessionChecked, setSessionChecked] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [, setSessionChecked] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -46,7 +45,6 @@ const NavbarMobile = () => {
   const handleSignOut = async () => {
     try {
       await signOut();
-      setLoading(true);
       navigate("/signin");
       console.log("Signed out successfully!");
       toast.success("Signed out successfully!", {
@@ -58,7 +56,6 @@ const NavbarMobile = () => {
           boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
         },
       });
-      setLoading(false);
     } catch (error) {
       console.error("Error signing out:", error);
     }
