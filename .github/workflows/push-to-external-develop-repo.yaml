@@ -14,12 +14,12 @@ jobs:
 
       - name: Configure Git identity
         run: |
-          git config --global user.email "aralLink2025@gmail.com"
-          git config --global user.name "aralLink"
+          git config --global user.email ""
+          git config --global user.name ""
 
       - name: Rewrite commit history
         run: |
-          git commit --amend --reset-author --no-edit
+          git commit --amend --author="aralLink <aralLink2025@gmail.com>"
 
       - name: push to external repository
         uses: peaceiris/actions-gh-pages@v3
