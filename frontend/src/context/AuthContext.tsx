@@ -5,10 +5,9 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import axios from "axios";
 import { useRoleStore } from "@/stores/roleStore";
 import SessionLoading from "@/components/Loading";
-import type { StudentSignUp } from "@/types";
+import type { StudentSignUp, TutorSignUp } from "@/types";
 import { useAuthStore } from "@/stores/authStore";
 import { useTokenStore } from "@/stores/authStore";
 import type { UserPayload } from "@/types";
@@ -18,17 +17,18 @@ interface AuthContextType {
   user: UserPayload | null;
   signInUser: (
     email: string,
-    password: string,
+    password: string
   ) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   signUpStudent: (
-    user: StudentSignUp,
+    user: StudentSignUp
   ) => Promise<{ success: boolean; error?: string }>;
   refreshSession: () => Promise<boolean>;
   isAuthenticated: boolean;
+  signUpTutor: (
+    user: TutorSignUp
+  ) => Promise<{ success: boolean; error?: string }>;
 }
-
-const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -72,7 +72,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      const res = await axios.post(`${API_URL}auth/login/refresh`, {
+      const res = await api.post(`auth/login/refresh`, {
         refresh_token: refreshToken,
       });
 
@@ -119,8 +119,52 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         email: user.user.email,
         name: user.user.name,
       });
+
       return { success: true };
     } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.detail || "Sign up failed.",
+      };
+    }
+  };
+
+  const signUpTutor = async (user: TutorSignUp) => {
+    try {
+      await api.post(`auth/signup/tutor`, {
+        user: {
+          name: user.user.name,
+          email: user.user.email,
+          password: user.user.password,
+          datejoined: user.user.datejoined,
+        },
+        tutor: {
+          description: user.tutor.description,
+          status: "pending",
+        },
+        availability: {
+          availability: user.availability.availability,
+          available_time_from: user.availability.available_time_from,
+          available_time_to: user.availability.available_time_to,
+        },
+        affiliation: {
+          affiliation: user.affiliation.affiliation,
+        },
+        expertise: {
+          expertise: user.expertise.expertise,
+        },
+        socials: {
+          socials: user.socials.socials,
+        },
+        subject: {
+          subject_name: user.subject.subject_name,
+        },
+      });
+
+      return { success: true };
+
+    } catch (error: any) {
+      console.error("Error signing up as tutor: ", error);
       return {
         success: false,
         error: error.response?.data?.detail || "Sign up failed.",
@@ -142,7 +186,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         const refreshSuccess = await refreshSession();
 
         if (refreshSuccess) {
-          setRoles(storedUser.role.map(Number));
+          setRoles(storedUser.role?.map(Number) || []);
         } else {
           clearAuth();
           setAccessToken(null);
@@ -172,6 +216,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         signUpStudent,
         refreshSession,
         isAuthenticated,
+        signUpTutor,
       }}
     >
       {children}

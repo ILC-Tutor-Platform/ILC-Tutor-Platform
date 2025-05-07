@@ -19,30 +19,33 @@ const Navbar = () => {
   const { isAuthenticated, user, signOut, refreshSession } = UserAuth();
   const [sessionChecked, setSessionChecked] = useState(false);
 
-    useEffect(() => {
-      const checkSession = async () => {
-        if (isAuthenticated && user) {
-          await refreshSession();
-        }
-        setSessionChecked(true);
-      };
-  
-      checkSession();
-      const refreshInterval = setInterval(() => {
+  useEffect(() => {
+    const checkSession = async () => {
+      if (isAuthenticated && user) {
+        await refreshSession();
+      }
+      setSessionChecked(true);
+    };
+
+    checkSession();
+    const refreshInterval = setInterval(
+      () => {
         if (isAuthenticated) {
           refreshSession();
         }
-      }, 15 * 60 * 1000);
-  
-      return () => clearInterval(refreshInterval);
-    }, [isAuthenticated, refreshSession]);
+      },
+      15 * 60 * 1000,
+    );
+
+    return () => clearInterval(refreshInterval);
+  }, [isAuthenticated, refreshSession, user]);
 
   const handleSignOut = async () => {
     try {
       await signOut();
       setLoading(true);
-      navigate("/signin");
       await new Promise((resolve) => setTimeout(resolve, 1200));
+      navigate("/signin");
       console.log("Signed out successfully!");
       toast.success("Signed out successfully!", {
         duration: 3000,
@@ -136,7 +139,11 @@ const Navbar = () => {
           <Button
             variant={"yellow-button"}
             size={"navbar-size"}
-            onClick={isAuthenticated && user ? handleSignOut : () => navigate("/signin")}
+            onClick={
+              isAuthenticated && user
+                ? handleSignOut
+                : () => navigate("/signin")
+            }
           >
             {isAuthenticated && user ? "Sign out" : "Sign in"}
           </Button>

@@ -31,15 +31,17 @@ const NavbarMobile = () => {
 
     checkSession();
 
-    // Optional: Set up periodic token refresh if needed
-    const refreshInterval = setInterval(() => {
-      if (isAuthenticated) {
-        refreshSession();
-      }
-    }, 15 * 60 * 1000);
+    const refreshInterval = setInterval(
+      () => {
+        if (isAuthenticated) {
+          refreshSession();
+        }
+      },
+      15 * 60 * 1000,
+    );
 
     return () => clearInterval(refreshInterval);
-  }, [isAuthenticated, refreshSession]);
+  }, [isAuthenticated, refreshSession, user]);
 
   const handleSignOut = async () => {
     try {
@@ -135,7 +137,9 @@ const NavbarMobile = () => {
             <li className="border-[2px] border-gray-300 border-dashed">
               <Button
                 onClick={() =>
-                  isAuthenticated && user ? handleSignOut() : navigate("/signin")
+                  isAuthenticated && user
+                    ? handleSignOut()
+                    : navigate("/signin")
                 }
                 variant={"yellow-button"}
                 className="text-xs"

@@ -8,7 +8,7 @@ import Announcements from "../assets/megaphone.svg";
 import { Menu } from "lucide-react";
 
 const StudentSidebar = () => {
-  const { isOpen, close, toggle } = useSidebarStore();
+  const { isOpen, toggle } = useSidebarStore();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -37,7 +37,11 @@ const StudentSidebar = () => {
           <div className="flex flex-col justify-center items-center gap-8">
             {[
               { label: "Profile", icon: Profile, route: "/profile/student" },
-              { label: "Tutor", icon: Tutor, route: "/profile/student/tutor-tracking" },
+              {
+                label: "Tutor",
+                icon: Tutor,
+                route: "/profile/student/tutor-tracking",
+              },
               {
                 label: "Schedule",
                 icon: Schedule,

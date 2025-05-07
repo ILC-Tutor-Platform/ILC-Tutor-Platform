@@ -5,6 +5,7 @@ import { api } from "@/utils/axios";
 
 const VerifyEmail = () => {
   const email = useAuthStore((state) => state.user?.email);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
   const navigate = useNavigate();
   const [verificationStatus, setVerificationStatus] = useState("pending"); // "pending", "success", "error"
   const [errorMessage, setErrorMessage] = useState("");
@@ -23,7 +24,7 @@ const VerifyEmail = () => {
         console.log("Attempting to verify email:", email);
 
         // Make the API call with more detailed logging
-        const response = await api.post("/auth/verify-email", { email });
+        const response = await api.post("auth/verify-email", { email });
         console.log("Email verification response:", response.data);
 
         if (response.data.message.includes("not yet verified")) {
@@ -36,31 +37,42 @@ const VerifyEmail = () => {
 
         // Extract detailed error information
         let message = "Unknown error occurred";
-        if (error.response) {
+        if (error instanceof Error && (error as any).response) {
+          const responseError = error as unknown as { response: { data?: any; status: number } };
           message =
-            error.response.data?.detail ||
-            `Server error (${error.response.status})`;
+            responseError.response.data?.detail ||
+            `Server error (${responseError.response.status})`;
           console.error("Server responded with error:", {
-            status: error.response.status,
-            data: error.response.data,
+            status: responseError.response.status,
+            data: responseError.response.data,
           });
-        } else if (error.request) {
+        } else if (error instanceof Error && "request" in error) {
           message = "No response received from server";
-          console.error("No response received:", error.request);
+          console.error("No response received:", (error as any).request);
         } else {
-          message = error.message || "Error processing request";
-          console.error("Error setting up request:", error.message);
+          if (error instanceof Error) {
+            message = error.message || "Error processing request";
+          } else {
+            message = "An unexpected error occurred";
+          }
+          console.error(
+            "Error setting up request:",
+            error instanceof Error ? error.message : "Unknown error"
+          );
         }
 
         setErrorMessage(message);
 
-        // Wait a bit before redirecting to give user time to see error
         setTimeout(() => navigate("/signin"), 5000);
       }
     };
 
-    verifyEmail();
-  }, [email, navigate]);
+    if (isHydrated) {
+      console.log("Auth store is hydrated. Proceeding with email verification.");
+      verifyEmail();
+    }
+    
+  }, [isHydrated, email, navigate]);
 
   return (
     <section className="grid justify-center min-h-screen w-full">

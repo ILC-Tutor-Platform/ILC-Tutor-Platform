@@ -53,6 +53,9 @@ const SignUpAsStudent = () => {
     } else if (password.length < 8) {
       newErrors.password = "*Password must be at least 8 characters long.";
     }
+    if (!selectedProgram?.trim()) {
+      newErrors.degreeProgram = "*Degree Program is required.";
+    }
 
     setErrors(newErrors);
 
@@ -109,7 +112,7 @@ const SignUpAsStudent = () => {
             padding: "1.5rem",
             boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
           },
-        },
+        }
       );
       setLoading(false);
     } else {
@@ -141,35 +144,39 @@ const SignUpAsStudent = () => {
           <div className="grid">
             <div className="flex gap-2">
               <div className="flex flex-col w-full">
-                <span className="h-7 font-thin text-[0.8rem] text-red-500">
-                  {errors.firstName && "*First name is required."}
-                </span>
+                <Label>First Name*</Label>
                 <Input
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="p-3 mt-2"
+                  className={`p-3 mt-2 ${
+                    errors.firstName ? "border-red-500" : ""
+                  }`}
                   type="text"
                   name="setFirstName"
                   id="setFirstName"
                   placeholder="First Name"
                 />
+                <span className="h-7 font-thin text-[0.8rem] text-red-500">
+                  {errors.firstName && "*First name is required."}
+                </span>
               </div>
               <div className="flex flex-col w-full">
-                <span className="h-7 font-thin text-[0.8rem] text-red-500">
-                  {errors.lastName && "*Last name is required."}
-                </span>
+                <Label>Last Name*</Label>
                 <Input
                   onChange={(e) => setLastName(e.target.value)}
-                  className="p-3 mt-2"
+                  className={`p-3 mt-2 ${
+                    errors.lastName ? "border-red-500" : ""
+                  }`}
                   type="text"
                   name="lastName"
                   id="lastName"
                   placeholder="Last Name"
                 />
+                <span className="h-7 font-thin text-[0.8rem] text-red-500">
+                  {errors.lastName && "*Last name is required."}
+                </span>
               </div>
               <div className="flex flex-col w-1/3">
-                <span className="h-7 font-thin text-sm text-red-500">
-                  {errors.middleInitial && "Required"}
-                </span>
+                <Label>M.I.*</Label>
                 <Input
                   onChange={(e) => setMiddleInitial(e.target.value)}
                   className="p-3 mt-2"
@@ -178,64 +185,79 @@ const SignUpAsStudent = () => {
                   id="middleInitial"
                   placeholder="M.I."
                 />
+                <span className="h-7 font-thin text-sm text-red-500">
+                  {errors.middleInitial && "Required"}
+                </span>
               </div>
             </div>
           </div>
 
           <div>
-            {errors.studentNumber && (
-              <Label className="text-[0.8rem] font-thin text-red-500">
-                {errors.studentNumber}
-              </Label>
-            )}
+            <Label>Student Number*</Label>
             <Input
               onChange={(e) => setStudentNumber(e.target.value)}
-              className="p-3 mt-2"
+              className={`p-3 mt-2 ${
+                errors.studentNumber ? "border-red-500" : ""
+              }`}
               type="text"
               name="studentNumber"
               id="studentNumber"
               placeholder="Student Number"
             />
+            {errors.studentNumber && (
+              <Label className="text-[0.8rem] font-thin text-red-500">
+                {errors.studentNumber}
+              </Label>
+            )}
           </div>
-          <div>
+          <div className="flex flex-col gap-2">
+            <Label>Degree Program*</Label>
             <DropdownDegreeProgram
               selectedProgram={selectedProgram}
               onSelectProgram={setSelectedProgram}
+              className={`p-3 mt-2 ${errors.password ? "border-red-500" : ""}`}
             />
+            {errors.studentNumber && (
+              <Label className="text-[0.8rem] font-thin text-red-500">
+                {errors.studentNumber}
+              </Label>
+            )}
           </div>
 
           <div>
-            {errors.email && (
-              <Label className="text-[0.8rem] font-thin text-red-500">
-                {errors.email}
-              </Label>
-            )}
+            <Label>Email Address*</Label>
             <Input
               onChange={(e) => setEmail(e.target.value)}
-              className="p-3 mt-2"
+              className={`p-3 mt-2 ${errors.email ? "border-red-500" : ""}`}
               type="email"
               name="email"
               id="email"
               placeholder="UP Mail"
               autoComplete="email"
             />
+            {errors.email && (
+              <Label className="text-[0.8rem] font-thin text-red-500">
+                {errors.email}
+              </Label>
+            )}
           </div>
 
           <div>
-            {errors.password && (
-              <Label className="text-[0.8rem] font-thin text-red-500">
-                {errors.password}
-              </Label>
-            )}
+            <Label>Create Password*</Label>
             <Input
               onChange={(e) => setPassword(e.target.value)}
-              className="p-3 mt-2"
+              className={`p-3 mt-2 ${errors.password ? "border-red-500" : ""}`}
               type={showPassword ? "text" : "password"} // Controlled by state!
               name="password"
               id="password"
               placeholder="Password"
               autoComplete="current-password"
             />
+            {errors.password && (
+              <Label className="text-[0.8rem] font-thin text-red-500">
+                {errors.password}
+              </Label>
+            )}
 
             <div className="flex items-center mt-2">
               <input
@@ -258,7 +280,7 @@ const SignUpAsStudent = () => {
             className="w-full"
             disabled={loading}
           >
-            Sign up as Student
+            {loading ? "Signing up..." : "Sign up as a Student"}
           </Button>
         </div>
         <div className="flex items-center justify-center gap-1 text-ilc-grey">

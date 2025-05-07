@@ -11,6 +11,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 type DropdownDegreeProgramProps = {
   selectedProgram: string | null;
   onSelectProgram: (programName: string) => void;
+  className?: string;
 };
 
 const degreePrograms = [
@@ -31,6 +32,7 @@ const degreePrograms = [
 const DropdownDegreeProgram = ({
   selectedProgram,
   onSelectProgram,
+  className
 }: DropdownDegreeProgramProps) => {
   const [isDropped, setIsDropped] = useState(false);
 
@@ -40,7 +42,7 @@ const DropdownDegreeProgram = ({
         <Button
           variant="outline"
           onClick={() => setIsDropped(!isDropped)}
-          className="border-black w-full"
+          className={`border border-black ${className}`}
         >
           <div className="flex items-center w-full justify-between">
             <p>{selectedProgram || "Select Degree Program"}</p>

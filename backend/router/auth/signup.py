@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from database.config import get_db
 from sqlalchemy.orm import Session
 from models import UserDetail, StudentDetail, UserRoleDetail, TutorDetail, StatusDetail, TutorSocials, TutorAffiliation, TutorAvailability, TutorExpertise, SubjectDetail
-from constants.supabase_client import supabase_admin
+from constants.supabase_client import supabase_admin, supabase # supabase for login/signup & supabase_admin for verification
 from schema import StudentSignupSchema, TutorSignupSchema
 from constants.logger import logger
 from pydantic import BaseModel
