@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { api } from "@/utils/axios";
+import { Button } from "@/components/ui/button";
 
 const VerifyEmail = () => {
   const email = useAuthStore((state) => state.user?.email);
@@ -75,8 +76,8 @@ const VerifyEmail = () => {
   }, [isHydrated, email, navigate]);
 
   return (
-    <section className="grid justify-center min-h-screen w-full">
-      <div className="w-[80%] mx-auto max-w-lg mt-16 p-6 border rounded-lg shadow-md h-[50%]">
+    <section className="grid justify-center min-h-screen w-full items-center">
+      <div className="w-[80%] mx-auto mt-16 p-6 border rounded-lg green-shadow-card flex flex-col justify-center">
         <h1 className="text-2xl font-bold mb-4 text-center">
           Email Verification
         </h1>
@@ -93,16 +94,17 @@ const VerifyEmail = () => {
         )}
 
         {verificationStatus === "success" && (
-          <div className="text-center">
+          <div className="text-center flex flex-col">
             <p className="text-green-600 mb-4">
               Your email has been successfully verified!
             </p>
-            <button
+            <Button
+              variant={'yellow-button'}
               onClick={() => navigate("/signin")}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="mt-4 px-4 py-2"
             >
               Proceed to Sign In
-            </button>
+            </Button>
           </div>
         )}
 

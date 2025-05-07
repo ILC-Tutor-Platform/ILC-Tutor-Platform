@@ -21,9 +21,9 @@ const SignUpAsTutor = () => {
   const [middleInitial, setMiddleInitial] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [description, setDescription] = useState("");
   const [concatenatedName, setConcatenatedName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   // Dynamic fields states
   const [availability, setAvailability] = useState([
@@ -40,7 +40,6 @@ const SignUpAsTutor = () => {
     lastName: "",
     email: "",
     password: "",
-    confirmPassword: "",
     subject: "",
   });
   // Handle adding new entries for dynamic fields
@@ -105,6 +104,10 @@ const SignUpAsTutor = () => {
     setter(newItems);
   };
 
+  const handleShowPassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
   // Form validation
   const validateForm = () => {
     setLoading(true);
@@ -114,7 +117,6 @@ const SignUpAsTutor = () => {
       lastName: "",
       email: "",
       password: "",
-      confirmPassword: "",
       subject: "",
     };
 
@@ -148,11 +150,6 @@ const SignUpAsTutor = () => {
       valid = false;
     }
 
-    // Validate confirm password
-    if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-      valid = false;
-    }
 
     // Validate confirm password
     if (subject !== subject) {
@@ -238,7 +235,7 @@ const SignUpAsTutor = () => {
             },
           }
         );
-        setTimeout(() => setLoading(false), 3000);
+        setLoading(false);
       } catch (error) {
         console.log("Error signing up: ", error);
         toast.error("Error signing up.", {
@@ -337,7 +334,7 @@ const SignUpAsTutor = () => {
               <Label htmlFor="password">Password *</Label>
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={errors.password ? "border-red-500" : ""}
@@ -347,19 +344,21 @@ const SignUpAsTutor = () => {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password *</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className={errors.confirmPassword ? "border-red-500" : ""}
-              />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
-              )}
-            </div>
+            <div className="flex items-center mt-2">
+                    <input
+                      type="checkbox"
+                      id="showPassword"
+                      checked={showPassword}
+                      onChange={handleShowPassword}
+                      className="mr-2"
+                    />
+                    <label
+                      htmlFor="showPassword"
+                      className="text-sm text-ilc-grey"
+                    >
+                      Show Password
+                    </label>
+                  </div>
           </div>
         </div>
 
@@ -636,7 +635,7 @@ const SignUpAsTutor = () => {
             className="w-full py-6 text-lg"
             disabled={loading}
           >
-            Sign up as Tutor
+            {loading ? "Checking information..." : "Sign up as a Tutor"}
           </Button>
         </div>
 

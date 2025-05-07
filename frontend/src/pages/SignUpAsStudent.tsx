@@ -97,8 +97,7 @@ const SignUpAsStudent = () => {
 
     if (success) {
       console.log("User signed up successfully:", concatenatedName);
-      navigate("/signin");
-      // Show success toast
+      setTimeout(() => navigate("/verify-email"), 3000);
       toast.success(
         "Please check your email. We sent you a confirmation. Thank you.",
         {
@@ -117,6 +116,21 @@ const SignUpAsStudent = () => {
       setLoading(false);
     } else {
       setErrors({ general: error || "Signup failed" });
+      toast.error(
+        "Sign up failed. Please check your details and try again.",
+        {
+          className: "green-shadow-card text-black",
+          duration: 3000,
+          style: {
+            background: "#8A1538",
+            color: "#307B74",
+            fontSize: "16px",
+            border: "0px",
+            padding: "1.5rem",
+            boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
+          },
+        }
+      );
       setLoading(false);
       return;
     }
@@ -280,7 +294,7 @@ const SignUpAsStudent = () => {
             className="w-full"
             disabled={loading}
           >
-            {loading ? "Signing up..." : "Sign up as a Student"}
+            {loading ? "Checking information..." : "Sign up as a Student"}
           </Button>
         </div>
         <div className="flex items-center justify-center gap-1 text-ilc-grey">
