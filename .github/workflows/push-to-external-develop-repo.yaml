@@ -12,14 +12,10 @@ jobs:
         with:
           fetch-depth: 0 # Need full history for commit manipulation
 
-      - name: Configure Git identity
-        run: |
-          git config --global user.email ""
-          git config --global user.name ""
-
       - name: Rewrite commit history
         run: |
-          git commit --amend --author="aralLink <aralLink2025@gmail.com>"
+          git commit --amend --author="aralLink <aralLink2025@gmail.com>" && \
+          git push --force
 
       - name: push to external repository
         uses: peaceiris/actions-gh-pages@v3
