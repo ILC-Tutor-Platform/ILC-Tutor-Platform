@@ -19,12 +19,7 @@ jobs:
 
       - name: Rewrite commit history
         run: |
-          git filter-branch --env-filter '
-            export GIT_AUTHOR_EMAIL="aralLink2025@gmail.com"
-            export GIT_AUTHOR_NAME="aralLink"
-            export GIT_COMMITTER_EMAIL="aralLink2025@gmail.com"
-            export GIT_COMMITTER_NAME="aralLink"
-          ' -- develop
+          git commit --amend --reset-author --no-edit
 
       - name: push to external repository
         uses: peaceiris/actions-gh-pages@v3
