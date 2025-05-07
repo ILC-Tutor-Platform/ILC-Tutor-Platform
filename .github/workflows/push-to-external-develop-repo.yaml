@@ -14,7 +14,9 @@ jobs:
 
       - name: Rewrite commit history
         run: |
-          git commit --amend --author="aralLink <aralLink2025@gmail.com>" && \
+          git config user.email "aralLink"
+          git config user.name "aralLink2025@gmail.com"
+          git commit --amend --author="aralLink <aralLink2025@gmail.com>"
           git push --force
 
       - name: push to external repository
