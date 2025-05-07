@@ -5,6 +5,7 @@ from models import UserDetail, StudentDetail, UserRoleDetail, TutorDetail, Statu
 from constants.supabase_client import supabase_admin, supabase # supabase for login/signup & supabase_admin for verification
 from schema import StudentSignupSchema, TutorSignupSchema
 from constants.logger import logger
+from constants.logger import logger
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -35,7 +36,7 @@ def verify_email(payload: EmailPayload, db: Session = Depends(get_db)):
             )
 
         if not user:
-            logger.info(f"User with email {email} not found")
+            logger.info("User does not exist.")
             raise HTTPException(status_code=404, detail="User not found")
             
         # Log user details for debugging (remove in production)
@@ -168,7 +169,6 @@ def create_tutor_profile(user, db, tutor_status):
 
     db.add(UserRoleDetail(user_id=user.id, role_id="1"))
     db.commit()    
-
 
 #Register a student and send verification email
 @router.post("/auth/signup/student")

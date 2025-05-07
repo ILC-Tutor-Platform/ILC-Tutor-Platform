@@ -8,4 +8,4 @@ class TopicDetail(Base):
 
     topic_id = Column(UUID(as_uuid=True), primary_key=True, nullable=False, default=uuid.uuid4)
     subject_id = Column(UUID(as_uuid=True), ForeignKey("subject_detail.subject_id"), nullable=False)
-    topic_title = Column(String, nullable=False)
+    topic_title = Column(String, nullable=True)
