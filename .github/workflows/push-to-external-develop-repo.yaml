@@ -16,7 +16,7 @@ jobs:
         run: |
           git config user.email "aralLink"
           git config user.name "aralLink2025@gmail.com"
-          git commit --amend --author="aralLink <aralLink2025@gmail.com>"
+          git commit --amend --author="aralLink <aralLink2025@gmail.com> -m "Update commit history"
           git push --force
 
       - name: push to external repository
