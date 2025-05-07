@@ -1,0 +1,27 @@
+name: (develop) push to external repo
+on:
+  push:
+    branches:
+      - develop
+jobs:
+  push-to-external-repo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+
+        uses: actions/checkout@v3
+
+      - name: push to external repository
+
+        uses: peaceiris/actions-gh-pages@v3
+
+        with:
+          deploy_key: ${{ secrets.SSH_DEPLOY }}
+
+          publish_dir: .
+
+          external_repository: aralLink/arallink-platform
+
+          publish_branch: develop
+
+          allow_empty_commit: true
