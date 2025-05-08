@@ -5,17 +5,17 @@ import type { StudentSignUp, TutorSignUp, UserPayload } from '@/types';
 import { api } from '@/utils/axios';
 import {
   createContext,
-  useContext,
-  useState,
-  useEffect,
   ReactNode,
+  useContext,
+  useEffect,
+  useState,
 } from 'react';
 
 interface AuthContextType {
   user: UserPayload | null;
   signInUser: (
     email: string,
-    password: string
+    password: string,
   ) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   signUpStudent: (
@@ -200,6 +200,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     };
 
     checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) return <SessionLoading msg="Checking your identity..." />;
@@ -224,7 +225,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 export const UserAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("UserAuth must be used within an AuthContextProvider");
+    throw new Error('UserAuth must be used within an AuthContextProvider');
   }
   return context;
 };

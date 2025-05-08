@@ -1,7 +1,6 @@
-import axios from "axios";
-import { useAuthStore } from "../stores/authStore";
-import { useTokenStore } from "../stores/authStore";
-import { useRoleStore } from "../stores/roleStore";
+import axios from 'axios';
+import { useAuthStore, useTokenStore } from '../stores/authStore';
+import { useRoleStore } from '../stores/roleStore';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -16,7 +15,7 @@ export const api = axios.create({
 const refreshAccessToken = async () => {
   const refreshToken = useAuthStore.getState().refreshToken;
   if (!refreshToken) {
-    throw new Error("No refresh token available");
+    throw new Error('No refresh token available');
   }
 
   const response = await axios.post(`${API_URL}auth/login/refresh`, {
