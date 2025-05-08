@@ -8,8 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Plus, X, Calendar, Briefcase, BookOpen, Share2 } from "lucide-react";
 import { api } from "@/utils/axios";
 import { toast } from "sonner";
-import { useAuthStore } from "@/stores/authStore";
-import { set } from "date-fns";
 
 const SignUpAsTutor = () => {
   const navigate = useNavigate();
@@ -23,7 +21,6 @@ const SignUpAsTutor = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [description, setDescription] = useState("");
-  const [concatenatedName, setConcatenatedName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   // Dynamic fields states
@@ -166,7 +163,6 @@ const SignUpAsTutor = () => {
   // Prepare form data
   const prepareFormData = () => {
     const concatenatedName = `${firstName} ${lastName} ${middleInitial}`.trim();
-    setConcatenatedName(concatenatedName);
 
     return {
       user: {

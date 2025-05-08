@@ -4,9 +4,6 @@ import Navbar from "./components/Navbar";
 import NavbarMobile from "./components/NavbarMobile";
 import Footer from "./components/Footer";
 import { ScrollToTop } from "./components/ScrollToTop";
-import { Toaster } from "@/components/ui/sonner";
-import { toast } from "sonner";
-import { Button } from "./components/ui/button";
 
 function App() {
   const [isMobile, setIsMobile] = useState(

@@ -41,7 +41,7 @@ const ProtectedRoute = ({
         return <Navigate to="/" replace />;
       }
     } else {
-      const userRoles = user.role.map((r) =>
+      const userRoles = (user.role ?? []).map((r) =>
         typeof r === "string" ? parseInt(r) : r,
       );
 

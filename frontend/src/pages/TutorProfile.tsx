@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 import EditIcon from '../assets/edit.svg';
 import ProfilePlaceholder from '../assets/ProfilePlaceholder.svg';
 import BadgeIcon from '../assets/user2.svg';
-import StudentSidebar from '../components/TutorSidebar';
 
 const TutorProfile = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     setSidebarOpen(false);
