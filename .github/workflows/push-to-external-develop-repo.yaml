@@ -21,12 +21,10 @@ jobs:
       - name: Install dependencies
         run: |
           cd frontend
-          npm ci
+          npm ci --legacy-peer-deps
 
       - name: Run ESLint with auto-fix
         run: |
-          cd frontend
-          npm install
           npm run lint:fix
 
       - name: Commit and push changes if needed
