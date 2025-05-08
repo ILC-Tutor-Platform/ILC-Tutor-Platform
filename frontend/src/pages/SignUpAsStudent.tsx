@@ -1,24 +1,25 @@
-import Logo from '@/assets/AralLinkLogo.svg';
-import DropdownDegreeProgram from '@/components/DropdownDegreeProgram.tsx';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { UserAuth } from '@/context/AuthContext';
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import Logo from "@/assets/AralLinkLogo.svg";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   isValidStudentNumber,
   isValidUpEmail,
-} from '@/utils/errorValidations.ts';
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+} from "@/utils/errorValidations.ts";
+import DropdownDegreeProgram from "@/components/DropdownDegreeProgram.tsx";
+import { Label } from "@/components/ui/label";
+import { UserAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 const SignUpAsStudent = () => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [middleInitial, setMiddleInitial] = useState('');
-  const [studentNumber, setStudentNumber] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [middleInitial, setMiddleInitial] = useState("");
+  const [studentNumber, setStudentNumber] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -29,31 +30,31 @@ const SignUpAsStudent = () => {
   const concatenatedName = `${firstName} ${lastName} ${middleInitial}`;
 
   const dateNow = () => {
-    const date = new Date().toISOString().split('T')[0];
+    const date = new Date().toISOString().split("T")[0];
     return date;
   };
   const validateFields = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!firstName.trim()) newErrors.firstName = '*Required';
-    if (!lastName.trim()) newErrors.lastName = '*Required';
+    if (!firstName.trim()) newErrors.firstName = "*Required";
+    if (!lastName.trim()) newErrors.lastName = "*Required";
     if (!studentNumber.trim()) {
-      newErrors.studentNumber = '*Required';
+      newErrors.studentNumber = "*Required";
     } else if (!isValidStudentNumber(studentNumber)) {
-      newErrors.studentNumber = '*Student number must be in format YYYY-12345.';
+      newErrors.studentNumber = "*Student number must be in format YYYY-12345.";
     }
     if (!email.trim()) {
-      newErrors.email = '*Required';
+      newErrors.email = "*Required";
     } else if (!isValidUpEmail(email)) {
-      newErrors.email = '*Must be a valid UP Email.';
+      newErrors.email = "*Must be a valid UP Email.";
     }
     if (!password.trim()) {
-      newErrors.password = '*Required';
+      newErrors.password = "*Required";
     } else if (password.length < 8) {
-      newErrors.password = '*Password must be at least 8 characters long.';
+      newErrors.password = "*Password must be at least 8 characters long.";
     }
     if (!selectedProgram?.trim()) {
-      newErrors.degreeProgram = '*Degree Program is required.';
+      newErrors.degreeProgram = "*Degree Program is required.";
     }
 
     setErrors(newErrors);
@@ -74,7 +75,7 @@ const SignUpAsStudent = () => {
     }
 
     if (!signUpStudent) {
-      console.error('signUpStudent function not found in AuthContext');
+      console.error("signUpStudent function not found in AuthContext");
       setLoading(false);
       return;
     }
@@ -88,45 +89,48 @@ const SignUpAsStudent = () => {
       },
       student: {
         student_number: studentNumber,
-        degree_program: selectedProgram || '',
+        degree_program: selectedProgram || "",
       },
     };
 
     const { success, error } = await signUpStudent(payload);
 
     if (success) {
-      console.log('User signed up successfully:', concatenatedName);
-      setTimeout(() => navigate('/verify-email'), 3000);
+      console.log("User signed up successfully:", concatenatedName);
+      setTimeout(() => navigate("/verify-email"), 3000);
       toast.success(
-        'Please check your email. We sent you a confirmation. Thank you.',
+        "Please check your email. We sent you a confirmation. Thank you.",
         {
-          className: 'green-shadow-card text-black',
+          className: "green-shadow-card text-black",
           duration: 3000,
           style: {
-            background: '#ffffff',
-            color: '#307B74',
-            fontSize: '16px',
-            border: '0px',
-            padding: '1.5rem',
-            boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
+            background: "#ffffff",
+            color: "#307B74",
+            fontSize: "16px",
+            border: "0px",
+            padding: "1.5rem",
+            boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
           },
-        },
+        }
       );
       setLoading(false);
     } else {
-      setErrors({ general: error || 'Signup failed' });
-      toast.error('Sign up failed. Please check your details and try again.', {
-        className: 'green-shadow-card text-black',
-        duration: 3000,
-        style: {
-          background: '#8A1538',
-          color: '#307B74',
-          fontSize: '16px',
-          border: '0px',
-          padding: '1.5rem',
-          boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
-        },
-      });
+      setErrors({ general: error || "Signup failed" });
+      toast.error(
+        "Sign up failed. Please check your details and try again.",
+        {
+          className: "green-shadow-card text-black",
+          duration: 3000,
+          style: {
+            background: "#8A1538",
+            color: "#307B74",
+            fontSize: "16px",
+            border: "0px",
+            padding: "1.5rem",
+            boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
+          },
+        }
+      );
       setLoading(false);
       return;
     }
@@ -139,6 +143,7 @@ const SignUpAsStudent = () => {
       <form
         onSubmit={(e) => {
           e.preventDefault();
+          signUpAsStudentHandler();
           signUpAsStudentHandler();
         }}
         className="grid w-[90%] xl:w-[30%] mx-auto py-15 px-4 xl:px-10 gap-10 rounded-2xl green-shadow-card"
@@ -158,7 +163,7 @@ const SignUpAsStudent = () => {
                 <Input
                   onChange={(e) => setFirstName(e.target.value)}
                   className={`p-3 mt-2 ${
-                    errors.firstName ? 'border-red-500' : ''
+                    errors.firstName ? "border-red-500" : ""
                   }`}
                   type="text"
                   name="setFirstName"
@@ -166,7 +171,7 @@ const SignUpAsStudent = () => {
                   placeholder="First Name"
                 />
                 <span className="h-7 font-thin text-[0.8rem] text-red-500">
-                  {errors.firstName && '*First name is required.'}
+                  {errors.firstName && "*First name is required."}
                 </span>
               </div>
               <div className="flex flex-col w-full">
@@ -174,7 +179,7 @@ const SignUpAsStudent = () => {
                 <Input
                   onChange={(e) => setLastName(e.target.value)}
                   className={`p-3 mt-2 ${
-                    errors.lastName ? 'border-red-500' : ''
+                    errors.lastName ? "border-red-500" : ""
                   }`}
                   type="text"
                   name="lastName"
@@ -182,7 +187,7 @@ const SignUpAsStudent = () => {
                   placeholder="Last Name"
                 />
                 <span className="h-7 font-thin text-[0.8rem] text-red-500">
-                  {errors.lastName && '*Last name is required.'}
+                  {errors.lastName && "*Last name is required."}
                 </span>
               </div>
               <div className="flex flex-col w-1/3">
@@ -196,7 +201,7 @@ const SignUpAsStudent = () => {
                   placeholder="M.I."
                 />
                 <span className="h-7 font-thin text-sm text-red-500">
-                  {errors.middleInitial && 'Required'}
+                  {errors.middleInitial && "Required"}
                 </span>
               </div>
             </div>
@@ -207,7 +212,7 @@ const SignUpAsStudent = () => {
             <Input
               onChange={(e) => setStudentNumber(e.target.value)}
               className={`p-3 mt-2 ${
-                errors.studentNumber ? 'border-red-500' : ''
+                errors.studentNumber ? "border-red-500" : ""
               }`}
               type="text"
               name="studentNumber"
@@ -225,7 +230,7 @@ const SignUpAsStudent = () => {
             <DropdownDegreeProgram
               selectedProgram={selectedProgram}
               onSelectProgram={setSelectedProgram}
-              className={`p-3 mt-2 ${errors.password ? 'border-red-500' : ''}`}
+              className={`p-3 mt-2 ${errors.password ? "border-red-500" : ""}`}
             />
             {errors.studentNumber && (
               <Label className="text-[0.8rem] font-thin text-red-500">
@@ -238,7 +243,7 @@ const SignUpAsStudent = () => {
             <Label>Email Address*</Label>
             <Input
               onChange={(e) => setEmail(e.target.value)}
-              className={`p-3 mt-2 ${errors.email ? 'border-red-500' : ''}`}
+              className={`p-3 mt-2 ${errors.email ? "border-red-500" : ""}`}
               type="email"
               name="email"
               id="email"
@@ -256,8 +261,8 @@ const SignUpAsStudent = () => {
             <Label>Create Password*</Label>
             <Input
               onChange={(e) => setPassword(e.target.value)}
-              className={`p-3 mt-2 ${errors.password ? 'border-red-500' : ''}`}
-              type={showPassword ? 'text' : 'password'} // Controlled by state!
+              className={`p-3 mt-2 ${errors.password ? "border-red-500" : ""}`}
+              type={showPassword ? "text" : "password"} // Controlled by state!
               name="password"
               id="password"
               placeholder="Password"
@@ -285,12 +290,12 @@ const SignUpAsStudent = () => {
         </div>
         <div className="flex items-center w-[50%] mx-auto">
           <Button
-            variant={'yellow-button'}
+            variant={"yellow-button"}
             type="submit"
             className="w-full"
             disabled={loading}
           >
-            {loading ? 'Checking information...' : 'Sign up as a Student'}
+            {loading ? "Checking information..." : "Sign up as a Student"}
           </Button>
         </div>
         <div className="flex items-center justify-center gap-1 text-ilc-grey">

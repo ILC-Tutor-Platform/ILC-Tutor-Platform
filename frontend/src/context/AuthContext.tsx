@@ -5,17 +5,17 @@ import type { StudentSignUp, TutorSignUp, UserPayload } from '@/types';
 import { api } from '@/utils/axios';
 import {
   createContext,
-  ReactNode,
   useContext,
-  useEffect,
   useState,
+  useEffect,
+  ReactNode,
 } from 'react';
 
 interface AuthContextType {
   user: UserPayload | null;
   signInUser: (
     email: string,
-    password: string,
+    password: string
   ) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   signUpStudent: (
@@ -224,7 +224,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 export const UserAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('UserAuth must be used within an AuthContextProvider');
+    throw new Error("UserAuth must be used within an AuthContextProvider");
   }
   return context;
 };

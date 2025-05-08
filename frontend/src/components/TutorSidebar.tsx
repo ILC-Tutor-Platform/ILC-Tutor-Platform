@@ -1,11 +1,11 @@
-import { useSidebarStore } from '@/stores/sidebarStore';
-import { Menu } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import Schedule from '../assets/calendar.svg';
-import Tutor from '../assets/coach.svg';
-import Announcements from '../assets/megaphone.svg';
-import Profile from '../assets/user.svg';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import Profile from "../assets/user.svg";
+import Tutor from "../assets/coach.svg";
+import Schedule from "../assets/calendar.svg";
+import Announcements from "../assets/megaphone.svg";
+import { useSidebarStore } from "@/stores/sidebarStore";
+import { Menu } from "lucide-react";
 
 const TutorSidebar = () => {
   const { isOpen, toggle } = useSidebarStore();
@@ -19,7 +19,7 @@ const TutorSidebar = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const sidebarWidth = isOpen ? (isMobile ? '7rem' : '8rem') : '0rem';
+  const sidebarWidth = isOpen ? (isMobile ? "7rem" : "8rem") : "0rem";
 
   return (
     <aside

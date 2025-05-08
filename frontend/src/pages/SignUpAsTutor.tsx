@@ -21,7 +21,6 @@ const SignUpAsTutor = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [description, setDescription] = useState('');
-  const [concatenatedName, setConcatenatedName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   // Dynamic fields states
@@ -163,7 +162,6 @@ const SignUpAsTutor = () => {
   // Prepare form data
   const prepareFormData = () => {
     const concatenatedName = `${firstName} ${lastName} ${middleInitial}`.trim();
-    setConcatenatedName(concatenatedName);
 
     return {
       user: {

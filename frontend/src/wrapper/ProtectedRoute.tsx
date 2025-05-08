@@ -1,8 +1,8 @@
-import { ReactNode, useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import SessionLoading from '../components/Loading';
-import { UserAuth } from '../context/AuthContext';
-import { useRoleStore } from '../stores/roleStore';
+import { Navigate } from "react-router-dom";
+import { UserAuth } from "../context/AuthContext";
+import { useRoleStore } from "../stores/roleStore";
+import { ReactNode, useState, useEffect } from "react";
+import SessionLoading from "../components/Loading";
 
 type ProtectedRouteProps = {
   children: ReactNode;
@@ -13,7 +13,7 @@ type ProtectedRouteProps = {
 const ProtectedRoute = ({
   children,
   allowedRoles = [],
-  redirectTo = '/signin',
+  redirectTo = "/signin",
 }: ProtectedRouteProps) => {
   const { isAuthenticated, user } = UserAuth();
   const activeRole = useRoleStore((state) => state.activeRole);
@@ -41,8 +41,8 @@ const ProtectedRoute = ({
         return <Navigate to="/" replace />;
       }
     } else {
-      const userRoles = user.role.map((r) =>
-        typeof r === 'string' ? parseInt(r) : r,
+      const userRoles = (user.role ?? []).map((r) =>
+        typeof r === "string" ? parseInt(r) : r,
       );
 
       const hasAllowedRole = userRoles.some((role) =>

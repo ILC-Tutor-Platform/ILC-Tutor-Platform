@@ -4,19 +4,20 @@ import ProfilePlaceholder from '../assets/ProfilePlaceholder.svg';
 import BadgeIcon from '../assets/user2.svg';
 
 const TutorProfile = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     setSidebarOpen(false);
-    const navbar = document.querySelector('nav');
+    const navbar = document.querySelector("nav");
     if (navbar) {
-      (navbar as HTMLElement).style.marginLeft = '0rem';
+      (navbar as HTMLElement).style.marginLeft = "0rem";
     }
     return () => {
       if (navbar) {
         (navbar as HTMLElement).style.marginLeft = '0rem';
       }
     };
+  }, []);
   }, []);
 
   const handleEditClick = (section: string) => {
@@ -25,7 +26,9 @@ const TutorProfile = () => {
 
   return (
     <div className="min-h-screen font-manrope relative flex">
-      <div className="transition-all duration-300 ease-in-out flex-1">
+      <div
+        className="transition-all duration-300 ease-in-out flex-1"
+      >
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
           <div
             className="flex items-center gap-2 md:gap-4 mb-4 md:mb-6"
