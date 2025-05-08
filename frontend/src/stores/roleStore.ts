@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 type RoleStore = {
   roles: number[];
@@ -20,7 +20,7 @@ export const useRoleStore = create<RoleStore>()(
       setActiveRole: (role) => {
         const state = get();
         if (!state.roles.includes(role)) {
-          console.warn("Trying to set an active role not in assigned roles.");
+          console.warn('Trying to set an active role not in assigned roles.');
         }
         set({ activeRole: role });
       },
@@ -28,7 +28,7 @@ export const useRoleStore = create<RoleStore>()(
       hasRole: (target) => get().roles.includes(target),
     }),
     {
-      name: "role-storage", // key for localStorage
+      name: 'role-storage', // key for localStorage
       partialize: (state) => ({ activeRole: state.activeRole }), // only persist this
     },
   ),

@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import NavbarMobile from "./components/NavbarMobile";
-import Footer from "./components/Footer";
-import { ScrollToTop } from "./components/ScrollToTop";
+import { useEffect, useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import Footer from './components/Footer';
+import Navbar from './components/Navbar';
+import NavbarMobile from './components/NavbarMobile';
+import { ScrollToTop } from './components/ScrollToTop';
 
 function App() {
   const [isMobile, setIsMobile] = useState(

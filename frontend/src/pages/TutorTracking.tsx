@@ -6,24 +6,24 @@ import TutorCard from '../components/ui/TutorCard';
 const tutors = [
   {
     id: 1,
-    name: "Name",
-    subject: "Subject/s",
-    available: "Dates Available",
-    expertise: "Expertise",
+    name: 'Name',
+    subject: 'Subject/s',
+    available: 'Dates Available',
+    expertise: 'Expertise',
   },
   {
     id: 2,
-    name: "Name",
-    subject: "Subject/s",
-    available: "Dates Available",
-    expertise: "Expertise",
+    name: 'Name',
+    subject: 'Subject/s',
+    available: 'Dates Available',
+    expertise: 'Expertise',
   },
   {
     id: 3,
-    name: "Name",
-    subject: "Subject/s",
-    available: "Dates Available",
-    expertise: "Expertise",
+    name: 'Name',
+    subject: 'Subject/s',
+    available: 'Dates Available',
+    expertise: 'Expertise',
   },
 ];
 
@@ -33,9 +33,9 @@ const TutorTracking = () => {
 
   useEffect(() => {
     setSidebarOpen(false); // close on mount
-    const navbar = document.querySelector("nav");
+    const navbar = document.querySelector('nav');
     if (navbar) {
-      (navbar as HTMLElement).style.marginLeft = "0rem";
+      (navbar as HTMLElement).style.marginLeft = '0rem';
     }
     return () => {
       if (navbar) {

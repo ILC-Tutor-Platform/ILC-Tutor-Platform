@@ -1,15 +1,14 @@
-import { NavLink, useNavigate } from "react-router-dom";
-import { Button } from "./ui/button";
-import Logo from "@/assets/AralLinkLogo.svg";
-import { useState } from "react";
-import { UserAuth } from "@/context/AuthContext";
-import StudentSidebar from "./StudentSidebar";
-import { useSidebarStore } from "@/stores/sidebarStore";
-import { Menu } from "lucide-react";
-import TutorSidebar from "./TutorSidebar";
-import { useRoleStore } from "@/stores/roleStore";
-import { toast } from "sonner";
-import { useEffect } from "react";
+import Logo from '@/assets/AralLinkLogo.svg';
+import { UserAuth } from '@/context/AuthContext';
+import { useRoleStore } from '@/stores/roleStore';
+import { useSidebarStore } from '@/stores/sidebarStore';
+import { Menu } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import StudentSidebar from './StudentSidebar';
+import TutorSidebar from './TutorSidebar';
+import { Button } from './ui/button';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -43,19 +42,19 @@ const Navbar = () => {
     try {
       await signOut();
       await new Promise((resolve) => setTimeout(resolve, 1200));
-      navigate("/signin");
-      console.log("Signed out successfully!");
-      toast.success("Signed out successfully!", {
+      navigate('/signin');
+      console.log('Signed out successfully!');
+      toast.success('Signed out successfully!', {
         duration: 3000,
         style: {
-          backgroundColor: "#ffffff",
-          color: "#307B74",
-          fontSize: "16px",
-          boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
+          backgroundColor: '#ffffff',
+          color: '#307B74',
+          fontSize: '16px',
+          boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
         },
       });
     } catch (error) {
-      console.error("Error signing out:", error);
+      console.error('Error signing out:', error);
     }
   };
 
@@ -73,7 +72,7 @@ const Navbar = () => {
           {activeRole === 1 && <TutorSidebar />}
         </span>
       )}
-      <NavLink to={"/"}>
+      <NavLink to={'/'}>
         <img src={Logo} alt="Logo" className="w-35 h-auto" />
       </NavLink>
 
@@ -107,11 +106,11 @@ const Navbar = () => {
           <li>
             {activeRole === 0 && (
               <NavLink
-                to={"/profile/student"}
+                to={'/profile/student'}
                 className={({ isActive }) =>
                   isActive
-                    ? "text-ilc-yellow underline underline-offset-[15px]"
-                    : "hover:text-ilc-yellow underline-offset-[15px] hover:underline"
+                    ? 'text-ilc-yellow underline underline-offset-[15px]'
+                    : 'hover:text-ilc-yellow underline-offset-[15px] hover:underline'
                 }
               >
                 Profile
@@ -119,11 +118,11 @@ const Navbar = () => {
             )}
             {activeRole === 1 && (
               <NavLink
-                to={"/profile/tutor"}
+                to={'/profile/tutor'}
                 className={({ isActive }) =>
                   isActive
-                    ? "text-ilc-yellow underline underline-offset-[15px]"
-                    : "hover:text-ilc-yellow underline-offset-[15px] hover:underline"
+                    ? 'text-ilc-yellow underline underline-offset-[15px]'
+                    : 'hover:text-ilc-yellow underline-offset-[15px] hover:underline'
                 }
               >
                 Profile
@@ -134,15 +133,15 @@ const Navbar = () => {
 
         <li className="border-[2px] border-gray-300 border-dashed">
           <Button
-            variant={"yellow-button"}
-            size={"navbar-size"}
+            variant={'yellow-button'}
+            size={'navbar-size'}
             onClick={
               isAuthenticated && user
                 ? handleSignOut
-                : () => navigate("/signin")
+                : () => navigate('/signin')
             }
           >
-            {isAuthenticated && user ? "Sign out" : "Sign in"}
+            {isAuthenticated && user ? 'Sign out' : 'Sign in'}
           </Button>
         </li>
       </ul>
