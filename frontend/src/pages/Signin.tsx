@@ -1,19 +1,19 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { UserAuth } from "../context/AuthContext";
-import Logo from "@/assets/AralLinkLogo.svg";
-import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
-import { Label } from "@/components/ui/label";
-import { isValidUpEmail } from "@/utils/errorValidations.ts";
-import SessionLoading from "@/components/Loading";
-import { toast } from "sonner";
-import { useRoleStore } from "@/stores/roleStore";
-import { useAuthStore } from "@/stores/authStore";
+import Logo from '@/assets/AralLinkLogo.svg';
+import SessionLoading from '@/components/Loading';
+import { Label } from '@/components/ui/label';
+import { useAuthStore } from '@/stores/authStore';
+import { useRoleStore } from '@/stores/roleStore';
+import { isValidUpEmail } from '@/utils/errorValidations.ts';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { UserAuth } from '../context/AuthContext';
 
 const Signin = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
@@ -38,11 +38,11 @@ const Signin = () => {
     } = {};
 
     if (!email.trim()) {
-      newErrors.email = "*Email is required.";
+      newErrors.email = '*Email is required.';
     } else if (!isValidUpEmail(email)) {
-      newErrors.email = "*Must be a valid UP email.";
+      newErrors.email = '*Must be a valid UP email.';
     }
-    if (!password.trim()) newErrors.password = "*Password is required.";
+    if (!password.trim()) newErrors.password = '*Password is required.';
 
     setErrors(newErrors);
 
@@ -62,11 +62,11 @@ const Signin = () => {
         const user = useAuthStore.getState().user;
 
         if (!user || !user.role || user.role.length === 0) {
-          throw new Error("User or roles not found after successful login");
+          throw new Error('User or roles not found after successful login');
         }
 
         const parsedRoles = user.role
-          .map((r) => (typeof r === "string" ? Number(r) : r))
+          .map((r) => (typeof r === 'string' ? Number(r) : r))
           .filter((n) => !isNaN(n));
         const { setActiveRole } = useRoleStore.getState();
 
@@ -74,51 +74,51 @@ const Signin = () => {
           const role = parsedRoles[0];
           setActiveRole(role);
 
-          if (role === 0) navigate("/profile/student");
-          else if (role === 1) navigate("/profile/tutor");
-          else if (role === 2) navigate("/profile/admin");
-          else navigate("/unknown-role");
+          if (role === 0) navigate('/profile/student');
+          else if (role === 1) navigate('/profile/tutor');
+          else if (role === 2) navigate('/profile/admin');
+          else navigate('/unknown-role');
         } else if (parsedRoles.length > 1) {
-          navigate("/choose-role");
+          navigate('/choose-role');
         } else {
-          navigate("/signin");
+          navigate('/signin');
         }
 
-        toast.success("Signed in successfully!", {
-          className: "green-shadow-card text-black",
+        toast.success('Signed in successfully!', {
+          className: 'green-shadow-card text-black',
           duration: 3000,
           style: {
-            background: "#ffffff",
-            color: "#307B74",
-            fontSize: "16px",
-            border: "0px",
-            padding: "1.5rem",
-            boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
+            background: '#ffffff',
+            color: '#307B74',
+            fontSize: '16px',
+            border: '0px',
+            padding: '1.5rem',
+            boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
           },
         });
       } else {
         setErrors({ invalidCredentials: error });
-        toast.error("Sign in failed.", {
-          className: "green-shadow-card text-black",
+        toast.error('Sign in failed.', {
+          className: 'green-shadow-card text-black',
           duration: 3000,
           style: {
-            background: "#ffffff",
-            color: "#8A1538",
-            fontSize: "16px",
-            border: "0px",
-            padding: "1.5rem",
-            boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
+            background: '#ffffff',
+            color: '#8A1538',
+            fontSize: '16px',
+            border: '0px',
+            padding: '1.5rem',
+            boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
           },
         });
-        console.error("Sign in failed:", error);
+        console.error('Sign in failed:', error);
       }
     } catch (error) {
-      console.error("Error signing in: ", error);
+      console.error('Error signing in: ', error);
       setErrors({
         invalidCredentials:
           error instanceof Error
             ? error.message
-            : "An unexpected error occurred",
+            : 'An unexpected error occurred',
       });
     } finally {
       setLoading(false);
@@ -161,7 +161,7 @@ const Signin = () => {
                   )}
                   <Input
                     onChange={(e) => setEmail(e.target.value)}
-                    className={`p-3 mt-2 ${errors.email ? "border-red-500" : ""}`}
+                    className={`p-3 mt-2 ${errors.email ? 'border-red-500' : ''}`}
                     type="email"
                     name="email"
                     id="email"
@@ -177,8 +177,8 @@ const Signin = () => {
                   )}
                   <Input
                     onChange={(e) => setPassword(e.target.value)}
-                    className={`p-3 mt-2 ${errors.password ? "border-red-500" : ""}`}
-                    type={showPassword ? "text" : "password"}
+                    className={`p-3 mt-2 ${errors.password ? 'border-red-500' : ''}`}
+                    type={showPassword ? 'text' : 'password'}
                     name="password"
                     id="password"
                     placeholder="Password"
@@ -207,7 +207,7 @@ const Signin = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  variant={"yellow-button"}
+                  variant={'yellow-button'}
                   className="w-full"
                 >
                   Sign in
@@ -222,7 +222,7 @@ const Signin = () => {
               </div>
               <div className="mx-auto">
                 <Link
-                  to={"/"}
+                  to={'/'}
                   className="font-light text-ilc-grey hover:text-black transition-all duration-300"
                 >
                   Return to Home

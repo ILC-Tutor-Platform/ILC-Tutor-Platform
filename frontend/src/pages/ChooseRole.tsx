@@ -1,12 +1,12 @@
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { useRoleStore } from "@/stores/roleStore";
-import logo from "../assets/AralLinkLogo.svg";
+import { Button } from '@/components/ui/button';
+import { useRoleStore } from '@/stores/roleStore';
+import { useNavigate } from 'react-router-dom';
+import logo from '../assets/AralLinkLogo.svg';
 
 const roleLabels: Record<number, string> = {
-  0: "Student",
-  1: "Tutor",
-  2: "Admin",
+  0: 'Student',
+  1: 'Tutor',
+  2: 'Admin',
 };
 
 const ChooseRole = () => {
@@ -15,7 +15,7 @@ const ChooseRole = () => {
 
   const handleRoleSelection = (role: number) => {
     setActiveRole(role);
-    console.log("Role selected: ", roles);
+    console.log('Role selected: ', roles);
     navigate(`/profile/${roleLabels[role]?.toLowerCase()}`);
   };
 
@@ -41,10 +41,10 @@ const ChooseRole = () => {
             .map((role) => (
               <Button
                 key={role}
-                variant={"yellow-button"}
+                variant={'yellow-button'}
                 onClick={() => handleRoleSelection(role)}
               >
-                Sign in as {roleLabels[role] ?? "Unknown"}
+                Sign in as {roleLabels[role] ?? 'Unknown'}
               </Button>
             ))}
         </div>

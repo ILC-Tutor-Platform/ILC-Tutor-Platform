@@ -1,6 +1,6 @@
-import Logo from "@/assets/AralLinkLogo.svg";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import Logo from '@/assets/AralLinkLogo.svg';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const navigate = useNavigate();

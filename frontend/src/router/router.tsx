@@ -1,25 +1,25 @@
-import { createBrowserRouter } from "react-router-dom";
-import App from "@/App";
-import Signin from "@/pages/Signin";
-import SignupAs from "@/pages/SignUpAs";
-import Home from "@/pages/Home";
-import SignUpAsTutor from "@/pages/SignUpAsTutor";
-import SignUpAsStudent from "@/pages/SignUpAsStudent";
-import StudentDashboardProfile from "@/pages/StudentDashboardProfile";
-import TutorTracking from "@/pages/TutorTracking";
-import StudentScheduleTracking from "@/pages/StudentScheduleTracking";
-import StudentAnnouncements from "@/pages/StudentAnnouncements";
-import Tutors from "@/pages/Tutors";
-import IndividualTutor from "@/pages/IndividualTutor";
-import TutorProfile from "@/pages/TutorProfile";
-import StudentTracking from "@/pages/StudentTracking";
-import TutorSchedule from "@/pages/TutorSchedule";
-import TutorAnnouncements from "@/pages/TutorAnnouncements";
-import VerifyEmail from "@/pages/VerifyEmail";
-import ProtectedRoute from "@/wrapper/ProtectedRoute";
-import PageNotFound from "@/pages/PageNotFound";
-import ChooseRole from "@/pages/ChooseRole";
-import RedirectIfAuthenticated from "@/wrapper/RedirectIfAuthenticated";
+import App from '@/App';
+import ChooseRole from '@/pages/ChooseRole';
+import Home from '@/pages/Home';
+import IndividualTutor from '@/pages/IndividualTutor';
+import PageNotFound from '@/pages/PageNotFound';
+import Signin from '@/pages/Signin';
+import SignupAs from '@/pages/SignUpAs';
+import SignUpAsStudent from '@/pages/SignUpAsStudent';
+import SignUpAsTutor from '@/pages/SignUpAsTutor';
+import StudentAnnouncements from '@/pages/StudentAnnouncements';
+import StudentDashboardProfile from '@/pages/StudentDashboardProfile';
+import StudentScheduleTracking from '@/pages/StudentScheduleTracking';
+import StudentTracking from '@/pages/StudentTracking';
+import TutorAnnouncements from '@/pages/TutorAnnouncements';
+import TutorProfile from '@/pages/TutorProfile';
+import Tutors from '@/pages/Tutors';
+import TutorSchedule from '@/pages/TutorSchedule';
+import TutorTracking from '@/pages/TutorTracking';
+import VerifyEmail from '@/pages/VerifyEmail';
+import ProtectedRoute from '@/wrapper/ProtectedRoute';
+import RedirectIfAuthenticated from '@/wrapper/RedirectIfAuthenticated';
+import { createBrowserRouter } from 'react-router-dom';
 
 /*
 todo:
@@ -47,7 +47,7 @@ export const router = createBrowserRouter([
         element: <IndividualTutor />,
       },
       {
-        path: "/profile/student",
+        path: '/profile/student',
         element: (
           <ProtectedRoute allowedRoles={[0]}>
             <StudentDashboardProfile />
@@ -55,7 +55,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/profile/tutor",
+        path: '/profile/tutor',
         element: (
           <ProtectedRoute allowedRoles={[1]}>
             <TutorProfile />
@@ -63,7 +63,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/profile/student/tutor-tracking",
+        path: '/profile/student/tutor-tracking',
         element: (
           <ProtectedRoute allowedRoles={[0]}>
             <TutorTracking />
@@ -71,7 +71,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/profile/student/schedule-tracking",
+        path: '/profile/student/schedule-tracking',
         element: (
           <ProtectedRoute allowedRoles={[0]}>
             <StudentScheduleTracking />
@@ -79,7 +79,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/profile/student/announcements",
+        path: '/profile/student/announcements',
         element: (
           <ProtectedRoute allowedRoles={[0]}>
             <StudentAnnouncements />
@@ -87,7 +87,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/profile/tutor/student-tracking",
+        path: '/profile/tutor/student-tracking',
         element: (
           <ProtectedRoute allowedRoles={[1]}>
             <StudentTracking />
@@ -95,7 +95,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/profile/tutor/schedule",
+        path: '/profile/tutor/schedule',
         element: (
           <ProtectedRoute allowedRoles={[1]}>
             <TutorSchedule />
@@ -103,7 +103,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/profile/tutor/announcements",
+        path: '/profile/tutor/announcements',
         element: (
           <ProtectedRoute allowedRoles={[1]}>
             <TutorAnnouncements />
@@ -113,7 +113,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: "/signin",
+    path: '/signin',
     element: (
       <RedirectIfAuthenticated>
         <Signin />
@@ -121,7 +121,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: "/signup",
+    path: '/signup',
     element: (
       <RedirectIfAuthenticated>
         <SignupAs />
@@ -129,7 +129,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: "/signup/student",
+    path: '/signup/student',
     element: (
       <RedirectIfAuthenticated>
         <SignUpAsStudent />
@@ -137,7 +137,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: "/signup/tutor",
+    path: '/signup/tutor',
     element: (
       <RedirectIfAuthenticated>
         <SignUpAsTutor />
@@ -145,7 +145,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: "/verify-email",
+    path: '/verify-email',
     element: (
       <RedirectIfAuthenticated>
         <VerifyEmail />
@@ -153,7 +153,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: "/choose-role",
+    path: '/choose-role',
     element: <ChooseRole />,
   },
 ]);

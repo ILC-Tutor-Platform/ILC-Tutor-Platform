@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { useSidebarStore } from "@/stores/sidebarStore";
-import Profile from "../assets/user.svg";
-import Tutor from "../assets/coach.svg";
-import Schedule from "../assets/calendar.svg";
-import Announcements from "../assets/megaphone.svg";
-import { Menu } from "lucide-react";
+import { useSidebarStore } from '@/stores/sidebarStore';
+import { Menu } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import Schedule from '../assets/calendar.svg';
+import Tutor from '../assets/coach.svg';
+import Announcements from '../assets/megaphone.svg';
+import Profile from '../assets/user.svg';
 
 const StudentSidebar = () => {
   const { isOpen, toggle } = useSidebarStore();
@@ -19,7 +19,7 @@ const StudentSidebar = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const sidebarWidth = isOpen ? (isMobile ? "7rem" : "8rem") : "0rem";
+  const sidebarWidth = isOpen ? (isMobile ? '7rem' : '8rem') : '0rem';
 
   return (
     <aside
@@ -36,21 +36,21 @@ const StudentSidebar = () => {
           />
           <div className="flex flex-col justify-center items-center gap-8">
             {[
-              { label: "Profile", icon: Profile, route: "/profile/student" },
+              { label: 'Profile', icon: Profile, route: '/profile/student' },
               {
-                label: "Tutor",
+                label: 'Tutor',
                 icon: Tutor,
-                route: "/profile/student/tutor-tracking",
+                route: '/profile/student/tutor-tracking',
               },
               {
-                label: "Schedule",
+                label: 'Schedule',
                 icon: Schedule,
-                route: "/profile/student/schedule-tracking",
+                route: '/profile/student/schedule-tracking',
               },
               {
-                label: "Announcements",
+                label: 'Announcements',
                 icon: Announcements,
-                route: "/profile/student/announcements",
+                route: '/profile/student/announcements',
                 large: true,
               },
             ].map((item) => (
@@ -64,11 +64,11 @@ const StudentSidebar = () => {
                   <img
                     src={item.icon}
                     alt={item.label}
-                    className={item.large ? "w-6 h-6" : "w-5 h-5"}
+                    className={item.large ? 'w-6 h-6' : 'w-5 h-5'}
                   />
                   <span
                     className={`${
-                      item.large ? "text-xs" : "text-sm"
+                      item.large ? 'text-xs' : 'text-sm'
                     } font-medium text-center`}
                   >
                     {item.label}

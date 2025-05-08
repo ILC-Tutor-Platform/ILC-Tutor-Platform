@@ -1,29 +1,29 @@
-import { useEffect, useState } from "react";
-import TutorCard from "../components/ui/TutorCard";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import TutorCard from '../components/ui/TutorCard';
 
 // Placeholder tutor data for demo
 const tutors = [
   {
     id: 1,
-    name: "Name",
-    subject: "Subject/s",
-    available: "Dates Available",
-    expertise: "Expertise",
+    name: 'Name',
+    subject: 'Subject/s',
+    available: 'Dates Available',
+    expertise: 'Expertise',
   },
   {
     id: 2,
-    name: "Name",
-    subject: "Subject/s",
-    available: "Dates Available",
-    expertise: "Expertise",
+    name: 'Name',
+    subject: 'Subject/s',
+    available: 'Dates Available',
+    expertise: 'Expertise',
   },
   {
     id: 3,
-    name: "Name",
-    subject: "Subject/s",
-    available: "Dates Available",
-    expertise: "Expertise",
+    name: 'Name',
+    subject: 'Subject/s',
+    available: 'Dates Available',
+    expertise: 'Expertise',
   },
 ];
 
@@ -33,9 +33,9 @@ const TutorTracking = () => {
 
   useEffect(() => {
     setSidebarOpen(false); // close on mount
-    const navbar = document.querySelector("nav");
+    const navbar = document.querySelector('nav');
     if (navbar) {
-      (navbar as HTMLElement).style.marginLeft = "0rem";
+      (navbar as HTMLElement).style.marginLeft = '0rem';
     }
     return () => {
       if (navbar) {
@@ -77,7 +77,7 @@ const TutorTracking = () => {
             <div className="flex justify-center mt-6">
               <button
                 className="mt-4 w-2/5 md:w-1/4 lg:w-1/5 h-10 bg-[#307B74] rounded-[1rem] text-white text-base md:text-lg lg:text-xl font-montserrat font-bold break-words cursor-pointer"
-                onClick={() => navigate("/tutors")}
+                onClick={() => navigate('/tutors')}
               >
                 Browse Tutors
               </button>

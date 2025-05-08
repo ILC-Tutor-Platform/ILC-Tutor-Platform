@@ -1,17 +1,16 @@
-import { useSidebarStore } from "@/stores/sidebarStore";
-import { Button } from "./ui/button";
-import { Link, NavLink } from "react-router-dom";
-import { Menu } from "lucide-react";
-import bell from "@/assets/bell.svg";
-import profile from "@/assets/profile.svg";
-import { useNavigate } from "react-router-dom";
-import { UserAuth } from "@/context/AuthContext";
-import StudentSidebar from "./StudentSidebar";
-import logo from "@/assets/AralLinkLogo.svg";
-import TutorSidebar from "./TutorSidebar";
-import { toast } from "sonner";
-import { useRoleStore } from "@/stores/roleStore";
-import { useEffect, useState } from "react";
+import logo from '@/assets/AralLinkLogo.svg';
+import bell from '@/assets/bell.svg';
+import profile from '@/assets/profile.svg';
+import { UserAuth } from '@/context/AuthContext';
+import { useRoleStore } from '@/stores/roleStore';
+import { useSidebarStore } from '@/stores/sidebarStore';
+import { Menu } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import StudentSidebar from './StudentSidebar';
+import TutorSidebar from './TutorSidebar';
+import { Button } from './ui/button';
 
 const NavbarMobile = () => {
   const navigate = useNavigate();
@@ -45,19 +44,19 @@ const NavbarMobile = () => {
   const handleSignOut = async () => {
     try {
       await signOut();
-      navigate("/signin");
-      console.log("Signed out successfully!");
-      toast.success("Signed out successfully!", {
+      navigate('/signin');
+      console.log('Signed out successfully!');
+      toast.success('Signed out successfully!', {
         duration: 3000,
         style: {
-          backgroundColor: "#ffffff",
-          color: "#307B74",
-          fontSize: "16px",
-          boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
+          backgroundColor: '#ffffff',
+          color: '#307B74',
+          fontSize: '16px',
+          boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
         },
       });
     } catch (error) {
-      console.error("Error signing out:", error);
+      console.error('Error signing out:', error);
     }
   };
 
@@ -72,7 +71,7 @@ const NavbarMobile = () => {
               {activeRole === 1 && <TutorSidebar />}
             </span>
           )}
-          <Link to={"/"} onClick={close}>
+          <Link to={'/'} onClick={close}>
             <img src={logo} alt="" className="w-25 h-auto" />
           </Link>
         </div>
@@ -83,34 +82,34 @@ const NavbarMobile = () => {
               <>
                 <li>
                   {activeRole === 0 && (
-                    <Link to={"/profile/student/announcements"}>
+                    <Link to={'/profile/student/announcements'}>
                       <img src={bell} alt="" />
                     </Link>
                   )}
                   {activeRole === 1 && (
-                    <Link to={"/profile/tutor/announcements"}>
+                    <Link to={'/profile/tutor/announcements'}>
                       <img src={bell} alt="" />
                     </Link>
                   )}
                   {activeRole === 2 && (
-                    <Link to={"/profile/admin/announcements"}>
+                    <Link to={'/profile/admin/announcements'}>
                       <img src={bell} alt="" />
                     </Link>
                   )}
                 </li>
                 <li>
                   {activeRole === 0 && (
-                    <Link to={"/profile/student"}>
+                    <Link to={'/profile/student'}>
                       <img src={profile} alt="" />
                     </Link>
                   )}
                   {activeRole === 1 && (
-                    <Link to={"/profile/tutor"}>
+                    <Link to={'/profile/tutor'}>
                       <img src={profile} alt="" />
                     </Link>
                   )}
                   {activeRole === 2 && (
-                    <Link to={"/profile/admin"}>
+                    <Link to={'/profile/admin'}>
                       <img src={profile} alt="" />
                     </Link>
                   )}
@@ -120,11 +119,11 @@ const NavbarMobile = () => {
             {(!isAuthenticated || !user) && (
               <li>
                 <NavLink
-                  to={"/tutors"}
+                  to={'/tutors'}
                   className={({ isActive }) =>
                     isActive
-                      ? "text-ilc-yellow underline underline-offset-[15px]"
-                      : "hover:text-ilc-yellow underline-offset-[15px] hover:underline"
+                      ? 'text-ilc-yellow underline underline-offset-[15px]'
+                      : 'hover:text-ilc-yellow underline-offset-[15px] hover:underline'
                   }
                 >
                   Tutors
@@ -136,12 +135,12 @@ const NavbarMobile = () => {
                 onClick={() =>
                   isAuthenticated && user
                     ? handleSignOut()
-                    : navigate("/signin")
+                    : navigate('/signin')
                 }
-                variant={"yellow-button"}
+                variant={'yellow-button'}
                 className="text-xs"
               >
-                {isAuthenticated && user ? "Sign out" : "Sign in"}
+                {isAuthenticated && user ? 'Sign out' : 'Sign in'}
               </Button>
             </li>
           </ul>
