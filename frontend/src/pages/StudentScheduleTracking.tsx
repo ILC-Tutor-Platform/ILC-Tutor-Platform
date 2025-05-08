@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import StudentSidebar from '../components/StudentSidebar';
+import { useEffect, useState } from "react";
 
 interface Schedule {
   tutor: string;
@@ -9,23 +8,21 @@ interface Schedule {
 }
 
 const StudentScheduleTracking = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [, setSidebarOpen] = useState(true);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const sidebarWidth = sidebarOpen ? 7 : 0; // 7rem
 
   useEffect(() => {
-    const navbar = document.querySelector('nav');
+    setSidebarOpen(false); // close on mount
+    const navbar = document.querySelector("nav");
     if (navbar) {
-      (navbar as HTMLElement).style.marginLeft = sidebarOpen
-        ? `${sidebarWidth}rem`
-        : '0rem';
+      (navbar as HTMLElement).style.marginLeft = "0rem";
     }
     return () => {
       if (navbar) {
         (navbar as HTMLElement).style.marginLeft = '0rem';
       }
     };
-  }, [sidebarOpen]);
+  }, []);
 
   useEffect(() => {
     const mockData: Schedule[] = [
@@ -53,14 +50,9 @@ const StudentScheduleTracking = () => {
 
   return (
     <div className="min-h-screen font-manrope relative flex">
-      <StudentSidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-      />
 
       <div
         className="transition-all duration-300 ease-in-out flex-1"
-        style={{ marginLeft: `${sidebarWidth}rem` }}
       >
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
           <div

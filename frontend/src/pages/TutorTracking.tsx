@@ -1,62 +1,52 @@
-import { useEffect, useState } from 'react';
-import StudentSidebar from '../components/StudentSidebar';
-import TutorCard from '../components/ui/TutorCard';
+import { useEffect, useState } from "react";
+import TutorCard from "../components/ui/TutorCard";
+import { useNavigate } from "react-router-dom";
 
 // Placeholder tutor data for demo
 const tutors = [
   {
     id: 1,
-    name: 'Name',
-    subject: 'Subject/s',
-    available: 'Dates Available',
-    expertise: 'Expertise',
+    name: "Name",
+    subject: "Subject/s",
+    available: "Dates Available",
+    expertise: "Expertise",
   },
   {
     id: 2,
-    name: 'Name',
-    subject: 'Subject/s',
-    available: 'Dates Available',
-    expertise: 'Expertise',
+    name: "Name",
+    subject: "Subject/s",
+    available: "Dates Available",
+    expertise: "Expertise",
   },
   {
     id: 3,
-    name: 'Name',
-    subject: 'Subject/s',
-    available: 'Dates Available',
-    expertise: 'Expertise',
+    name: "Name",
+    subject: "Subject/s",
+    available: "Dates Available",
+    expertise: "Expertise",
   },
 ];
 
 const TutorTracking = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const sidebarWidth = sidebarOpen ? 7 : 0;
+  const [, setSidebarOpen] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const navbar = document.querySelector('nav');
+    setSidebarOpen(false); // close on mount
+    const navbar = document.querySelector("nav");
     if (navbar) {
-      (navbar as HTMLElement).style.marginLeft = sidebarOpen
-        ? `${sidebarWidth}rem`
-        : '0rem';
+      (navbar as HTMLElement).style.marginLeft = "0rem";
     }
-
     return () => {
       if (navbar) {
         (navbar as HTMLElement).style.marginLeft = '0rem';
       }
     };
-  }, [sidebarOpen]);
+  }, []);
 
   return (
     <div className="min-h-screen font-manrope flex relative">
-      <StudentSidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-      />
-
-      <div
-        className="transition-all duration-300 ease-in-out flex-1"
-        style={{ marginLeft: `${sidebarWidth}rem` }}
-      >
+      <div className="transition-all duration-300 ease-in-out flex-1">
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
           <div
             style={{
@@ -85,7 +75,10 @@ const TutorTracking = () => {
             </div>
 
             <div className="flex justify-center mt-6">
-              <button className="mt-4 w-2/5 md:w-1/4 lg:w-1/5 h-10 bg-[#307B74] rounded-[1rem] text-white text-base md:text-lg lg:text-xl font-montserrat font-bold break-words cursor-pointer">
+              <button
+                className="mt-4 w-2/5 md:w-1/4 lg:w-1/5 h-10 bg-[#307B74] rounded-[1rem] text-white text-base md:text-lg lg:text-xl font-montserrat font-bold break-words cursor-pointer"
+                onClick={() => navigate("/tutors")}
+              >
                 Browse Tutors
               </button>
             </div>
