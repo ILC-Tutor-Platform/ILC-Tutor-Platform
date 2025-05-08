@@ -18,13 +18,10 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install dependencies
+      - name: Install dependencies and run ESLint
         run: |
           cd frontend
           npm install --legacy-peer-deps
-
-      - name: Run ESLint with auto-fix
-        run: |
           npm run lint:fix
 
       - name: Commit and push changes if needed
