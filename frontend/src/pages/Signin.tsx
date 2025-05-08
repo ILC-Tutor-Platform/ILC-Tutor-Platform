@@ -1,6 +1,12 @@
 import Logo from '@/assets/AralLinkLogo.svg';
+import SessionLoading from '@/components/Loading';
+import { Label } from '@/components/ui/label';
+import { useAuthStore } from '@/stores/authStore';
+import { useRoleStore } from '@/stores/roleStore';
+import { isValidUpEmail } from '@/utils/errorValidations.ts';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { UserAuth } from '../context/AuthContext';
@@ -8,91 +14,225 @@ import { UserAuth } from '../context/AuthContext';
 const Signin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+    invalidCredentials?: string;
+  }>({});
   const [loading, setLoading] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const authContext = UserAuth();
-  const { session, signInUser } = authContext || {};
-  console.log(session);
+  const { signInUser } = authContext || {};
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true); // Show loading state
+  const handleShowPassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
+  const validateFields = () => {
+    const newErrors: {
+      email?: string;
+      password?: string;
+      invalidCredentials?: string;
+    } = {};
+
+    if (!email.trim()) {
+      newErrors.email = '*Email is required.';
+    } else if (!isValidUpEmail(email)) {
+      newErrors.email = '*Must be a valid UP email.';
+    }
+    if (!password.trim()) newErrors.password = '*Password is required.';
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSignIn = async () => {
+    setLoading(true);
+    if (!validateFields()) {
+      setLoading(false);
+      return;
+    }
     try {
-      const result = await signInUser(email, password);
+      const { success, error } = await signInUser(email, password);
 
-      // Check if signup was successful
-      if (result.success) {
-        navigate('/dashboard');
+      if (success) {
+        const user = useAuthStore.getState().user;
+
+        if (!user || !user.role || user.role.length === 0) {
+          throw new Error('User or roles not found after successful login');
+        }
+
+        const parsedRoles = user.role
+          .map((r) => (typeof r === 'string' ? Number(r) : r))
+          .filter((n) => !isNaN(n));
+        const { setActiveRole } = useRoleStore.getState();
+
+        if (parsedRoles.length === 1) {
+          const role = parsedRoles[0];
+          setActiveRole(role);
+
+          if (role === 0) navigate('/profile/student');
+          else if (role === 1) navigate('/profile/tutor');
+          else if (role === 2) navigate('/profile/admin');
+          else navigate('/unknown-role');
+        } else if (parsedRoles.length > 1) {
+          navigate('/choose-role');
+        } else {
+          navigate('/signin');
+        }
+
+        toast.success('Signed in successfully!', {
+          className: 'green-shadow-card text-black',
+          duration: 3000,
+          style: {
+            background: '#ffffff',
+            color: '#307B74',
+            fontSize: '16px',
+            border: '0px',
+            padding: '1.5rem',
+            boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
+          },
+        });
       } else {
-        // Handle known error from result
-        setError(result.error || 'An unknown error occurred.');
+        setErrors({ invalidCredentials: error });
+        toast.error('Sign in failed.', {
+          className: 'green-shadow-card text-black',
+          duration: 3000,
+          style: {
+            background: '#ffffff',
+            color: '#8A1538',
+            fontSize: '16px',
+            border: '0px',
+            padding: '1.5rem',
+            boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
+          },
+        });
+        console.error('Sign in failed:', error);
       }
-    } catch (err: any) {
-      // Handle unexpected errors
-      console.error('Sign up error:', err); // Log for debugging purposes
-      setError('An unexpected error occurred.');
+    } catch (error) {
+      console.error('Error signing in: ', error);
+      setErrors({
+        invalidCredentials:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
+      });
     } finally {
-      setLoading(false); // End loading state, regardless of success or failure
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex h-screen items-center w-full">
-      <form
-        onSubmit={handleSignIn}
-        className="flex flex-col w-[90%] md:gap-15 xl:w-[30%] mx-auto py-7 md:px-10 rounded-2xl green-shadow-card"
-      >
-        <div className="grid gap-10">
-          <img src={Logo} alt="Logo" className="w-35 h-auto mx-auto" />
-          <h2 className="font-bold text-5xl text-center">Sign in</h2>
+    <>
+      {loading ? (
+        <div className="flex justify-center items-center h-screen">
+          <SessionLoading msg="Signing in" />
         </div>
+      ) : (
+        <div className="flex h-screen items-center w-full">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSignIn();
+            }}
+            className="flex flex-col w-[90%] md:gap-10 xl:w-[30%] mx-auto py-7 md:px-10 rounded-2xl green-shadow-card"
+          >
+            <div className="grid gap-10">
+              <img src={Logo} alt="Logo" className="w-35 h-auto mx-auto" />
+              <h2 className="font-bold text-5xl text-center">Sign in</h2>
+            </div>
 
-        <div className="flex flex-col gap-8 p-8">
-          <div className="grid gap-4">
-            <Input
-              onChange={(e) => setEmail(e.target.value)}
-              type="email"
-              name="email"
-              id="email"
-              placeholder="Email address"
-              autoComplete="email"
-            />
+            <div className="flex flex-col gap-8 p-8">
+              <div className="flex flex-col gap-4">
+                {errors.invalidCredentials && (
+                  <Label className="text-red-500 mx-auto">
+                    {errors.invalidCredentials}
+                  </Label>
+                )}
 
-            <Input
-              onChange={(e) => setPassword(e.target.value)}
-              className="p-3 mt-2"
-              type="password"
-              name="password"
-              id="password"
-              placeholder="Password"
-              autoComplete="current-password"
-            />
-          </div>
+                <div className="grid gap-2">
+                  {errors.email && (
+                    <Label className="text-[0.8rem] font-thin text-red-500">
+                      {errors.email}
+                    </Label>
+                  )}
+                  <Input
+                    onChange={(e) => setEmail(e.target.value)}
+                    className={`p-3 mt-2 ${errors.email ? 'border-red-500' : ''}`}
+                    type="email"
+                    name="email"
+                    id="email"
+                    placeholder="Email address"
+                    autoComplete="email"
+                  />
+                </div>
+                <div>
+                  {errors.password && (
+                    <Label className="text-[0.8rem] font-thin text-red-500">
+                      {errors.password}
+                    </Label>
+                  )}
+                  <Input
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={`p-3 mt-2 ${errors.password ? 'border-red-500' : ''}`}
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    id="password"
+                    placeholder="Password"
+                    autoComplete="current-password"
+                  />
 
-          <div className="flex gap-4 justify-center">
-            <Button type="submit" disabled={loading} variant={'yellow-button'}>
-              Sign in as Student
-            </Button>
+                  <div className="flex items-center mt-2">
+                    <input
+                      type="checkbox"
+                      id="showPassword"
+                      checked={showPassword}
+                      onChange={handleShowPassword}
+                      className="mr-2"
+                    />
+                    <label
+                      htmlFor="showPassword"
+                      className="text-sm text-ilc-grey"
+                    >
+                      Show Password
+                    </label>
+                  </div>
+                </div>
+              </div>
 
-            <Button type="submit" disabled={loading} variant={'yellow-button'}>
-              Sign in as Tutor
-            </Button>
-          </div>
+              <div className="flex w-full">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  variant={'yellow-button'}
+                  className="w-full"
+                >
+                  Sign in
+                </Button>
+              </div>
 
-          <div className="flex items-center justify-center gap-1 text-ilc-grey">
-            <p>Don't have an account? </p>
-            <Link to="/signup" className="font-bold text-black">
-              Sign up
-            </Link>
-          </div>
-
-          {error && <p className="text-red-600 text-center pt-4">{error}</p>}
+              <div className="flex items-center justify-center gap-1 text-ilc-grey">
+                <p>Don't have an account? </p>
+                <Link to="/signup" className="font-bold text-black">
+                  Sign up
+                </Link>
+              </div>
+              <div className="mx-auto">
+                <Link
+                  to={'/'}
+                  className="font-light text-ilc-grey hover:text-black transition-all duration-300"
+                >
+                  Return to Home
+                </Link>
+              </div>
+            </div>
+          </form>
         </div>
-      </form>
-    </div>
+      )}
+    </>
   );
 };
 

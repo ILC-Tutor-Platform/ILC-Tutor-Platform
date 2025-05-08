@@ -2,26 +2,44 @@ from fastapi import APIRouter, HTTPException, Depends
 from database.config import get_db
 from sqlalchemy.orm import Session
 from models import UserDetail, StudentDetail, UserRoleDetail, TutorDetail, StatusDetail, TutorSocials, TutorAffiliation, TutorAvailability, TutorExpertise, SubjectDetail
-from constants.supabase_client import supabase
+from constants.supabase_client import supabase_admin, supabase # supabase for login/signup & supabase_admin for verification
 from schema import StudentSignupSchema, TutorSignupSchema
 from constants.logger import logger
+from pydantic import BaseModel
 
 router = APIRouter()
+
+class EmailPayload(BaseModel):
+    email: str
 
 # ----------- SIGN UP ----------------
 # Verifies a user’s email after signup.
 @router.post("/auth/verify-email")
-def verify_email(email: str, db: Session = Depends(get_db)):
+def verify_email(payload: EmailPayload, db: Session = Depends(get_db)):
     try:
-        # Get all users from supabase
-        users = supabase.auth.admin.list_users()
-
-        # Find user by email
-        user = next((u for u in users if u.email == email), None)
+        email = payload.email
+        logger.info(f"Starting email verification for: {email}")
+        
+        try:
+            # Make sure to use the service role key in your Supabase client
+            users = supabase_admin.auth.admin.list_users()
+            logger.info(f"Successfully retrieved users from Supabase")
+            
+            # Find user by email
+            user = next((u for u in users if u.email == email), None)
+        except Exception as supabase_error:
+            logger.error(f"Supabase admin API error: {str(supabase_error)}")
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Error connecting to authentication service: {str(supabase_error)}"
+            )
 
         if not user:
-            logger.info("User does not exist.")
+            logger.info(f"User with email {email} not found")
             raise HTTPException(status_code=404, detail="User not found")
+            
+        # Log user details for debugging (remove in production)
+        logger.info(f"User found: {user.id}, Email confirmed: {user.email_confirmed_at is not None}")
 
         role = user.user_metadata.get("role", [])
         # Check if user is already verified
@@ -52,21 +70,68 @@ def verify_email(email: str, db: Session = Depends(get_db)):
         else:
             return {"message": "Email not yet verified", "email": user.email}
 
+    except HTTPException as he:
+        # Re-raise HTTP exceptions
+        raise he
     except Exception as e:
-        logger.error(f"Email verification failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Unexpected error in email verification: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Verification failed: {str(e)}")
 
 def add_detail(user, role, db):
-    # Add user to student_detail table
+    # Add user to student_detail table if they have student role
     if "0" in role:
-        create_student_profile(user, db)   
+        try:
+            # Check if student profile already exists
+            existing_student = db.query(StudentDetail).filter(StudentDetail.student_id == user.id).first()
+            if not existing_student:
+                create_student_profile(user, db)
+            else:
+                # If student profile exists, make sure the role is set
+                existing_role = db.query(UserRoleDetail).filter(
+                    UserRoleDetail.user_id == user.id,
+                    UserRoleDetail.role_id == "0"
+                ).first()
+                
+                if not existing_role:
+                    try:
+                        db.add(UserRoleDetail(user_id=user.id, role_id="0"))
+                        db.commit()
+                    except Exception as e:
+                        logger.info(f"User role already exists, continuing: {str(e)}")
+                        db.rollback()
+        except Exception as e:
+            logger.error(f"Error processing student profile: {str(e)}")
+            db.rollback()
+            raise
 
-    # Query tutor status from status_detail table
-    tutor_status = db.query(StatusDetail).filter(StatusDetail.status_id == '0').first()
-    
-    # Add user to tutor_detail table
+    # Add user to tutor_detail table if they have tutor role
     if "1" in role:
-        create_tutor_profile(user, db, tutor_status)
+        try:
+            # Check if tutor profile already exists
+            existing_tutor = db.query(TutorDetail).filter(TutorDetail.tutor_id == user.id).first()
+            if not existing_tutor:
+                # Query tutor status from status_detail table
+                tutor_status = db.query(StatusDetail).filter(StatusDetail.status_id == '0').first()
+                create_tutor_profile(user, db, tutor_status)
+            else:
+                # If tutor already exists, just update their role if needed
+                existing_role = db.query(UserRoleDetail).filter(
+                    UserRoleDetail.user_id == user.id,
+                    UserRoleDetail.role_id == "1"
+                ).first()
+                
+                if not existing_role:
+                    try:
+                        db.add(UserRoleDetail(user_id=user.id, role_id="1"))
+                        db.commit()
+                    except Exception as e:
+                        logger.info(f"User role already exists, continuing: {str(e)}")
+                        db.rollback()
+        except Exception as e:
+            # Log the error for debugging
+            logger.error(f"Error processing tutor profile: {str(e)}")
+            db.rollback()
+            raise
 
 def create_student_profile(user, db):
     new_student_detail = StudentDetail(
@@ -76,15 +141,31 @@ def create_student_profile(user, db):
     )
 
     db.add(new_student_detail)
-
-    # Add student user id to user_role_detail
-    new_user_role = UserRoleDetail(
-        user_id = user.id,
-        role_id = "0"
-    )
-
-    db.add(new_user_role)
     db.commit()
+
+    # Check if user_role already exists for this role
+    try:
+        existing_role = db.query(UserRoleDetail).filter(
+            UserRoleDetail.user_id == user.id,
+            UserRoleDetail.role_id == "0"
+        ).first()
+        
+        # Only add user role if it doesn't exist
+        if not existing_role:
+            try:
+                new_user_role = UserRoleDetail(
+                    user_id = user.id,
+                    role_id = "0"
+                )
+                db.add(new_user_role)
+                db.commit()
+            except Exception as e:
+                logger.info(f"User role already exists, continuing: {str(e)}")
+                db.rollback()
+    except Exception as e:
+        logger.error(f"Error checking student role: {str(e)}")
+        db.rollback()
+        raise
 
 def create_tutor_profile(user, db, tutor_status):
     new_tutor_detail = TutorDetail(
@@ -94,8 +175,10 @@ def create_tutor_profile(user, db, tutor_status):
     )
 
     db.add(new_tutor_detail)
-    db.commit()   
-
+    
+    # Commit the tutor record first to ensure it exists before adding related records
+    db.commit()
+    
     # Insert affiliation
     tutor_affiliation = user.user_metadata.get("affiliation", [])
     for affiliation in tutor_affiliation:
@@ -123,6 +206,9 @@ def create_tutor_profile(user, db, tutor_status):
         )
         db.add(new_tutor_socials)
 
+    # Commit again to save affiliations, expertise, and socials
+    db.commit()
+
     tutor_availability = user.user_metadata.get("availability", [])
     available_time_from = user.user_metadata.get("available_time_from", [])
     available_time_to = user.user_metadata.get("available_time_to", [])
@@ -135,18 +221,38 @@ def create_tutor_profile(user, db, tutor_status):
             available_time_to = available_time_to[i]
         )
         db.add(new_tutor_availability)
+    
+    # Commit availability before adding subjects
+    db.commit()
 
     tutor_subject = user.user_metadata.get("subject", [])
     for subject in tutor_subject:
         new_tutor_subject = SubjectDetail(
             tutor_id=user.id,
-            subject_name=subject  # This is now a single string like "Calculus"
+            subject_name=subject
         )
         db.add(new_tutor_subject)
 
+    # Check if user_role already exists for this role
+    existing_role = db.query(UserRoleDetail).filter(
+        UserRoleDetail.user_id == user.id,
+        UserRoleDetail.role_id == "1"
+    ).first()
+    
+    # Only add user role if it doesn't exist
+    if not existing_role:
+        try:
+            db.add(UserRoleDetail(user_id=user.id, role_id="1"))
+            db.commit()
+        except Exception as e:
+            # If we get an error when adding the role, it's likely because it already exists
+            # Just log it and continue - the role is already there
+            logger.info(f"User role already exists, continuing: {str(e)}")
+            db.rollback()
+    else:
+        # Final commit to save everything else if we didn't add a role
+        db.commit()
 
-    db.add(UserRoleDetail(user_id=user.id, role_id="1"))
-    db.commit()    
 
 #Register a student and send verification email
 @router.post("/auth/signup/student")
@@ -174,7 +280,7 @@ def signup_student(payload: StudentSignupSchema):
 
 
             # Ensure you are updating user metadata correctly
-            supabase.auth.admin.update_user_by_id(
+            supabase_admin.auth.admin.update_user_by_id(
                 existing_user.id,
                 {
                     "user_metadata": {  
@@ -240,7 +346,7 @@ def signup_tutor(payload: TutorSignupSchema):
                 return {"message": "User is already a tutor."}
 
             # Ensure you are updating user metadata correctly
-            supabase.auth.admin.update_user_by_id(
+            supabase_admin.auth.admin.update_user_by_id(
                 existing_user.id,
                 {
                     "user_metadata": {  
@@ -290,7 +396,7 @@ def get_existing_user(user):
     # Check if the user already exists
     try:
         # Fetch all users 
-        response = supabase.auth.admin.list_users()
+        response = supabase_admin.auth.admin.list_users()
         user_list = response.users if hasattr(response, 'users') else response  # fallback for some clients
         
         # Look for matching email (case-insensitive just in case)

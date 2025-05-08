@@ -2,10 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { UserAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
-  const { session, signOut } = UserAuth();
+  const { user, signOut } = UserAuth();
   const navigate = useNavigate();
-
-  console.log(session);
 
   const handleSignOut = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,10 +14,13 @@ const Dashboard = () => {
       console.log(error);
     }
   };
+
+  console.log(user);
+
   return (
     <div>
       <h1>Dashboard</h1>
-      <h2>Welcome, {session?.user?.email}</h2>
+      <h2>Welcome, {user?.name}</h2>
       <div>
         <button className="hover:cursor-pointer" onClick={handleSignOut}>
           Signout

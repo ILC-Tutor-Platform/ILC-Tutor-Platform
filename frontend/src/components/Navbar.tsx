@@ -1,26 +1,77 @@
 import Logo from '@/assets/AralLinkLogo.svg';
-import { useRef, useState } from 'react';
+import { UserAuth } from '@/context/AuthContext';
+import { useRoleStore } from '@/stores/roleStore';
+import { useSidebarStore } from '@/stores/sidebarStore';
+import { Menu } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import StudentSidebar from './StudentSidebar';
+import TutorSidebar from './TutorSidebar';
 import { Button } from './ui/button';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { toggle } = useSidebarStore();
+  const activeRole = useRoleStore((state) => state.activeRole);
+  const { isAuthenticated, user, signOut, refreshSession } = UserAuth();
+  const [, setSessionChecked] = useState(false);
 
-  const handleMouseEnter = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setDropdownOpen(true);
-  };
+  useEffect(() => {
+    const checkSession = async () => {
+      if (isAuthenticated && user) {
+        await refreshSession();
+      }
+      setSessionChecked(true);
+    };
 
-  const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => {
-      setDropdownOpen(false);
-    }, 200); // Delay in ms before closing
+    checkSession();
+    const refreshInterval = setInterval(
+      () => {
+        if (isAuthenticated) {
+          refreshSession();
+        }
+      },
+      15 * 60 * 1000,
+    );
+
+    return () => clearInterval(refreshInterval);
+  }, [isAuthenticated, refreshSession, user]);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      navigate('/signin');
+      console.log('Signed out successfully!');
+      toast.success('Signed out successfully!', {
+        duration: 3000,
+        style: {
+          backgroundColor: '#ffffff',
+          color: '#307B74',
+          fontSize: '16px',
+          boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
+        },
+      });
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   return (
     <nav className="flex items-center justify-between px-20 py-7 shadow-md sticky top-0 bg-white z-50">
+      {isAuthenticated && user && (
+        <span className="absolute left-7">
+          <Menu
+            className="cursor-pointer"
+            onClick={toggle}
+            width={32}
+            height={32}
+          />
+          {activeRole === 0 && <StudentSidebar />}
+          {activeRole === 1 && <TutorSidebar />}
+        </span>
+      )}
       <NavLink to={'/'}>
         <img src={Logo} alt="Logo" className="w-35 h-auto" />
       </NavLink>
@@ -47,45 +98,50 @@ const Navbar = () => {
                 : 'hover:text-ilc-yellow underline-offset-[15px] hover:underline'
             }
           >
-            Tutor
+            Tutors
           </NavLink>
         </li>
 
-        {/* Profile with Dropdown */}
-        <li
-          className="relative"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          <span className="cursor-pointer hover:text-ilc-yellow underline-offset-[15px] hover:underline">
-            Profile
-          </span>
-
-          {isDropdownOpen && (
-            <div className="absolute top-8 right-0 bg-white shadow-md rounded-md border w-40 z-10">
+        {isAuthenticated && user && (
+          <li>
+            {activeRole === 0 && (
               <NavLink
-                to="/profile/student"
-                className="block px-4 py-2 hover:bg-ilc-yellow hover:text-white"
+                to={'/profile/student'}
+                className={({ isActive }) =>
+                  isActive
+                    ? 'text-ilc-yellow underline underline-offset-[15px]'
+                    : 'hover:text-ilc-yellow underline-offset-[15px] hover:underline'
+                }
               >
-                Student
+                Profile
               </NavLink>
+            )}
+            {activeRole === 1 && (
               <NavLink
-                to="/profile/tutor"
-                className="block px-4 py-2 hover:bg-ilc-yellow hover:text-white"
+                to={'/profile/tutor'}
+                className={({ isActive }) =>
+                  isActive
+                    ? 'text-ilc-yellow underline underline-offset-[15px]'
+                    : 'hover:text-ilc-yellow underline-offset-[15px] hover:underline'
+                }
               >
-                Tutor
+                Profile
               </NavLink>
-            </div>
-          )}
-        </li>
+            )}
+          </li>
+        )}
 
         <li className="border-[2px] border-gray-300 border-dashed">
           <Button
             variant={'yellow-button'}
             size={'navbar-size'}
-            onClick={() => navigate('/signin')}
+            onClick={
+              isAuthenticated && user
+                ? handleSignOut
+                : () => navigate('/signin')
+            }
           >
-            LOG OUT
+            {isAuthenticated && user ? 'Sign out' : 'Sign in'}
           </Button>
         </li>
       </ul>
