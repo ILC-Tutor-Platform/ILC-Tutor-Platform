@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from constants.supabase_client import supabase
 from pydantic import BaseModel
+from typing import List
+from fastapi import Header
 from constants.logger import logger
 
 router = APIRouter()
@@ -13,6 +15,8 @@ class LoginResponse(BaseModel):
     access_token: str
     refresh_token: str
     uid: str
+    role: List[str]
+    name: str
 
 class RefreshRequest(BaseModel):
     refresh_token: str

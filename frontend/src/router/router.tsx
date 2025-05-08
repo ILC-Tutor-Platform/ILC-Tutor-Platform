@@ -15,82 +15,145 @@ import TutorProfile from "@/pages/TutorProfile";
 import StudentTracking from "@/pages/StudentTracking";
 import TutorSchedule from "@/pages/TutorSchedule";
 import TutorAnnouncements from "@/pages/TutorAnnouncements";
+import VerifyEmail from "@/pages/VerifyEmail";
+import ProtectedRoute from "@/wrapper/ProtectedRoute";
+import PageNotFound from "@/pages/PageNotFound";
+import ChooseRole from "@/pages/ChooseRole";
+import RedirectIfAuthenticated from "@/wrapper/RedirectIfAuthenticated";
 
+/*
+todo:
+[x] use auth context
+[x] add auth guards
+[x] add protected routes based on roles
+*/
 
 export const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <App />,
-    errorElement: <div>404</div>,
+    errorElement: <PageNotFound />,
     children: [
       {
         index: true,
         element: <Home />,
       },
       {
-        path: "/tutors",
+        path: '/tutors',
         element: <Tutors />,
       },
       {
-        path: "/tutors/:tutorName",
+        path: '/tutors/:tutorName',
         element: <IndividualTutor />,
       },
       {
         path: "/profile/student",
-        element: <StudentDashboardProfile />,
+        element: (
+          <ProtectedRoute allowedRoles={[0]}>
+            <StudentDashboardProfile />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/profile/tutor",
-        element: <TutorProfile />,
+        element: (
+          <ProtectedRoute allowedRoles={[1]}>
+            <TutorProfile />
+          </ProtectedRoute>
+        ),
       },
       {
-        path: "/studentprofile",
-        element: <StudentDashboardProfile />,
+        path: "/profile/student/tutor-tracking",
+        element: (
+          <ProtectedRoute allowedRoles={[0]}>
+            <TutorTracking />
+          </ProtectedRoute>
+        ),
       },
       {
-        path: "/student/tutor-tracking",
-        element: <TutorTracking />,
+        path: "/profile/student/schedule-tracking",
+        element: (
+          <ProtectedRoute allowedRoles={[0]}>
+            <StudentScheduleTracking />
+          </ProtectedRoute>
+        ),
       },
       {
-        path: "/student/schedule-tracking",
-        element: <StudentScheduleTracking />,
+        path: "/profile/student/announcements",
+        element: (
+          <ProtectedRoute allowedRoles={[0]}>
+            <StudentAnnouncements />
+          </ProtectedRoute>
+        ),
       },
       {
-        path: "/student/announcements",
-        element: <StudentAnnouncements />,
+        path: "/profile/tutor/student-tracking",
+        element: (
+          <ProtectedRoute allowedRoles={[1]}>
+            <StudentTracking />
+          </ProtectedRoute>
+        ),
       },
       {
-        path: "/tutorprofile/student-tracking",
-        element: <StudentTracking />,
+        path: "/profile/tutor/schedule",
+        element: (
+          <ProtectedRoute allowedRoles={[1]}>
+            <TutorSchedule />
+          </ProtectedRoute>
+        ),
       },
       {
-        path: "/tutorprofile/schedule",
-        element: <TutorSchedule />,
-      },
-      {
-        path: "/tutorprofile/announcements",
-        element: <TutorAnnouncements />,
-      },
-      {
-        path: "/tutorprofile",
-        element: <TutorProfile />,
+        path: "/profile/tutor/announcements",
+        element: (
+          <ProtectedRoute allowedRoles={[1]}>
+            <TutorAnnouncements />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
   {
     path: "/signin",
-    element: <Signin />,
+    element: (
+      <RedirectIfAuthenticated>
+        <Signin />
+      </RedirectIfAuthenticated>
+    ),
   },
   {
     path: "/signup",
-    element: <SignupAs />,
+    element: (
+      <RedirectIfAuthenticated>
+        <SignupAs />
+      </RedirectIfAuthenticated>
+    ),
   },
   {
     path: "/signup/student",
-    element: <SignUpAsStudent />,
+    element: (
+      <RedirectIfAuthenticated>
+        <SignUpAsStudent />
+      </RedirectIfAuthenticated>
+    ),
   },
   {
     path: "/signup/tutor",
-    element: <SignUpAsTutor />,
+    element: (
+      <RedirectIfAuthenticated>
+        <SignUpAsTutor />
+      </RedirectIfAuthenticated>
+    ),
+  },
+  {
+    path: "/verify-email",
+    element: (
+      <RedirectIfAuthenticated>
+        <VerifyEmail />
+      </RedirectIfAuthenticated>
+    ),
+  },
+  {
+    path: "/choose-role",
+    element: <ChooseRole />,
   },
 ]);

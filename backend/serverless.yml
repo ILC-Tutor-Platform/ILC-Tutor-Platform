@@ -1,6 +1,5 @@
 service: arallink-backend-dev
 frameworkVersion: "4"
-
 custom:
   stage: ${opt:stage, 'development'}
   pythonRequirements:
@@ -21,7 +20,6 @@ custom:
     slimPatterns:
       - "/*.py[c|o]"
       - "/pycache*"
-
 provider:
   name: aws
   runtime: python3.11
@@ -50,16 +48,12 @@ functions:
       - http:
           path: /
           method: get
-          cors: true
-      - http:
-          path: /{proxy+}
-          method: any
           cors:
             origin: '*'
             headers:
               - Content-Type
               - X-Amz-Date
-              - Authorization  # This is where the JWT will be sent
+              - Authorization
               - X-Api-Key
               - X-Amz-Security-Token
               - X-Forwarded-For
@@ -69,7 +63,24 @@ functions:
               - Referer
               - User-Agent
             allowCredentials: true
-
+      - http:
+          path: /{proxy+}
+          method: any
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Forwarded-For
+              - X-Forwarded-Port
+              - Accept
+              - Origin
+              - Referer
+              - User-Agent
+            allowCredentials: true
 package:
   individually: false
   include:
@@ -79,7 +90,6 @@ package:
     - router/**
     - schema/**
     - models/**
-
   exclude:
     - requirements.txt
     - "**/__pycache__/**"
@@ -101,6 +111,5 @@ package:
     - scripts/**
     - resources/**
     - .env.*
-
 plugins:
   - serverless-python-requirements
