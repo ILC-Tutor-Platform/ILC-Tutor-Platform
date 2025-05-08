@@ -21,13 +21,6 @@ import PageNotFound from "@/pages/PageNotFound";
 import ChooseRole from "@/pages/ChooseRole";
 import RedirectIfAuthenticated from "@/wrapper/RedirectIfAuthenticated";
 
-/*
-todo:
-[x] use auth context
-[x] add auth guards
-[x] add protected routes based on roles
-*/
-
 export const router = createBrowserRouter([
   {
     path: '/',

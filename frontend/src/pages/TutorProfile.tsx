@@ -18,6 +18,7 @@ const TutorProfile = () => {
       }
     };
   }, []);
+  }, []);
 
   const handleEditClick = (section: string) => {
     console.log(`Edit ${section} clicked`);

@@ -144,6 +144,7 @@ const SignUpAsStudent = () => {
         onSubmit={(e) => {
           e.preventDefault();
           signUpAsStudentHandler();
+          signUpAsStudentHandler();
         }}
         className="grid w-[90%] xl:w-[30%] mx-auto py-15 px-4 xl:px-10 gap-10 rounded-2xl green-shadow-card"
       >

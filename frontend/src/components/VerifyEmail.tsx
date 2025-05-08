@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 const VerifyEmail = () => {
   const [status, setStatus] = useState("Verifying...");

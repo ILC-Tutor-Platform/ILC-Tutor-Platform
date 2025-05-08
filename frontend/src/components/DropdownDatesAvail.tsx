@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -7,8 +6,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDown, ChevronUp } from "lucide-react";
+} from '@/components/ui/dropdown-menu';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
 
 const availableDates = [
   { day: 'Monday', time: '10:00 AM - 12:00 PM' },
@@ -22,9 +22,7 @@ export const DropdownDatesAvail = () => {
 
   const toggleDate = (index: number) => {
     setSelectedDates((prev) =>
-      prev.includes(index)
-        ? prev.filter((i) => i !== index)
-        : [...prev, index]
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
     );
   };
 

@@ -27,6 +27,7 @@ function App() {
   return (
     <main>
       <ScrollToTop />
+      <ScrollToTop />
       {isMobile ? <NavbarMobile /> : <Navbar />}
       <div className="min-h-screen">
         <Outlet />

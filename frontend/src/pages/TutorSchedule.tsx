@@ -9,6 +9,7 @@ interface Schedule {
 
 const TutorSchedule = () => {
   const [, setSidebarOpen] = useState(true);
+  const [, setSidebarOpen] = useState(true);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
 
   useEffect(() => {
@@ -22,6 +23,7 @@ const TutorSchedule = () => {
         (navbar as HTMLElement).style.marginLeft = '0rem';
       }
     };
+  }, []);
   }, []);
 
   useEffect(() => {

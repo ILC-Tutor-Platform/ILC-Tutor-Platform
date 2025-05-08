@@ -1,5 +1,5 @@
-import { Loader2 } from "lucide-react"
-import Logo from "@/assets/AralLinkLogo.svg"
+import Logo from '@/assets/AralLinkLogo.svg';
+import { Loader2 } from 'lucide-react';
 
 interface SessionLoadingProps {
   msg: string;
@@ -21,5 +21,5 @@ export default function SessionLoading({ msg }: SessionLoadingProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

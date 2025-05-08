@@ -1,6 +1,6 @@
-import ProfilePlaceholder from "../assets/ProfilePlaceholder.svg";
-import BadgeIcon from "../assets/user2.svg";
-import EditIcon from "../assets/edit.svg";
+import EditIcon from '../assets/edit.svg';
+import ProfilePlaceholder from '../assets/ProfilePlaceholder.svg';
+import BadgeIcon from '../assets/user2.svg';
 
 const StudentDashboardProfile = () => {
   const handleEditClick = (section: string) => {
@@ -47,7 +47,7 @@ const StudentDashboardProfile = () => {
               />
               <button
                 className="mt-3 text-center text-base md:text-lg lg:text-xl text-black font-normal underline"
-                onClick={() => console.log("Update Photo clicked")}
+                onClick={() => console.log('Update Photo clicked')}
               >
                 Update Photo
               </button>
@@ -55,7 +55,7 @@ const StudentDashboardProfile = () => {
 
             {/* Profile Sections */}
             <div className="flex flex-col md:flex-row gap-6 md:gap-8 flex-wrap justify-center w-full">
-              {["left section", "right section"].map((section) => (
+              {['left section', 'right section'].map((section) => (
                 <div
                   key={section}
                   className="flex-1 min-w-[17rem] max-w-[30rem] h-[15rem] md:min-w-[20rem] md:max-w-[32rem] md:h-[16rem] bg-white shadow-lg rounded-lg border border-opacity-10 relative"

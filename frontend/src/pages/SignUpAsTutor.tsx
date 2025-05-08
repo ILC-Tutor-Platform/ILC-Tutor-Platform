@@ -1,13 +1,13 @@
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import Logo from "@/assets/AralLinkLogo.svg";
-import { Link, useNavigate } from "react-router-dom";
-import { isValidUpEmail } from "@/utils/errorValidations.ts";
-import { Label } from "@/components/ui/label";
-import { Plus, X, Calendar, Briefcase, BookOpen, Share2 } from "lucide-react";
-import { api } from "@/utils/axios";
-import { toast } from "sonner";
+import Logo from '@/assets/AralLinkLogo.svg';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { api } from '@/utils/axios';
+import { isValidUpEmail } from '@/utils/errorValidations.ts';
+import { BookOpen, Briefcase, Calendar, Plus, Share2, X } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const SignUpAsTutor = () => {
   const navigate = useNavigate();
@@ -15,44 +15,44 @@ const SignUpAsTutor = () => {
   const [loading, setLoading] = useState(false);
 
   // Basic info state
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [middleInitial, setMiddleInitial] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [description, setDescription] = useState("");
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [middleInitial, setMiddleInitial] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [description, setDescription] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   // Dynamic fields states
   const [availability, setAvailability] = useState([
-    { date: "", timeFrom: "", timeTo: "" },
+    { date: '', timeFrom: '', timeTo: '' },
   ]);
-  const [affiliations, setAffiliations] = useState([""]);
-  const [expertise, setExpertise] = useState([""]);
-  const [socials, setSocials] = useState([""]);
-  const [subject, setSubject] = useState([""]);
+  const [affiliations, setAffiliations] = useState(['']);
+  const [expertise, setExpertise] = useState(['']);
+  const [socials, setSocials] = useState(['']);
+  const [subject, setSubject] = useState(['']);
 
   // Form errors
   const [errors, setErrors] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    subject: "",
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    subject: '',
   });
   // Handle adding new entries for dynamic fields
   const addFieldItem = (
     setter: React.Dispatch<React.SetStateAction<string[]>>,
-    currentItems: string[]
+    currentItems: string[],
   ): void => {
-    setter([...currentItems, ""]);
+    setter([...currentItems, '']);
   };
 
   // Handle removing entries for dynamic fields
   const removeFieldItem = (
     setter: React.Dispatch<React.SetStateAction<string[]>>,
     currentItems: string[],
-    index: number
+    index: number,
   ): void => {
     if (currentItems.length > 1) {
       setter(currentItems.filter((_, i) => i !== index));
@@ -63,7 +63,7 @@ const SignUpAsTutor = () => {
   const addAvailability = (): void => {
     setAvailability((prev) => [
       ...prev,
-      { date: "", timeFrom: "", timeTo: "" },
+      { date: '', timeFrom: '', timeTo: '' },
     ]);
   };
 
@@ -80,8 +80,8 @@ const SignUpAsTutor = () => {
   // Update availability fields
   const updateAvailability = (
     index: number,
-    field: "date" | "timeFrom" | "timeTo",
-    value: string
+    field: 'date' | 'timeFrom' | 'timeTo',
+    value: string,
   ): void => {
     setAvailability((prev) => {
       const updated = [...prev];
@@ -95,7 +95,7 @@ const SignUpAsTutor = () => {
     setter: React.Dispatch<React.SetStateAction<string[]>>,
     currentItems: string[],
     index: number,
-    value: string
+    value: string,
   ): void => {
     const newItems = [...currentItems];
     newItems[index] = value;
@@ -111,47 +111,46 @@ const SignUpAsTutor = () => {
     setLoading(true);
     let valid = true;
     const newErrors = {
-      firstName: "",
-      lastName: "",
-      email: "",
-      password: "",
-      subject: "",
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      subject: '',
     };
 
     // Validate first name
     if (!firstName.trim()) {
-      newErrors.firstName = "First name is required";
+      newErrors.firstName = 'First name is required';
       valid = false;
     }
 
     // Validate last name
     if (!lastName.trim()) {
-      newErrors.lastName = "Last name is required";
+      newErrors.lastName = 'Last name is required';
       valid = false;
     }
 
     // Validate email
     if (!email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email = 'Email is required';
       valid = false;
     } else if (!isValidUpEmail(email)) {
-      newErrors.email = "Please enter a valid UP email address";
+      newErrors.email = 'Please enter a valid UP email address';
       valid = false;
     }
 
     // Validate password
     if (!password) {
-      newErrors.password = "Password is required";
+      newErrors.password = 'Password is required';
       valid = false;
     } else if (password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters long";
+      newErrors.password = 'Password must be at least 8 characters long';
       valid = false;
     }
 
-
     // Validate confirm password
     if (subject !== subject) {
-      newErrors.subject = "Subject is required.";
+      newErrors.subject = 'Subject is required.';
       valid = false;
     }
 
@@ -173,7 +172,7 @@ const SignUpAsTutor = () => {
       },
       tutor: {
         description: description,
-        status: "pending", // Always set to pending for new tutors
+        status: 'pending', // Always set to pending for new tutors
       },
       availability: {
         availability: availability.map((item) => item.date),
@@ -181,13 +180,13 @@ const SignUpAsTutor = () => {
         available_time_to: availability.map((item) => item.timeTo),
       },
       affiliation: {
-        affiliation: affiliations.filter((aff) => aff.trim() !== ""),
+        affiliation: affiliations.filter((aff) => aff.trim() !== ''),
       },
       expertise: {
-        expertise: expertise.filter((exp) => exp.trim() !== ""),
+        expertise: expertise.filter((exp) => exp.trim() !== ''),
       },
       socials: {
-        socials: socials.filter((social) => social.trim() !== ""),
+        socials: socials.filter((social) => social.trim() !== ''),
       },
       subject: {
         subject_name: subject.map((sub) => sub.trim().toUpperCase()),
@@ -202,40 +201,40 @@ const SignUpAsTutor = () => {
       setLoading(true);
       const formData = prepareFormData();
       try {
-        await api.post("auth/signup/tutor", formData);
+        await api.post('auth/signup/tutor', formData);
         toast.success(
-          "Please check your email. We sent you a confirmation. Thank you.",
+          'Please check your email. We sent you a confirmation. Thank you.',
           {
-            className: "green-shadow-card text-black",
+            className: 'green-shadow-card text-black',
             duration: 3000,
             style: {
-              background: "#ffffff",
-              color: "#307B74",
-              fontSize: "16px",
-              border: "0px",
-              padding: "1.5rem",
-              boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
+              background: '#ffffff',
+              color: '#307B74',
+              fontSize: '16px',
+              border: '0px',
+              padding: '1.5rem',
+              boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
             },
-          }
+          },
         );
         setLoading(false);
       } catch (error) {
-        console.log("Error signing up: ", error);
-        toast.error("Error signing up.", {
-          className: "green-shadow-card text-black",
+        console.log('Error signing up: ', error);
+        toast.error('Error signing up.', {
+          className: 'green-shadow-card text-black',
           duration: 3000,
           style: {
-            background: "#ffffff",
-            color: "#8A1538",
-            fontSize: "16px",
-            border: "0px",
-            padding: "1.5rem",
-            boxShadow: "0px 4px 4px 3px rgba(48, 123, 116, 0.40)",
+            background: '#ffffff',
+            color: '#8A1538',
+            fontSize: '16px',
+            border: '0px',
+            padding: '1.5rem',
+            boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
           },
         });
         setLoading(false);
       }
-      setTimeout(() => navigate("/verify-email"), 3000);
+      setTimeout(() => navigate('/verify-email'), 3000);
     }
   };
 
@@ -266,7 +265,7 @@ const SignUpAsTutor = () => {
                 id="firstName"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className={errors.firstName ? "border-red-500" : ""}
+                className={errors.firstName ? 'border-red-500' : ''}
               />
               {errors.firstName && (
                 <p className="text-red-500 text-sm">{errors.firstName}</p>
@@ -279,7 +278,7 @@ const SignUpAsTutor = () => {
                 id="lastName"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className={errors.lastName ? "border-red-500" : ""}
+                className={errors.lastName ? 'border-red-500' : ''}
               />
               {errors.lastName && (
                 <p className="text-red-500 text-sm">{errors.lastName}</p>
@@ -304,7 +303,7 @@ const SignUpAsTutor = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={errors.email ? "border-red-500" : ""}
+              className={errors.email ? 'border-red-500' : ''}
               placeholder="example@up.edu.ph"
             />
             {errors.email && (
@@ -317,10 +316,10 @@ const SignUpAsTutor = () => {
               <Label htmlFor="password">Password *</Label>
               <Input
                 id="password"
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={errors.password ? "border-red-500" : ""}
+                className={errors.password ? 'border-red-500' : ''}
               />
               {errors.password && (
                 <p className="text-red-500 text-sm">{errors.password}</p>
@@ -328,20 +327,17 @@ const SignUpAsTutor = () => {
             </div>
 
             <div className="flex items-center mt-2">
-                    <input
-                      type="checkbox"
-                      id="showPassword"
-                      checked={showPassword}
-                      onChange={handleShowPassword}
-                      className="mr-2"
-                    />
-                    <label
-                      htmlFor="showPassword"
-                      className="text-sm text-ilc-grey"
-                    >
-                      Show Password
-                    </label>
-                  </div>
+              <input
+                type="checkbox"
+                id="showPassword"
+                checked={showPassword}
+                onChange={handleShowPassword}
+                className="mr-2"
+              />
+              <label htmlFor="showPassword" className="text-sm text-ilc-grey">
+                Show Password
+              </label>
+            </div>
           </div>
         </div>
 
@@ -391,7 +387,7 @@ const SignUpAsTutor = () => {
                   type="date"
                   value={slot.date}
                   onChange={(e) =>
-                    updateAvailability(index, "date", e.target.value)
+                    updateAvailability(index, 'date', e.target.value)
                   }
                 />
               </div>
@@ -403,7 +399,7 @@ const SignUpAsTutor = () => {
                   type="time"
                   value={slot.timeFrom}
                   onChange={(e) =>
-                    updateAvailability(index, "timeFrom", e.target.value)
+                    updateAvailability(index, 'timeFrom', e.target.value)
                   }
                 />
               </div>
@@ -415,7 +411,7 @@ const SignUpAsTutor = () => {
                   type="time"
                   value={slot.timeTo}
                   onChange={(e) =>
-                    updateAvailability(index, "timeTo", e.target.value)
+                    updateAvailability(index, 'timeTo', e.target.value)
                   }
                 />
               </div>
@@ -461,7 +457,7 @@ const SignUpAsTutor = () => {
                     setAffiliations,
                     affiliations,
                     index,
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 placeholder="e.g., STEM Scholars Program"
@@ -508,7 +504,7 @@ const SignUpAsTutor = () => {
                     setExpertise,
                     expertise,
                     index,
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 placeholder="e.g., Calculus, Physics"
@@ -538,7 +534,7 @@ const SignUpAsTutor = () => {
               variant="outline"
               size="sm"
               onClick={() => addFieldItem(setSubject, subject)}
-              className={`${errors.subject ? "border-red-500" : ""}`}
+              className={`${errors.subject ? 'border-red-500' : ''}`}
             >
               <Plus className="w-4 h-4" /> Add
             </Button>
@@ -613,12 +609,12 @@ const SignUpAsTutor = () => {
         {/* Submit Button */}
         <div className="flex items-center w-full sm:w-[60%] md:w-[50%] lg:w-[40%] mx-auto mt-4">
           <Button
-            variant={"yellow-button"}
+            variant={'yellow-button'}
             type="submit"
             className="w-full py-6 text-lg"
             disabled={loading}
           >
-            {loading ? "Checking information..." : "Sign up as a Tutor"}
+            {loading ? 'Checking information...' : 'Sign up as a Tutor'}
           </Button>
         </div>
 

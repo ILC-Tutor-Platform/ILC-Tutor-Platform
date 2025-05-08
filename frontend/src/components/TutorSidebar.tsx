@@ -36,21 +36,21 @@ const TutorSidebar = () => {
           />
           <div className="flex flex-col justify-center items-center flex-1 gap-8">
             {[
-              { label: "Profile", icon: Profile, route: "/profile/tutor" },
+              { label: 'Profile', icon: Profile, route: '/profile/tutor' },
               {
-                label: "Students",
+                label: 'Students',
                 icon: Tutor,
-                route: "/profile/tutor/student-tracking",
+                route: '/profile/tutor/student-tracking',
               },
               {
-                label: "Schedule",
+                label: 'Schedule',
                 icon: Schedule,
-                route: "/profile/tutor/schedule",
+                route: '/profile/tutor/schedule',
               },
               {
-                label: "Announcements",
+                label: 'Announcements',
                 icon: Announcements,
-                route: "/profile/tutor/announcements",
+                route: '/profile/tutor/announcements',
                 large: true,
               },
             ].map((item) => (
@@ -64,11 +64,11 @@ const TutorSidebar = () => {
                   <img
                     src={item.icon}
                     alt={item.label}
-                    className={item.large ? "w-6 h-6" : "w-5 h-5"}
+                    className={item.large ? 'w-6 h-6' : 'w-5 h-5'}
                   />
                   <span
                     className={`${
-                      item.large ? "text-xs" : "text-sm"
+                      item.large ? 'text-xs' : 'text-sm'
                     } font-medium text-center`}
                   >
                     {item.label}

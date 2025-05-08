@@ -1,17 +1,15 @@
+import SessionLoading from '@/components/Loading';
+import { useAuthStore, useTokenStore } from '@/stores/authStore';
+import { useRoleStore } from '@/stores/roleStore';
+import type { StudentSignUp, TutorSignUp, UserPayload } from '@/types';
+import { api } from '@/utils/axios';
 import {
   createContext,
   useContext,
   useState,
   useEffect,
   ReactNode,
-} from "react";
-import { useRoleStore } from "@/stores/roleStore";
-import SessionLoading from "@/components/Loading";
-import type { StudentSignUp, TutorSignUp } from "@/types";
-import { useAuthStore } from "@/stores/authStore";
-import { useTokenStore } from "@/stores/authStore";
-import type { UserPayload } from "@/types";
-import { api } from "@/utils/axios";
+} from 'react';
 
 interface AuthContextType {
   user: UserPayload | null;
@@ -21,12 +19,12 @@ interface AuthContextType {
   ) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   signUpStudent: (
-    user: StudentSignUp
+    user: StudentSignUp,
   ) => Promise<{ success: boolean; error?: string }>;
   refreshSession: () => Promise<boolean>;
   isAuthenticated: boolean;
   signUpTutor: (
-    user: TutorSignUp
+    user: TutorSignUp,
   ) => Promise<{ success: boolean; error?: string }>;
 }
 
@@ -59,7 +57,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       return {
         success: false,
-        error: error.response?.data?.detail || "Login failed.",
+        error: error.response?.data?.detail || 'Login failed.',
       };
     }
   };
@@ -84,7 +82,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       clearAuth();
       setAccessToken(null);
       clearRoles();
-      console.error("Error refreshing session:", error);
+      console.error('Error refreshing session:', error);
       return false;
     }
   };
@@ -110,10 +108,10 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         },
       });
 
-      console.log("User signed up successfully:", user.user.name);
-      console.log("User signed up successfully:", user.student.student_number);
-      console.log("User signed up successfully:", user.student.degree_program);
-      console.log("User signed up successfully:", user.user.datejoined);
+      console.log('User signed up successfully:', user.user.name);
+      console.log('User signed up successfully:', user.student.student_number);
+      console.log('User signed up successfully:', user.student.degree_program);
+      console.log('User signed up successfully:', user.user.datejoined);
 
       useAuthStore.getState().setUser({
         email: user.user.email,
@@ -124,7 +122,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       return {
         success: false,
-        error: error.response?.data?.detail || "Sign up failed.",
+        error: error.response?.data?.detail || 'Sign up failed.',
       };
     }
   };
@@ -140,7 +138,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         },
         tutor: {
           description: user.tutor.description,
-          status: "pending",
+          status: 'pending',
         },
         availability: {
           availability: user.availability.availability,
@@ -162,12 +160,11 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       });
 
       return { success: true };
-
     } catch (error: any) {
-      console.error("Error signing up as tutor: ", error);
+      console.error('Error signing up as tutor: ', error);
       return {
         success: false,
-        error: error.response?.data?.detail || "Sign up failed.",
+        error: error.response?.data?.detail || 'Sign up failed.',
       };
     }
   };
@@ -193,7 +190,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
           clearRoles();
         }
       } catch (error) {
-        console.error("Auth check error:", error);
+        console.error('Auth check error:', error);
         clearAuth();
         setAccessToken(null);
         clearRoles();
