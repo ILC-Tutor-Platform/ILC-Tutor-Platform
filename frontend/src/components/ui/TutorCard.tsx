@@ -21,8 +21,9 @@ const TutorCard = ({
 }: TutorCardProps) => {
   return (
     <div
-      className={`bg-ilc-tutor-card mx-auto w-full md:w-[90%] lg:w-full rounded-[15px] p-5 shadow-md flex flex-col gap-3 transform transition-transform duration-300 hover:scale-105 cursor-pointer ${className || ''
-        }`}
+      className={`bg-ilc-tutor-card mx-auto w-full md:w-[90%] lg:w-full rounded-[15px] p-5 shadow-md flex flex-col gap-3 transform transition-transform duration-300 hover:scale-105 cursor-pointer ${
+        className || ''
+      }`}
       style={{ boxShadow: '0px 4px 4px rgba(48, 123, 116, 0.3)' }}
       onClick={onClick}
     >
