@@ -47,3 +47,25 @@ export interface TutorSignUp {
     subject_name: string[];
   };
 }
+
+export interface TutorDetail {
+  userid: string;
+  name: string;
+  email: string;
+  datejoined: string;
+  description: string;
+  status: string;
+  affiliations: string[];
+  availability: string[];
+  available_time_from: string[];
+  available_time_to: string[];
+  expertise: string[];
+  socials: string[];
+}
+
+export interface TutorResponse {
+  tutors: TutorDetail[];
+  total: number;
+  page: number;
+  limit: number;
+}
