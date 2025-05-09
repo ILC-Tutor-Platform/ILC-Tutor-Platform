@@ -16,7 +16,6 @@ const IndividualTutor = () => {
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
 
   useEffect(() => {
-    console.log(tutor_id);
     const fetchTutor = async () => {
       if (!tutor_id) return;
 
@@ -25,7 +24,6 @@ const IndividualTutor = () => {
 
       try {
         const response = await api.get(`/tutors/${tutor_id}`);
-
         const tutorData = response.data;
 
         if (!tutorData) {
@@ -42,7 +40,7 @@ const IndividualTutor = () => {
         );
         setTutor(null);
       } finally {
-        setLoading(false);
+        setTimeout(() => setLoading(false), 1000);
       }
     };
 

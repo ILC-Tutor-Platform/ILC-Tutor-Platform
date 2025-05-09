@@ -1,3 +1,4 @@
+import { TutorCardLoadingSkeleton } from '@/components/TutorLoadingSkeleton';
 import { Button } from '@/components/ui/button';
 import TutorCard from '@/components/ui/TutorCard';
 import type { TutorDetail, TutorResponse } from '@/types';
@@ -28,7 +29,7 @@ const Tutors = () => {
     } catch (error) {
       console.error('Error fetching tutors:', error);
     } finally {
-      setLoading(false);
+      setTimeout(() => setLoading(false), 1000);
     }
   };
 
@@ -61,13 +62,19 @@ const Tutors = () => {
   };
 
   return (
-    <section className="flex flex-col gap-10 px-5 xl:px-40 relative top-[2vh]">
-      <h2 className="text-6xl md:text-[64px] text-ilc-red font-bold">
+    <section className="flex flex-col gap-10 px-5 xl:px-40 relative top-[2vh] min-h-screen">
+      <h2 className="text-6xl md:text-[64px] text-ilc-red font-bold text-center md:text-left">
         Tutor List
       </h2>
 
       {loading ? (
-        <div className="text-center py-8">Loading tutors...</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-10">
+          {Array(6)
+            .fill(0)
+            .map((_, i) => (
+              <TutorCardLoadingSkeleton key={i} />
+            ))}
+        </div>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-10">
