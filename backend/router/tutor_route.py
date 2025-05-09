@@ -6,7 +6,7 @@ from database.config import get_db
 from constants.logger import logger
 from pydantic import BaseModel, Field
 from constants.supabase_client import supabase
-from models import UserDetail, TutorAffiliation, TutorDetail, TutorAvailability, TutorExpertise, TutorSocials
+from models import UserDetail, TutorAffiliation, TutorDetail, TutorAvailability, TutorExpertise, TutorSocials, SubjectDetail
 from uuid import UUID
 from datetime import date, time
 
@@ -17,6 +17,7 @@ class TutorResponse(BaseModel):
     name: Optional[str] = None
     email: str
     datejoined: date
+    subject: Optional[str] = None
     description: Optional[str] = None
     status: Optional[str] = None
     affiliations: Optional[List[str]] = None
@@ -52,12 +53,14 @@ async def get_tutors(
             .outerjoin(TutorAvailability, UserDetail.userid == TutorAvailability.tutor_id)\
             .outerjoin(TutorExpertise, UserDetail.userid == TutorExpertise.tutor_id)\
             .outerjoin(TutorSocials, UserDetail.userid == TutorSocials.tutor_id)\
+            .outerjoin(SubjectDetail, UserDetail.userid == SubjectDetail.tutor_id)\
             .options(
                 joinedload(UserDetail.tutor_detail),
                 joinedload(UserDetail.tutor_affiliation),
                 joinedload(UserDetail.tutor_availability),
                 joinedload(UserDetail.tutor_expertise),
-                joinedload(UserDetail.tutor_socials)
+                joinedload(UserDetail.tutor_socials),
+                joinedload(UserDetail.subject_detail)
             )
         
         # filters when searching for tutors pero optional pa muna 
@@ -85,6 +88,7 @@ async def get_tutors(
                 "name": user.name,
                 "email": user.email,
                 "datejoined": user.datejoined,
+                "subject": user.subject_detail.subject_name if hasattr(user, 'subject_detail') and user.subject_detail else None,
                 "description": user.tutor_detail.description if hasattr(user, 'tutor_detail') and user.tutor_detail else None,
                 "status": str(user.tutor_detail.status) if hasattr(user, 'tutor_detail') and user.tutor_detail else None,
                 "affiliations": [user.tutor_affiliation.affiliations] if hasattr(user, 'tutor_affiliation') and user.tutor_affiliation else None,

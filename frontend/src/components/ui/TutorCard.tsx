@@ -37,16 +37,16 @@ const TutorCard = ({
       </div>
 
       {/* Subject Button */}
-      <Button variant="yellow-button">{subject}</Button>
+      <Button variant="yellow-button">Subject: {subject}</Button>
 
       {/* Icons and Info */}
       <div className="flex items-center gap-2 text-gray-500">
         <FaCalendarAlt />
-        <p className="text-xs">{available}</p>
+        <p className="text-xs">Available: {available}</p>
       </div>
       <div className="flex items-center gap-2 text-gray-500">
         <FaBriefcase />
-        <p className="text-xs">{expertise}</p>
+        <p className="text-xs">Expertise: {expertise}</p>
       </div>
     </div>
   );

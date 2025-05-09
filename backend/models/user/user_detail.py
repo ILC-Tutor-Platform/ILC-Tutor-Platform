@@ -20,3 +20,4 @@ class UserDetail(Base):
     tutor_availability = relationship("TutorAvailability", back_populates="user", uselist=False)
     tutor_expertise = relationship("TutorExpertise", back_populates="user", uselist=False)
     tutor_socials = relationship("TutorSocials", back_populates="user", uselist=False)
+    subject_detail = relationship("SubjectDetail", back_populates="user", uselist=False)
