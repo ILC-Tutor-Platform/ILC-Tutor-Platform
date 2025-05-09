@@ -7,34 +7,31 @@ import { useNavigate } from 'react-router-dom';
 
 const Tutors = () => {
   const [tutors, setTutors] = useState<TutorDetail[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   const navigate = useNavigate();
 
   const fetchTutors = async (pageNum = 1) => {
-    setIsLoading(true);
+    setLoading(true);
     try {
       const response = await api.get<TutorResponse>(
         `/tutors?page=${pageNum}&limit=10`,
       );
       console.log(response.data);
 
-      // Extract the tutors array from the response data
       setTutors(response.data.tutors);
 
-      // Calculate total pages
       setTotalPages(Math.ceil(response.data.total / response.data.limit));
       setPage(response.data.page);
     } catch (error) {
       console.error('Error fetching tutors:', error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  // Load tutors on component mount
   useEffect(() => {
     fetchTutors();
   }, []);
@@ -69,7 +66,7 @@ const Tutors = () => {
         Tutor List
       </h2>
 
-      {isLoading ? (
+      {loading ? (
         <div className="text-center py-8">Loading tutors...</div>
       ) : (
         <>

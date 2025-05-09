@@ -8,30 +8,35 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 
-const availableDates = [
-  { day: 'Monday', time: '10:00 AM - 12:00 PM' },
-  { day: 'Wednesday', time: '2:00 PM - 4:00 PM' },
-  { day: 'Friday', time: '1:00 PM - 3:00 PM' },
-];
+interface DropdownDatesAvailProps {
+  dates: [string, string, string][];
+  selectedDates: string[];
+  setSelectedDates: Dispatch<SetStateAction<string[]>>;
+  className?: string;
+}
 
-export const DropdownDatesAvail = () => {
-  const [isDropped, setIsDropped] = useState(false);
-  const [selectedDates, setSelectedDates] = useState<number[]>([]); // holds indices of selected items
+export const DropdownDatesAvail = ({
+  dates = [],
+  selectedDates = [],
+  setSelectedDates,
+  className,
+}: DropdownDatesAvailProps) => {
+  const [isOpen, setIsOpen] = useState(false);
 
-  const toggleDate = (index: number) => {
+  const toggleDate = (date: string) => {
     setSelectedDates((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
+      prev.includes(date) ? prev.filter((d) => d !== date) : [...prev, date],
     );
   };
 
   return (
-    <DropdownMenu open={isDropped} onOpenChange={setIsDropped}>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" onClick={() => setIsDropped(!isDropped)}>
+        <Button variant="outline" className={className}>
           <div className="mr-2">
-            {isDropped ? (
+            {isOpen ? (
               <ChevronUp className="text-ilc-yellow" />
             ) : (
               <ChevronDown className="text-ilc-yellow" />
@@ -40,20 +45,28 @@ export const DropdownDatesAvail = () => {
           DATES AVAILABLE
         </Button>
       </DropdownMenuTrigger>
-
       <DropdownMenuContent className="w-56">
         <DropdownMenuLabel>DATES AVAILABLE</DropdownMenuLabel>
         <DropdownMenuSeparator />
-
-        {availableDates.map((date, index) => (
-          <DropdownMenuCheckboxItem
-            key={index}
-            checked={selectedDates.includes(index)}
-            onCheckedChange={() => toggleDate(index)}
-          >
-            {date.day}: {date.time}
-          </DropdownMenuCheckboxItem>
-        ))}
+        {dates.length > 0 ? (
+          dates.map(([availability, time_from, time_to], index) => {
+            const dateKey = `${availability}-${time_from}-${time_to}`;
+            return (
+              <DropdownMenuCheckboxItem
+                key={index}
+                checked={selectedDates.includes(dateKey)}
+                onCheckedChange={() => toggleDate(dateKey)}
+              >
+                {availability}
+                <span className="text-xs text-gray-500">
+                  {time_from} - {time_to}
+                </span>
+              </DropdownMenuCheckboxItem>
+            );
+          })
+        ) : (
+          <div className="px-2 py-1 text-sm">No dates available</div>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

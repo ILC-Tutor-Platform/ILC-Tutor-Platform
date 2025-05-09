@@ -158,9 +158,8 @@ const SignUpAsStudent = () => {
                 <Label>First Name*</Label>
                 <Input
                   onChange={(e) => setFirstName(e.target.value)}
-                  className={`p-3 mt-2 ${
-                    errors.firstName ? 'border-red-500' : ''
-                  }`}
+                  className={`p-3 mt-2 ${errors.firstName ? 'border-red-500' : ''
+                    }`}
                   type="text"
                   name="setFirstName"
                   id="setFirstName"
@@ -174,9 +173,8 @@ const SignUpAsStudent = () => {
                 <Label>Last Name*</Label>
                 <Input
                   onChange={(e) => setLastName(e.target.value)}
-                  className={`p-3 mt-2 ${
-                    errors.lastName ? 'border-red-500' : ''
-                  }`}
+                  className={`p-3 mt-2 ${errors.lastName ? 'border-red-500' : ''
+                    }`}
                   type="text"
                   name="lastName"
                   id="lastName"
@@ -207,9 +205,8 @@ const SignUpAsStudent = () => {
             <Label>Student Number*</Label>
             <Input
               onChange={(e) => setStudentNumber(e.target.value)}
-              className={`p-3 mt-2 ${
-                errors.studentNumber ? 'border-red-500' : ''
-              }`}
+              className={`p-3 mt-2 ${errors.studentNumber ? 'border-red-500' : ''
+                }`}
               type="text"
               name="studentNumber"
               id="studentNumber"
@@ -226,11 +223,11 @@ const SignUpAsStudent = () => {
             <DropdownDegreeProgram
               selectedProgram={selectedProgram}
               onSelectProgram={setSelectedProgram}
-              className={`p-3 mt-2 ${errors.password ? 'border-red-500' : ''}`}
+              className={`p-3 mt-2 ${errors.degreeProgram ? 'border-red-500' : ''}`}
             />
-            {errors.studentNumber && (
+            {errors.degreeProgram && (
               <Label className="text-[0.8rem] font-thin text-red-500">
-                {errors.studentNumber}
+                {errors.degreeProgram}
               </Label>
             )}
           </div>
