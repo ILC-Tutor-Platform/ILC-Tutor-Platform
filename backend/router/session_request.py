@@ -91,4 +91,42 @@ def get_sessions_by_user(user= Depends(verify_token), db: Session = Depends(get_
         ]}
     except Exception as e:
         logger.error(f"Error retrieving sessions: {e}")
+<<<<<<< HEAD
         raise HTTPException(status_code=500, detail="Internal server error during authentication")
+=======
+        raise HTTPException(status_code=500, detail="Internal server error during authentication")
+
+# Get specific details to session
+@router.get("sessions/{session_id}")
+def get_session(session_id: str , db: Session = Depends(get_db), user=Depends(require_role([1]))):
+    if user:
+        try:
+            sessions = db.query(Session).filter(Session.session_id == session_id).first()
+            if not sessions:
+                raise HTTPException(status_code=404, detail="Session not found")
+            
+            logger.info("Fetching sessions from Supabase")
+            return {"session": [ 
+                {
+                    "session_id": session.session_id,
+                    "date": session.date.isoformat(),
+                    "time": session.time.strftime("%H:%M:%S"),
+                    "tutor_id": session.tutor_id,
+                    "student_id": session.student_id,
+                    "topic_id": session.topic_id,
+                    "status": session.status,
+                    "time_started": session.time_started.strftime("%H:%M:%S"),
+                    "time_ended": session.time_ended.strftime("%H:%M:%S"),
+                    "duration": session.duration,
+                    "room": session.room,
+                    "modality": session.modality
+                } 
+                for session in sessions
+            ]}
+        except Exception as e:
+            logger.error(f"Error retrieving sessions: {e}")
+            raise HTTPException(status_code=500, detail="Internal server error during authentication")
+    else:
+        logger.error("User is not allowed to view this endpoint.")
+        raise HTTPException(status_code=500, detail="Permission denied.")
+>>>>>>> 0b96c5db4deb5366bc8b9e504b48245ede5f231f
