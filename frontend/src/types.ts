@@ -61,6 +61,7 @@ export interface TutorDetail {
   available_time_to: string[];
   expertise: string[];
   socials: string[];
+  subject: string;
 }
 
 export interface TutorResponse {

@@ -63,7 +63,7 @@ const IndividualTutor = () => {
       >
         <TutorCard
           name={tutor.name || 'Guest'}
-          subject={tutor.expertise?.join(', ') || 'Not specified'}
+          subject={tutor.subject?.join(', ') || 'Not specified'}
           available={tutor.availability?.join(', ') || 'Not specified'}
           expertise={tutor.expertise?.join(', ') || 'Not specified'}
           className="bg-white"
