@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
+import type { StudentResponse, StudentDetail } from '@/types';
+import { api } from '@/utils/axios';
 
 const StudentTracking = () => {
+  const [students, setStudents] = useState<StudentDetail[]>([]);
   const [, setSidebarOpen] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -9,12 +13,28 @@ const StudentTracking = () => {
     if (navbar) {
       (navbar as HTMLElement).style.marginLeft = '0rem';
     }
+
+    fetchStudents(); // 🔹 Fetch students on mount
+
     return () => {
       if (navbar) {
         (navbar as HTMLElement).style.marginLeft = '0rem';
       }
     };
   }, []);
+
+  const fetchStudents = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get<StudentDetail[]>('/students'); // 🔹 use the correct endpoint
+      console.log(response.data);
+      setStudents(response.data);
+    } catch (error) {
+      console.error('Error fetching students:', error);
+    } finally {
+      setTimeout(() => setLoading(false), 1000);
+    }
+  };
 
   return (
     <div className="min-h-screen font-manrope relative flex">

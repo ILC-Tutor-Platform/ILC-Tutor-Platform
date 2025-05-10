@@ -63,9 +63,20 @@ export interface TutorDetail {
   socials: string[];
 }
 
+export interface StudentDetail {
+  userid: string;
+  name: string;
+  email: string;
+  password: string;
+  datejoined: string;
+  student_number: string;
+  degree_program: string;
+}
+
 export interface TutorResponse {
   tutors: TutorDetail[];
   total: number;
   page: number;
   limit: number;
 }
+
