@@ -92,3 +92,14 @@ def get_sessions_by_user(user= Depends(verify_token), db: Session = Depends(get_
     except Exception as e:
         logger.error(f"Error retrieving sessions: {e}")
         raise HTTPException(status_code=500, detail="Internal server error during authentication")
+
+
+# Student API to request sessions from tutor
+@router.post("/student/request/session")
+def request_session(user=Depends(require_role([0])), db: Session = Depends(get_db)):
+    try:
+        pass
+    except Exception as e:
+        raise e
+    finally:
+        pass
