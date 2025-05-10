@@ -12,4 +12,3 @@ class TutorAffiliation(Base):
     affiliations = Column(String, nullable=True)
 
     user = relationship("UserDetail", back_populates="tutor_affiliation")
-

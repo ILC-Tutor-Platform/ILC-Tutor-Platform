@@ -12,4 +12,3 @@ class TutorExpertise(Base):
     expertise = Column(String, nullable=False)
 
     user = relationship("UserDetail", back_populates="tutor_expertise")
-

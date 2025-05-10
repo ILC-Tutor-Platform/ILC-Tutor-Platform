@@ -10,4 +10,4 @@ class SubjectDetail(Base):
     subject_name = Column(String, nullable=False)
     tutor_id = Column(UUID(as_uuid=True), ForeignKey("user_detail.userid"), nullable=False)
 
-    user = relationship("UserDetail", back_populates="subject_detail") 
+    user = relationship("UserDetail", back_populates="subject_detail")

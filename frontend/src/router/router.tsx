@@ -1,4 +1,6 @@
 import App from '@/App';
+import AdminSessionTracking from '@/pages/AdminSessionTracking';
+import AdminTutorTracking from '@/pages/AdminTutorTracking';
 import ChooseRole from '@/pages/ChooseRole';
 import Home from '@/pages/Home';
 import IndividualTutor from '@/pages/IndividualTutor';
@@ -36,7 +38,7 @@ export const router = createBrowserRouter([
         element: <Tutors />,
       },
       {
-        path: '/tutors/:tutor_id',
+        path: '/tutors/:tutorName',
         element: <IndividualTutor />,
       },
       {
@@ -100,6 +102,22 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={[1]}>
             <TutorAnnouncements />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/tutor-tracking',
+        element: (
+          <ProtectedRoute allowedRoles={[2]}>
+            <AdminTutorTracking />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/session-tracking',
+        element: (
+          <ProtectedRoute allowedRoles={[2]}>
+            <AdminSessionTracking />
           </ProtectedRoute>
         ),
       },
