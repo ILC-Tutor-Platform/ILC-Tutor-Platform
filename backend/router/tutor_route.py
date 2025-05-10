@@ -1,14 +1,15 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import Session as DBSession
 from sqlalchemy import or_
 from database.config import get_db
 from constants.logger import logger
-from pydantic import BaseModel, Field
-from constants.supabase_client import supabase
-from models import UserDetail, TutorAffiliation, TutorDetail, TutorAvailability, TutorExpertise, TutorSocials, SubjectDetail
+from pydantic import BaseModel
+from models import UserDetail, TutorAffiliation, TutorDetail, TutorAvailability, TutorExpertise, TutorSocials, SubjectDetail, StudentDetail, Session, TopicDetail
 from uuid import UUID
 from datetime import date, time
+from .user_route import require_role
 
 router = APIRouter()
 
@@ -43,7 +44,7 @@ async def get_tutors(
     status: Optional[str] = None, # search by status
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(10, ge=1, le=100, description="Items per page"),
-    db: Session = Depends(get_db),
+    db: DBSession = Depends(get_db),
 ):
     try:
         # Build query with all joins at once
@@ -113,7 +114,7 @@ async def get_tutors(
 
 
 @router.get("/tutors/{tutor_id}", response_model=TutorResponse)
-async def get_tutor_by_id( tutor_id: str ,db: Session = Depends(get_db)):
+async def get_tutor_by_id( tutor_id: str ,db: DBSession = Depends(get_db)):
     try:
 
         if tutor_id is None:
@@ -164,3 +165,35 @@ async def get_tutor_by_id( tutor_id: str ,db: Session = Depends(get_db)):
     except Exception as e:
         logger.error(f"Error fetching tutor: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching tutor: {str(e)}")
+
+@router.get("/tutor/students")
+def get_students_for_tutor(user=Depends(require_role([1])), db: DBSession = Depends(get_db)):
+    tutor_id = user["user_id"]
+
+    sessions = (
+        db.query(
+            UserDetail.name,
+            SubjectDetail.subject_name,
+            TopicDetail.topic_title,
+            Session.date,
+            Session.time
+        )
+        .join(StudentDetail, StudentDetail.student_id == Session.student_id)
+        .join(UserDetail, UserDetail.userid == StudentDetail.student_id)
+        .join(TopicDetail, TopicDetail.topic_id == Session.topic_id)
+        .join(SubjectDetail, SubjectDetail.subject_id == TopicDetail.subject_id)
+        .filter(Session.tutor_id == tutor_id)
+        .all()
+    )
+
+    return [
+        {
+            "name": row.name,
+            "subject": row.subject_name,
+            "topic": row.topic_title,
+            "date": row.date.isoformat(),
+            "time": row.time.strftime("%H:%M")
+        }
+        for row in sessions
+    ]
+
