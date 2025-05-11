@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from .user_route import require_role
+from .user_route import require_role, verify_token
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from database.config import get_db
@@ -131,4 +131,27 @@ def get_approved_requests(user=Depends(require_role([1])), db: Session = Depends
 
     except Exception as e:
         logger.error(f"Error retrieving sessions: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.delete("/session/{session_id}")
+def delete_session_request(session_id: str, user=Depends(verify_token), db: Session = Depends(get_db)):
+    uid = user["user_id"]
+    try:
+        session = db.query(Session).filter(Session.session_id == session_id, Session.student_id == uid).first()
+
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+
+        topic = db.query(TopicDetail).filter(TopicDetail.topic_id == session.topic_id).first()
+        if topic:
+            db.delete(topic)
+
+        # Now delete the session
+        db.delete(session)
+        db.commit()
+
+        return {"message": "Session and related data deleted successfully"}
+
+    except Exception as e:
+        logger.exception("Error deleting session:")
         raise HTTPException(status_code=500, detail="Internal server error")
