@@ -52,8 +52,10 @@ const StudentTracking = () => {
       if (axios.isAxiosError(error)) {
         console.error('Axios error details:', error.response?.data); 
       } else {
-        console.error('Unknown error:', error);
+        console.error('Error:', error);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -88,7 +90,10 @@ const StudentTracking = () => {
                 <div>Date & Time</div>
                 <div>Action</div>
               </div>
-              { students.length === 0 ? (
+              { loading ? (
+                <div className="text-center text-gray-500 mt-4">Loading...</div>
+              ) :
+              students.length === 0 ? (
                 <div className="text-center text-gray-500 mt-4 text-sm sm:text-base">
                   There are no current student requests yet.
                 </div>

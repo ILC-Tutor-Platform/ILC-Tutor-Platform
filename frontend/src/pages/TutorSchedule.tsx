@@ -9,7 +9,7 @@ const TutorSchedule = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setSidebarOpen(false); // close on mount
+    setSidebarOpen(false); 
     const navbar = document.querySelector('nav');
     if (navbar) {
       (navbar as HTMLElement).style.marginLeft = '0rem';
@@ -32,6 +32,8 @@ const TutorSchedule = () => {
     setSchedule(acceptedSchedules);
   } catch (error) {
     console.error('Error fetching schedule:', error);
+  } finally{
+    setLoading(false);
   }
 };
 
@@ -67,7 +69,10 @@ const TutorSchedule = () => {
                 <div>Status</div>
               </div>
 
-              { schedules.length === 0 ? (
+              {loading ? (
+                <div className="text-center text-gray-500 mt-4">Loading...</div>
+              ) :
+               schedules.length === 0 ? (
                 <div className="text-center text-gray-500 mt-4 text-sm sm:text-base">
                   There are no current students yet.
                 </div>
