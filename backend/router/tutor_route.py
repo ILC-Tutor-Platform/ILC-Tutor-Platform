@@ -37,6 +37,7 @@ class TutorsListResponse(BaseModel):
     page: int
     limit: int
 
+# Retrieve tutor list
 @router.get("/tutors", response_model=TutorsListResponse)
 async def get_tutors(
     name: Optional[str] = None,  # search by name
@@ -112,7 +113,7 @@ async def get_tutors(
         logger.error(f"Error fetching tutors: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching tutors: {str(e)}")
 
-
+# View tutor details
 @router.get("/tutors/{tutor_id}", response_model=TutorResponse)
 async def get_tutor_by_id( tutor_id: str ,db: DBSession = Depends(get_db)):
     try:
@@ -166,34 +167,38 @@ async def get_tutor_by_id( tutor_id: str ,db: DBSession = Depends(get_db)):
         logger.error(f"Error fetching tutor: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching tutor: {str(e)}")
 
-@router.get("/tutor/students")
-def get_students_for_tutor(user=Depends(require_role([1])), db: DBSession = Depends(get_db)):
+# Get student requests of tutor
+@router.get("/tutor/student-requests")
+def get_students_for_tutor( user=Depends(require_role([1])), db: DBSession = Depends(get_db)):
     tutor_id = user["user_id"]
 
-    sessions = (
+    students = (
         db.query(
             UserDetail.name,
             SubjectDetail.subject_name,
             TopicDetail.topic_title,
             Session.date,
-            Session.time
+            Session.time,
+            Session.session_id
         )
         .join(StudentDetail, StudentDetail.student_id == Session.student_id)
         .join(UserDetail, UserDetail.userid == StudentDetail.student_id)
         .join(TopicDetail, TopicDetail.topic_id == Session.topic_id)
         .join(SubjectDetail, SubjectDetail.subject_id == TopicDetail.subject_id)
         .filter(Session.tutor_id == tutor_id)
+        .filter(Session.status == "0")
         .all()
     )
 
     return [
         {
-            "name": row.name,
-            "subject": row.subject_name,
-            "topic": row.topic_title,
-            "date": row.date.isoformat(),
-            "time": row.time.strftime("%H:%M")
+            "name": s.name,
+            "subject": s.subject_name,
+            "topic": s.topic_title,
+            "date": s.date.isoformat(),
+            "time": s.time.strftime("%H:%M"),
+            "session_id": s.session_id
         }
-        for row in sessions
+        for s in students
     ]
 
