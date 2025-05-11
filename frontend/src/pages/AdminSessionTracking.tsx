@@ -11,7 +11,7 @@ interface Schedule {
 }
 
 const AdminSessionTracking = () => {
-  const { isOpen, toggleSidebar } = useSidebarStore();
+  const { isOpen, toggle } = useSidebarStore();
   const sidebarWidth = isOpen ? 7 : 0;
 
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -59,7 +59,7 @@ const AdminSessionTracking = () => {
 
   return (
     <div className="min-h-screen font-manrope relative flex">
-      <AdminSidebar sidebarOpen={isOpen} setSidebarOpen={toggleSidebar} />
+      <AdminSidebar sidebarOpen={isOpen} setSidebarOpen={toggle} />
 
       <div
         className="transition-all duration-300 ease-in-out flex-1"
