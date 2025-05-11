@@ -74,19 +74,6 @@ def get_all_users(db: Session = Depends(get_db)):
         logger.error(f"Error retrieving users: {e}")
         raise HTTPException(status_code=500, detail="Internal server error during authentication")
 
-# Test routes to check role-based API access 
-@router.get("/student-data")
-def get_student_data(user=Depends(require_role([0]))):
-    return {"msg": "Student data", "user_id": user["user_id"]}
-
-@router.get("/tutor-data")
-def get_tutor_data(user=Depends(require_role([1]))):
-    return {"msg": "Tutor data", "user_id": user["user_id"]}
-
-@router.get("/both")
-def get_common_data(user=Depends(require_role([0, 1]))):
-    return {"msg": "This user is a student and a tutor.", "roles": user["role"]}
-
 @router.get("/users/profile")
 def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
     try:
@@ -304,13 +291,3 @@ def update_user_profile(
         logger.error(f"User detail cannot be updated. Error: {str(e)}")
         raise HTTPException(status_code=400, detail="Update user failed.")
     
-# Delete user data from table
-@router.delete("/user/{userid}")
-def delete_user(userid: str, db: Session = Depends(get_db)):
-    try:
-        user = db.query(UserDetail).filter(UserDetail.userid == userid).first()
-        db.delete(user)
-        db.commit()
-        return {"message": "User deleted successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
