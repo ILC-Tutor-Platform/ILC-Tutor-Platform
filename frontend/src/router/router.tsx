@@ -167,4 +167,12 @@ export const router = createBrowserRouter([
     path: '/choose-role',
     element: <ChooseRole />,
   },
+  {
+    path: '/session/update-requests',
+    element: <StudentTracking />
+  }, 
+  {
+    path: '/tutor/accepted-students',
+    element: <StudentTracking />
+  }
 ]);
