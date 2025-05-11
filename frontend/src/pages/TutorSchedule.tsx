@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
 import type { Schedule } from '@/types';
 import { api } from '@/utils/axios';
+import { useEffect, useState } from 'react';
 // import axios from 'axios';
 
 const TutorSchedule = () => {
@@ -9,7 +9,7 @@ const TutorSchedule = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setSidebarOpen(false); 
+    setSidebarOpen(false);
     const navbar = document.querySelector('nav');
     if (navbar) {
       (navbar as HTMLElement).style.marginLeft = '0rem';
@@ -24,18 +24,20 @@ const TutorSchedule = () => {
   }, []);
 
   const fetchSchedule = async () => {
-  setLoading(true);
-  try {
-    const response = await api.get<{ session: Schedule[] }>('/sessions/accepted-requests');
+    setLoading(true);
+    try {
+      const response = await api.get<{ session: Schedule[] }>(
+        '/sessions/accepted-requests',
+      );
 
-    const acceptedSchedules = response.data.session;
-    setSchedule(acceptedSchedules);
-  } catch (error) {
-    console.error('Error fetching schedule:', error);
-  } finally{
-    setLoading(false);
-  }
-};
+      const acceptedSchedules = response.data.session;
+      setSchedule(acceptedSchedules);
+    } catch (error) {
+      console.error('Error fetching schedule:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen font-manrope relative flex">
@@ -71,8 +73,7 @@ const TutorSchedule = () => {
 
               {loading ? (
                 <div className="text-center text-gray-500 mt-4">Loading...</div>
-              ) :
-               schedules.length === 0 ? (
+              ) : schedules.length === 0 ? (
                 <div className="text-center text-gray-500 mt-4 text-sm sm:text-base">
                   There are no current students yet.
                 </div>
@@ -83,7 +84,9 @@ const TutorSchedule = () => {
                     className="grid grid-cols-4 items-center bg-white rounded-md px-4 py-3 mt-2 text-center text-xs sm:text-sm md:text-base"
                   >
                     <div>{schedule.name}</div>
-                    <div>{schedule.subject} {schedule.topic}</div>
+                    <div>
+                      {schedule.subject} {schedule.topic}
+                    </div>
                     <div>{`${schedule.date} ${schedule.time}`}</div>
                     <div>
                       <span className="border text-xs px-3 py-1 rounded-full border-[#307B74] text-[#307B74]">

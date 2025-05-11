@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
 import type { StudentResponse } from '@/types';
 import { api } from '@/utils/axios';
 import axios from 'axios';
-
+import { useEffect, useState } from 'react';
 
 const StudentTracking = () => {
   const [students, setStudents] = useState<StudentResponse[]>([]);
@@ -28,7 +27,9 @@ const StudentTracking = () => {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      const response = await api.get<StudentResponse[]>('/tutor/student-requests'); 
+      const response = await api.get<StudentResponse[]>(
+        '/tutor/student-requests',
+      );
       setStudents(response.data);
     } catch (error) {
       console.error('Error fetching students:', error);
@@ -38,19 +39,19 @@ const StudentTracking = () => {
   };
 
   const handleStatusUpdate = async (session_id: string, status_id: number) => {
-  try {
-    const payload = { session_id, status_id };
-    console.log('Sending payload:', payload);  
-    await api.post(`/session/update-requests`, payload);
+    try {
+      const payload = { session_id, status_id };
+      console.log('Sending payload:', payload);
+      await api.post(`/session/update-requests`, payload);
 
-    // Remove the student from the list after updating status
-    setStudents((prevStudents) =>
-      prevStudents.filter((student) => student.session_id !== session_id)
-    );
-    console.log(`Status updated to ${status_id} for session ${session_id}`);
+      // Remove the student from the list after updating status
+      setStudents((prevStudents) =>
+        prevStudents.filter((student) => student.session_id !== session_id),
+      );
+      console.log(`Status updated to ${status_id} for session ${session_id}`);
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error('Axios error details:', error.response?.data); 
+        console.error('Axios error details:', error.response?.data);
       } else {
         console.error('Error:', error);
       }
@@ -58,7 +59,6 @@ const StudentTracking = () => {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="min-h-screen font-manrope relative flex">
@@ -90,10 +90,9 @@ const StudentTracking = () => {
                 <div>Date & Time</div>
                 <div>Action</div>
               </div>
-              { loading ? (
+              {loading ? (
                 <div className="text-center text-gray-500 mt-4">Loading...</div>
-              ) :
-              students.length === 0 ? (
+              ) : students.length === 0 ? (
                 <div className="text-center text-gray-500 mt-4 text-sm sm:text-base">
                   There are no current student requests yet.
                 </div>
@@ -109,26 +108,34 @@ const StudentTracking = () => {
                       </div>
                       <span className="text-[0.9rem]">{student.name}</span>
                     </div>
-                    <div className="text-[0.9rem]">{student.subject} {student.topic}</div>
                     <div className="text-[0.9rem]">
-                      {new Date(student.date).toLocaleDateString()} {student.time}
+                      {student.subject} {student.topic}
+                    </div>
+                    <div className="text-[0.9rem]">
+                      {new Date(student.date).toLocaleDateString()}{' '}
+                      {student.time}
                     </div>
                     <div className="flex justify-center gap-2">
-                      <button 
-                          onClick={() => handleStatusUpdate(student.session_id, 2)}
-                          className="bg-[#8A1538] hover:bg-[#73122f] text-white text-xs px-3 py-1 rounded">
+                      <button
+                        onClick={() =>
+                          handleStatusUpdate(student.session_id, 2)
+                        }
+                        className="bg-[#8A1538] hover:bg-[#73122f] text-white text-xs px-3 py-1 rounded"
+                      >
                         ✖
                       </button>
-                      <button 
-                          onClick={() => handleStatusUpdate(student.session_id, 1)}
-                          className="bg-[#307B74] hover:bg-[#24625b] text-white text-xs px-3 py-1 rounded">
+                      <button
+                        onClick={() =>
+                          handleStatusUpdate(student.session_id, 1)
+                        }
+                        className="bg-[#307B74] hover:bg-[#24625b] text-white text-xs px-3 py-1 rounded"
+                      >
                         ✓
                       </button>
                     </div>
                   </div>
                 ))
-              )
-              }
+              )}
             </div>
           </div>
         </main>

@@ -81,19 +81,19 @@ export interface TutorResponse {
 }
 
 export interface StudentResponse {
-  name: string, 
-  subject: string, 
-  topic: string, 
-  date: Date,
-  time: string,
-  session_id: string
+  name: string;
+  subject: string;
+  topic: string;
+  date: Date;
+  time: string;
+  session_id: string;
 }
 
 export interface Schedule {
   name: string;
-  date: Date,
-  topic: string,
-  time: string,
+  date: Date;
+  topic: string;
+  time: string;
   subject: string;
-  status_id: number
+  status_id: number;
 }

@@ -169,10 +169,10 @@ export const router = createBrowserRouter([
   },
   {
     path: '/session/update-requests',
-    element: <StudentTracking />
-  }, 
+    element: <StudentTracking />,
+  },
   {
     path: '/tutor/accepted-students',
-    element: <StudentTracking />
-  }
+    element: <StudentTracking />,
+  },
 ]);
