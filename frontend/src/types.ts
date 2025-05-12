@@ -47,8 +47,6 @@ export interface TutorSignUp {
     subject_name: string[];
   };
 }
-<<<<<<< HEAD
-=======
 
 export interface TutorDetail {
   userid: string;
@@ -65,10 +63,73 @@ export interface TutorDetail {
   socials: string[];
 }
 
+export interface StudentDetail {
+  userid: string;
+  name: string;
+  email: string;
+  password: string;
+  datejoined: string;
+  student_number: string;
+  degree_program: string;
+}
+
 export interface TutorResponse {
   tutors: TutorDetail[];
   total: number;
   page: number;
   limit: number;
 }
->>>>>>> develop
+
+export interface StudentResponse {
+  name: string;
+  subject: string;
+  topic: string;
+  date: Date;
+  time: string;
+  session_id: string;
+}
+
+export interface Schedule {
+  name: string;
+  date: Date; 
+  topic: string;
+  time: string;
+  subject: string;
+  status_id: number;
+}
+
+export interface StudentResponse {
+  name: string;
+  subject: string;
+  topic: string;
+  date: Date;
+  time: string;
+  session_id: string;
+}
+
+export interface Schedule {
+  name: string;
+  date: Date;
+  topic: string;
+  time: string;
+  subject: string;
+  status_id: number;
+}
+
+export interface StudentResponse {
+  name: string;
+  subject: string;
+  topic: string;
+  date: Date;
+  time: string;
+  session_id: string;
+}
+
+export interface Schedule {
+  name: string;
+  date: Date;
+  topic: string;
+  time: string;
+  subject: string;
+  status_id: number;
+}
