@@ -91,7 +91,7 @@ export interface StudentResponse {
 
 export interface Schedule {
   name: string;
-  date: Date; 
+  date: Date;
   topic: string;
   time: string;
   subject: string;

@@ -226,19 +226,11 @@ const SignUpAsStudent = () => {
             <DropdownDegreeProgram
               selectedProgram={selectedProgram}
               onSelectProgram={setSelectedProgram}
-<<<<<<< HEAD
-              className={`p-3 mt-2 ${errors.password ? 'border-red-500' : ''}`}
-            />
-            {errors.studentNumber && (
-              <Label className="text-[0.8rem] font-thin text-red-500">
-                {errors.studentNumber}
-=======
               className={`p-3 mt-2 ${errors.degreeProgram ? 'border-red-500' : ''}`}
             />
             {errors.degreeProgram && (
               <Label className="text-[0.8rem] font-thin text-red-500">
                 {errors.degreeProgram}
->>>>>>> develop
               </Label>
             )}
           </div>
