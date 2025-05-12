@@ -134,11 +134,7 @@ def get_approved_requests(user=Depends(require_role([1])), db: Session = Depends
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/session/{session_id}")
-def delete_session_request(
-    session_id: str,
-    user=Depends(verify_token),
-    db: Session = Depends(get_db)
-):
+def delete_session_request(session_id: str, user=Depends(verify_token), db: Session = Depends(get_db)):
     uid = user["user_id"]
     try:
         session = db.query(Session).filter(
