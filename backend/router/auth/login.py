@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException
 from constants.supabase_client import supabase
 from pydantic import BaseModel
 from typing import List
-from fastapi import Header
 from constants.logger import logger
 
 router = APIRouter()

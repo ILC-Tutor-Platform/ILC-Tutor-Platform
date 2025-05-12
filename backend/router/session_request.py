@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from .user_route import require_role
+from .user_route import require_role, verify_token
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from database.config import get_db
@@ -132,3 +132,48 @@ def get_approved_requests(user=Depends(require_role([1])), db: Session = Depends
     except Exception as e:
         logger.error(f"Error retrieving sessions: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.delete("/session/{session_id}")
+def delete_session_request(session_id: str, user=Depends(verify_token), db: Session = Depends(get_db)):
+    uid = user["user_id"]
+    try:
+        session = db.query(Session).filter(
+            Session.session_id == session_id,
+            Session.student_id == uid,
+            Session.status == 0
+        ).first()
+
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found. Session is already approved.")
+
+        session_id = session.session_id
+        topic_id = session.topic_id
+
+        db.delete(session)
+        db.commit()
+
+        logger.info(f"Session {session_id} has been deleted.")
+
+        # Check if the topic_id exists on the sessions added, else it will delete the topic
+        active_sessions = db.query(Session).filter(Session.topic_id == topic_id).first()
+
+        if active_sessions:
+            raise HTTPException(
+                status_code=400,
+                detail="Topic cannot be deleted, it is still used in sessions."
+            )
+
+        # Safe to delete topic
+        topic = db.query(TopicDetail).filter(TopicDetail.topic_id == topic_id).first()
+
+        if not topic:
+            raise HTTPException(status_code=404, detail="Topic not found.")
+
+        db.delete(topic)
+        db.commit()
+        logger.info(f"Topic {topic_id} has been deleted.")
+
+    except Exception as e:
+        db.rollback()
+        logger.exception("Error deleting session:")
+        raise HTTPException(status_code=500, detail="User is not allowed to delete this session.")
