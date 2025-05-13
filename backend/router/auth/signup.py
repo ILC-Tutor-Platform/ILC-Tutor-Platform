@@ -12,7 +12,6 @@ router = APIRouter()
 class EmailPayload(BaseModel):
     email: str
 
-# ----------- SIGN UP ----------------
 # Verifies a user’s email after signup.
 @router.post("/auth/verify-email")
 def verify_email(payload: EmailPayload, db: Session = Depends(get_db)):
@@ -78,7 +77,9 @@ def verify_email(payload: EmailPayload, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Verification failed: {str(e)}")
 
 def add_detail(user, role, db):
-    # Add user to student_detail table if they have student role
+    """
+    Add user to student_detail table if they have student role
+    """
     if "0" in role:
         try:
             # Check if student profile already exists
@@ -391,9 +392,11 @@ def signup_tutor(payload: TutorSignupSchema):
         logger.error(f"Signup failed. {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
 
-# Check if the user already exists in supabase auth
 def get_existing_user(user):
     # Check if the user already exists
+    """
+    Check if the user already exists in supabase auth
+    """
     try:
         # Fetch all users 
         response = supabase_admin.auth.admin.list_users()

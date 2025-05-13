@@ -80,6 +80,8 @@ async def login(credentials: LoginRequest):
             uid=auth_response.user.id
         )
     
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Login failed: {e}")
         raise HTTPException(status_code=401, detail="Authentication failed")

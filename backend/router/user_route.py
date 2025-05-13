@@ -14,8 +14,10 @@ SETTINGS = settings.get_settings()
 JWT_SECRET = SETTINGS.SUPABASE_JWT_SECRET
 JWT_ALGORITHM = "HS256"
 
-# Role-based access function
 def require_role(allowed_roles: list[int]):
+    """
+    Ensures role based access to routes.
+    """
     def checker(user=Depends(verify_token)):
         if not any(str(role) in user["role"] for role in allowed_roles):
             logger.error("The user's role is not allowed to access this endpoint.")
@@ -25,6 +27,9 @@ def require_role(allowed_roles: list[int]):
 
 
 def get_authorization_token(request: Request):
+    """
+    Ensures that the authorization token exists.
+    """
     auth_header = request.headers.get("Authorization")
     
     if not auth_header:
@@ -52,6 +57,9 @@ def verify_token(token: str = Depends(get_authorization_token)):
             "user_id": user_id,
             "role": role
         }
+    
+    except HTTPException:
+        raise
     except JWTError as e:
         logger.error(f"Token verification failed: {str(e)}")
         raise HTTPException(status_code=401, detail=f"Invalid or expired token: {str(e)}")
@@ -60,7 +68,7 @@ def verify_token(token: str = Depends(get_authorization_token)):
 def get_all_users(db: Session = Depends(get_db)):
     try:
         users = db.query(UserDetail).all()
-        logger.info("Fetching users from Supabase")
+        logger.info("Fetching all users from Supabase")
         return {"users": [ 
             {
                 "user_id": user.userid,
@@ -80,14 +88,12 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
         uid = user["user_id"] 
         roles = user["role"]
         
-        logger.info(f"uid: {uid}")
+        logger.info(f"Loading information of user {uid}.")
 
         # Fetch user from supabase
         user_detail = db.query(UserDetail).filter(UserDetail.userid == uid).first()
-        # all_users = supabase.auth.admin.list_users()
 
-        # Fetch user from Supabase
-        # user = next((u for u in all_users if u.id == uid), None)
+        # Fetch roles from supabase
         role_ids = [int(r) for r in roles]
 
         response = {
@@ -133,7 +139,7 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
                 }
 
         return response
-
+    
     except Exception:
         logger.error("User requested is not found.")
         raise HTTPException(status_code=500, detail="User not found.")
@@ -149,8 +155,6 @@ def update_user_profile(
     try:
         logger.info(f"Updating user {uid}")
         # Check if user exists in Supabase Auth
-        # all_users = supabase.auth.admin.list_users()
-        # user = next((u for u in all_users if u.id == uid), None)
         if not user:
             logger.error("User not found in database.")
             raise HTTPException(status_code=404, detail="User not found.")
@@ -287,6 +291,9 @@ def update_user_profile(
                 raise HTTPException(status_code=403, detail="Permission denied")        
 
         return {"message": "Profile updated successfully."}
+    
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"User detail cannot be updated. Error: {str(e)}")
         raise HTTPException(status_code=400, detail="Update user failed.")
