@@ -1,14 +1,15 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import Session as DBSession
 from sqlalchemy import or_
 from database.config import get_db
 from constants.logger import logger
-from pydantic import BaseModel, Field
-from constants.supabase_client import supabase
-from models import UserDetail, TutorAffiliation, TutorDetail, TutorAvailability, TutorExpertise, TutorSocials, SubjectDetail
+from pydantic import BaseModel
+from models import UserDetail, TutorAffiliation, TutorDetail, TutorAvailability, TutorExpertise, TutorSocials, SubjectDetail, StudentDetail, Session, TopicDetail
 from uuid import UUID
 from datetime import date, time
+from .user_route import require_role
 
 router = APIRouter()
 
@@ -36,6 +37,7 @@ class TutorsListResponse(BaseModel):
     page: int
     limit: int
 
+# Retrieve tutor list
 @router.get("/tutors", response_model=TutorsListResponse)
 async def get_tutors(
     name: Optional[str] = None,  # search by name
@@ -43,7 +45,7 @@ async def get_tutors(
     status: Optional[str] = None, # search by status
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(10, ge=1, le=100, description="Items per page"),
-    db: Session = Depends(get_db),
+    db: DBSession = Depends(get_db),
 ):
     try:
         # Build query with all joins at once
@@ -111,9 +113,9 @@ async def get_tutors(
         logger.error(f"Error fetching tutors: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching tutors: {str(e)}")
 
-
+# View tutor details
 @router.get("/tutors/{tutor_id}", response_model=TutorResponse)
-async def get_tutor_by_id( tutor_id: str ,db: Session = Depends(get_db)):
+async def get_tutor_by_id( tutor_id: str ,db: DBSession = Depends(get_db)):
     try:
 
         if tutor_id is None:
@@ -163,6 +165,44 @@ async def get_tutor_by_id( tutor_id: str ,db: Session = Depends(get_db)):
 
         return tutor_data;
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching tutor: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching tutor: {str(e)}")
+
+# Get student requests of tutor
+@router.get("/tutor/student-requests")
+def get_students_for_tutor( user=Depends(require_role([1])), db: DBSession = Depends(get_db)):
+    tutor_id = user["user_id"]
+
+    students = (
+        db.query(
+            UserDetail.name,
+            SubjectDetail.subject_name,
+            TopicDetail.topic_title,
+            Session.date,
+            Session.time,
+            Session.session_id
+        )
+        .join(StudentDetail, StudentDetail.student_id == Session.student_id)
+        .join(UserDetail, UserDetail.userid == StudentDetail.student_id)
+        .join(TopicDetail, TopicDetail.topic_id == Session.topic_id)
+        .join(SubjectDetail, SubjectDetail.subject_id == TopicDetail.subject_id)
+        .filter(Session.tutor_id == tutor_id)
+        .filter(Session.status == "0")
+        .all()
+    )
+
+    return [
+        {
+            "name": s.name,
+            "subject": s.subject_name,
+            "topic": s.topic_title,
+            "date": s.date.isoformat(),
+            "time": s.time.strftime("%H:%M"),
+            "session_id": s.session_id
+        }
+        for s in students
+    ]
+

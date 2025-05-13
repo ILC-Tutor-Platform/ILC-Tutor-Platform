@@ -2,6 +2,7 @@ from sqlalchemy import Column, ForeignKey, Integer, Date, Time, String
 from models import Base
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
+from sqlalchemy.orm import relationship
 
 class Session(Base):
     __tablename__ = "session"
@@ -19,3 +20,4 @@ class Session(Base):
     room_number = Column(String, nullable=True)   
     modality = Column(String, nullable=False)
 
+    student = relationship("StudentDetail", back_populates="sessions")

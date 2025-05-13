@@ -45,6 +45,7 @@ export const DropdownDatesAvail = ({
           DATES AVAILABLE
         </Button>
       </DropdownMenuTrigger>
+
       <DropdownMenuContent className="w-56">
         <DropdownMenuLabel>DATES AVAILABLE</DropdownMenuLabel>
         <DropdownMenuSeparator />

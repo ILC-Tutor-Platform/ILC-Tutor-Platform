@@ -5,7 +5,16 @@ import { Link } from 'react-router-dom';
 import Tutor from '../assets/coach.svg';
 import Session from '../assets/session.svg';
 
-const AdminSidebar = () => {
+// Define the props for AdminSidebar
+interface AdminSidebarProps {
+  sidebarOpen: boolean;
+  setSidebarOpen: () => void;
+}
+
+const AdminSidebar: React.FC<AdminSidebarProps> = ({
+  sidebarOpen,
+  setSidebarOpen,
+}) => {
   const { isOpen, toggle } = useSidebarStore();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -45,7 +54,7 @@ const AdminSidebar = () => {
                 to={item.route}
                 key={item.label}
                 className="w-full"
-                onClick={toggle}
+                onClick={setSidebarOpen} // Trigger setSidebarOpen when link is clicked
               >
                 <button className="flex flex-col items-center gap-2 w-full text-black hover:text-[#307B74] transition-colors">
                   <img src={item.icon} alt={item.label} className="w-5 h-5" />
