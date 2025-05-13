@@ -7,6 +7,7 @@ from models import SubjectDetail, Session, StatusDetail, UserDetail, TopicDetail
 from constants.logger import logger
 from pydantic import BaseModel
 from datetime import date, time
+from typing import Optional
 
 router = APIRouter()
 
@@ -19,7 +20,6 @@ class SessionStatusUpdate(BaseModel):
 class SessionRequestPayload(BaseModel):
     date: date
     time: time
-
     tutor_id: str
     student_id: str
     topic_id: str
@@ -145,6 +145,7 @@ def get_approved_requests(user=Depends(require_role([0])), db: Session = Depends
                 Session.session_id,
                 Session.status
             )
+
             .join(TutorDetail, TutorDetail.tutor_id == Session.tutor_id)
             .join(StudentDetail, StudentDetail.student_id == Session.student_id)
             .join(UserDetail, UserDetail.userid == TutorDetail.tutor_id)
@@ -174,10 +175,9 @@ def get_approved_requests(user=Depends(require_role([0])), db: Session = Depends
         logger.error(f"Error retrieving sessions: {e}")
         raise HTTPException(status_code=500, detail="Internal server error during authentication")
 
-
 # Student API to request sessions from tutor
 @router.post("/student/request/session", response_model=SessionRequestPayload)
-def request_session(user=Depends(require_role([0])), db: Session = Depends(get_db), payload: SessionRequestPayload):
+def request_session(payload: SessionRequestPayload, user=Depends(require_role([0])), db: Session = Depends(get_db)):
     
     # Validation checks
     if payload is None:
@@ -207,6 +207,7 @@ def request_session(user=Depends(require_role([0])), db: Session = Depends(get_d
         logger.warning(f"Duplicate session request detected for student {payload.student_id} with tutor {payload.tutor_id}")
         raise HTTPException(
             status_code=409, 
+
             detail="A session request with the same tutor, topic, date, and time is already pending. Please wait for a response or cancel the existing request."
         )
         
@@ -237,7 +238,7 @@ def request_session(user=Depends(require_role([0])), db: Session = Depends(get_d
 
     except Exception as e:
         logger.error(f"Error requesting session: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/session/delete/{session_id}")
