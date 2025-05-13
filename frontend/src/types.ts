@@ -97,3 +97,39 @@ export interface Schedule {
   subject: string;
   status_id: number;
 }
+
+export interface StudentResponse {
+  name: string;
+  subject: string;
+  topic: string;
+  date: Date;
+  time: string;
+  session_id: string;
+}
+
+export interface Schedule {
+  name: string;
+  date: Date;
+  topic: string;
+  time: string;
+  subject: string;
+  status_id: number;
+}
+
+export interface StudentResponse {
+  name: string;
+  subject: string;
+  topic: string;
+  date: Date;
+  time: string;
+  session_id: string;
+}
+
+export interface Schedule {
+  name: string;
+  date: Date;
+  topic: string;
+  time: string;
+  subject: string;
+  status_id: number;
+}

@@ -48,6 +48,14 @@ const StudentScheduleTracking = () => {
     setSchedules(mockData);
   }, []);
 
+  const handleDelete = (index: number) => {
+    if (window.confirm('Are you sure you want to delete this session?')) {
+      setSchedules((prevSchedules) =>
+        prevSchedules.filter((_, i) => i !== index),
+      );
+    }
+  };
+
   return (
     <div className="min-h-screen font-manrope relative flex">
       <div className="transition-all duration-300 ease-in-out flex-1">
@@ -72,17 +80,18 @@ const StudentScheduleTracking = () => {
 
           <div className="w-full min-h-[calc(100vh-10rem)] bg-[#F9F8F4] border border-black border-opacity-30 rounded-[1.25rem] p-4 md:p-6 lg:p-8 xl:p-10 shadow-md">
             <div className="w-full">
-              <div className="grid grid-cols-4 font-semibold text-white bg-[#8A1538] rounded-md px-4 py-3 text-center text-xs sm:text-sm md:text-base">
+              <div className="grid grid-cols-5 font-semibold text-white bg-[#8A1538] rounded-md px-4 py-3 text-center text-xs sm:text-sm md:text-base">
                 <div>Tutor</div>
                 <div>Date & Time</div>
                 <div>Subject</div>
                 <div>Status</div>
+                <div>Action</div>
               </div>
 
               {schedules.map((schedule, index) => (
                 <div
                   key={index}
-                  className="grid grid-cols-4 items-center bg-white rounded-md px-4 py-3 mt-2 text-center text-xs sm:text-sm md:text-base"
+                  className="grid grid-cols-5 items-center bg-white rounded-md px-4 py-3 mt-2 text-center text-xs sm:text-sm md:text-base"
                 >
                   <div>{schedule.tutor}</div>
                   <div>{schedule.datetime}</div>
@@ -99,6 +108,14 @@ const StudentScheduleTracking = () => {
                     >
                       {schedule.status}
                     </span>
+                  </div>
+                  <div>
+                    <button
+                      onClick={() => handleDelete(index)}
+                      className="bg-[#8A1538] hover:bg-[#6A102C] text-white px-3 py-1 rounded-md text-xs sm:text-sm transition-colors duration-200"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               ))}
