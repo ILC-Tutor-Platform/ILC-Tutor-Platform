@@ -6,11 +6,32 @@ from database.config import get_db
 from models import Session, StatusDetail, UserDetail
 from constants.logger import logger
 from pydantic import BaseModel
+from datetime import date, time
 
 router = APIRouter()
 
 class SessionStatusUpdate(BaseModel):
     status: str
+
+# Payload definition
+class SessionRequestPayload(BaseModel):
+    date: date
+    time: time
+
+    tutor_id: str
+    student_id: str
+    topic_id: str
+    status: str
+    time_started: Optional[time] = None
+    time_ended: Optional[time] = None
+    duration: Optional[int] = None  
+    room_number: Optional[str] = None
+    modality: str
+    
+    class Config:
+        from_attributes = True
+
+
 
 # Tutor API to view session requests
 @router.get("/tutors/requests")
@@ -95,11 +116,65 @@ def get_sessions_by_user(user= Depends(verify_token), db: Session = Depends(get_
 
 
 # Student API to request sessions from tutor
-@router.post("/student/request/session")
-def request_session(user=Depends(require_role([0])), db: Session = Depends(get_db)):
+@router.post("/student/request/session", response_model=SessionRequestPayload)
+def request_session(user=Depends(require_role([0])), db: Session = Depends(get_db), payload: SessionRequestPayload):
+    
+    # Validation checks
+    if payload is None:
+        logger.error("Invalid payload")
+        raise HTTPException(status_code=400, detail="Invalid payload")
+        
+    if payload.tutor_id is None:
+        logger.error("Tutor ID is required")
+        raise HTTPException(status_code=400, detail="Tutor ID is required")
+        
+    if payload.student_id is None:
+        logger.error("Student ID is required")
+        raise HTTPException(status_code=400, detail="Student ID is required")
+    
+    # Check for existing pending session with same parameters
+    existing_session = db.query(SessionModel).filter(
+        SessionModel.tutor_id == payload.tutor_id,
+        SessionModel.topic_id == payload.topic_id,
+        SessionModel.date == payload.date,
+        SessionModel.time == payload.time,
+        SessionModel.student_id == payload.student_id,
+        SessionModel.status == "pending"
+    ).first()
+    
+    if existing_session:
+
+        logger.warning(f"Duplicate session request detected for student {payload.student_id} with tutor {payload.tutor_id}")
+        raise HTTPException(
+            status_code=409, 
+            detail="A session request with the same tutor, topic, date, and time is already pending. Please wait for a response or cancel the existing request."
+        )
+        
+    logger.info(f"Requesting session with tutor {payload.tutor_id} for student {payload.student_id}")
+    
     try:
-        pass
+        session = SessionModel(
+            date=payload.date,
+            time=payload.time,
+            tutor_id=payload.tutor_id,
+            student_id=payload.student_id,
+            topic_id=payload.topic_id,
+            status="pending",  # Default to pending status for new requests
+            time_started=payload.time_started,
+            time_ended=payload.time_ended,
+            duration=payload.duration,
+            room_number=payload.room_number,
+            modality=payload.modality
+        )
+        db.add(session)
+
+        db.commit()
+
+        db.refresh(session)
+
+        return session
+    
+
     except Exception as e:
-        raise e
-    finally:
-        pass
+        logger.error(f"Error requesting session: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")

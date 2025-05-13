@@ -18,3 +18,4 @@ class Session(Base):
     duration = Column(Integer, nullable=True)    
     room_number = Column(String, nullable=True)   
     modality = Column(String, nullable=False)
+
