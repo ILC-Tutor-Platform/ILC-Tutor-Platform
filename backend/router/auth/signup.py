@@ -70,9 +70,8 @@ def verify_email(payload: EmailPayload, db: Session = Depends(get_db)):
         else:
             return {"message": "Email not yet verified", "email": user.email}
 
-    except HTTPException as he:
-        # Re-raise HTTP exceptions
-        raise he
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Unexpected error in email verification: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Verification failed: {str(e)}")

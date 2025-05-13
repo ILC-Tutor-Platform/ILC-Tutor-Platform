@@ -113,7 +113,7 @@ export interface Schedule {
   topic: string;
   time: string;
   subject: string;
-  status_id: number;
+  status: number;
 }
 
 export interface StudentResponse {
@@ -127,9 +127,10 @@ export interface StudentResponse {
 
 export interface Schedule {
   name: string;
-  date: Date;
-  topic: string;
-  time: string;
   subject: string;
+  topic: string;
+  date: Date;
+  time: string;
   status_id: number;
+  session_id: string;
 }

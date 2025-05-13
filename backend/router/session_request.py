@@ -3,7 +3,7 @@ from .user_route import require_role, verify_token
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from database.config import get_db
-from models import SubjectDetail, Session, StatusDetail, UserDetail, TopicDetail, StudentDetail
+from models import SubjectDetail, Session, StatusDetail, UserDetail, TopicDetail, StudentDetail, TutorDetail
 from constants.logger import logger
 from pydantic import BaseModel
 
@@ -38,13 +38,15 @@ def update_session_status( payload: SessionStatusUpdate, user=Depends(require_ro
         db.commit()
 
         logger.info(f"Session {session_id} was accepted by the tutor {session.tutor_id}")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error retrieving sessions: {e}")
         raise HTTPException(status_code=500, detail="Internal server error during authentication")
 
 # Tutor views accepted student sessions
 @router.get("/sessions/accepted-requests")
-def get_student_accepted_requests(user=Depends(require_role([0])), db: Session = Depends(get_db)):
+def get_student_accepted_requests(user=Depends(require_role([1])), db: Session = Depends(get_db)):
     uid = user["user_id"]  # Tutor's ID
 
     try:
@@ -88,15 +90,15 @@ def get_student_accepted_requests(user=Depends(require_role([0])), db: Session =
         logger.error(f"Error retrieving sessions: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-# Student views accepted sessions
-@router.get("/sessions/approved-sessions")
-def get_approved_requests(user=Depends(require_role([1])), db: Session = Depends(get_db)):
-    uid = user["user_id"]  # Tutor's ID
+# Student views all sessions
+@router.get("/sessions/student")
+def get_approved_requests(user=Depends(require_role([0])), db: Session = Depends(get_db)):
+    uid = user["user_id"]  # Student's ID
 
     try:
         sessions = (
             db.query(
-                UserDetail.name.label("student_name"),
+                UserDetail.name.label("tutor_name"),
                 SubjectDetail.subject_name,
                 TopicDetail.topic_title,
                 Session.date,
@@ -104,26 +106,26 @@ def get_approved_requests(user=Depends(require_role([1])), db: Session = Depends
                 Session.session_id,
                 Session.status
             )
+            .join(TutorDetail, TutorDetail.tutor_id == Session.tutor_id)
             .join(StudentDetail, StudentDetail.student_id == Session.student_id)
-            .join(UserDetail, UserDetail.userid == StudentDetail.student_id)
+            .join(UserDetail, UserDetail.userid == TutorDetail.tutor_id)
             .join(TopicDetail, TopicDetail.topic_id == Session.topic_id)
             .join(SubjectDetail, SubjectDetail.subject_id == TopicDetail.subject_id)
-            .filter(Session.tutor_id == uid)
-            .filter(Session.status == 1)
+            .filter(Session.student_id == uid)
             .all()
         )
 
-        logger.info("Fetching accepted sessions with student info for tutor")
+        logger.info("Fetching approved sessions of the student.")
         return {
             "session": [
                 {
-                    "name": s.student_name,
+                    "name": s.tutor_name,
                     "subject": s.subject_name,
                     "topic": s.topic_title,
                     "date": s.date.isoformat(),
                     "time": s.time.strftime("%H:%M"),
                     "session_id": s.session_id,
-                    "status": s.status
+                    "status_id": s.status
                 }
                 for s in sessions
             ]
@@ -133,10 +135,12 @@ def get_approved_requests(user=Depends(require_role([1])), db: Session = Depends
         logger.error(f"Error retrieving sessions: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.delete("/session/{session_id}")
+@router.delete("/session/delete/{session_id}")
 def delete_session_request(session_id: str, user=Depends(verify_token), db: Session = Depends(get_db)):
     uid = user["user_id"]
+
     try:
+        # Get session owned by the student and not yet approved
         session = db.query(Session).filter(
             Session.session_id == session_id,
             Session.student_id == uid,
@@ -144,36 +148,33 @@ def delete_session_request(session_id: str, user=Depends(verify_token), db: Sess
         ).first()
 
         if not session:
-            raise HTTPException(status_code=404, detail="Session not found. Session is already approved.")
-
-        session_id = session.session_id
-        topic_id = session.topic_id
-
-        db.delete(session)
-        db.commit()
-
-        logger.info(f"Session {session_id} has been deleted.")
-
-        # Check if the topic_id exists on the sessions added, else it will delete the topic
-        active_sessions = db.query(Session).filter(Session.topic_id == topic_id).first()
-
-        if active_sessions:
             raise HTTPException(
-                status_code=400,
-                detail="Topic cannot be deleted, it is still used in sessions."
+                status_code=403, 
+                detail="You are not allowed to delete this session. It may not exist or is already approved."
             )
 
-        # Safe to delete topic
-        topic = db.query(TopicDetail).filter(TopicDetail.topic_id == topic_id).first()
+        topic_id = session.topic_id
 
-        if not topic:
-            raise HTTPException(status_code=404, detail="Topic not found.")
-
-        db.delete(topic)
+        # Delete the session first
+        db.delete(session)
         db.commit()
-        logger.info(f"Topic {topic_id} has been deleted.")
+        logger.info(f"Session {session_id} deleted.")
 
+        # Check if topic is still used in other sessions
+        still_used = db.query(Session).filter(Session.topic_id == topic_id).first()
+
+        if not still_used:
+            topic = db.query(TopicDetail).filter(TopicDetail.topic_id == topic_id).first()
+            if topic:
+                db.delete(topic)
+                db.commit()
+                logger.info(f"Topic {topic_id} deleted.")
+        
+        return {"message": "Session deleted successfully."}
+
+    except HTTPException:
+        raise 
     except Exception as e:
         db.rollback()
-        logger.exception("Error deleting session:")
-        raise HTTPException(status_code=500, detail="User is not allowed to delete this session.")
+        logger.exception("Unexpected error during deletion:")
+        raise HTTPException(status_code=500, detail="Internal server error.")
