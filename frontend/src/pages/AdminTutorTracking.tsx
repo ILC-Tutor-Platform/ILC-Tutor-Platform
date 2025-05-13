@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
 
 const AdminTutorTracking = () => {
-  const { isOpen, toggle } = useSidebarStore();
+  const { isOpen } = useSidebarStore(); // Only need isOpen here
   const sidebarWidth = isOpen ? 7 : 0;
 
   const [tutors, setTutors] = useState<any[]>([]);
@@ -34,8 +34,8 @@ const AdminTutorTracking = () => {
 
   return (
     <div className="min-h-screen font-manrope relative flex">
-      <AdminSidebar sidebarOpen={isOpen} setSidebarOpen={toggle} />
-
+      <AdminSidebar />{' '}
+      {/* Removed props since AdminSidebar manages its own state */}
       <div
         className="transition-all duration-300 ease-in-out flex-1"
         style={{ marginLeft: `${sidebarWidth}rem` }}
