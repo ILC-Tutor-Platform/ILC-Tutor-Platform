@@ -175,4 +175,8 @@ export const router = createBrowserRouter([
     path: '/tutor/accepted-students',
     element: <StudentTracking />,
   },
+  {
+    path: 'sessions/approved-sessions',
+    element: <StudentScheduleTracking/>
+  },
 ]);
