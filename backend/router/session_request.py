@@ -8,6 +8,7 @@ from constants.logger import logger
 from pydantic import BaseModel
 from datetime import date, time
 from typing import Optional
+from uuid import UUID
 
 router = APIRouter()
 
@@ -20,10 +21,10 @@ class SessionStatusUpdate(BaseModel):
 class SessionRequestPayload(BaseModel):
     date: date
     time: time
-    tutor_id: str
-    student_id: str
-    topic_id: str
-    status: str
+    tutor_id: UUID
+    student_id: UUID
+    topic_id: UUID
+    status: int 
     time_started: Optional[time] = None
     time_ended: Optional[time] = None
     duration: Optional[int] = None  
@@ -176,12 +177,13 @@ def get_approved_requests(user=Depends(require_role([0])), db: Session = Depends
         raise HTTPException(status_code=500, detail="Internal server error during authentication")
 
 # Student API to request sessions from tutor
-@router.post("/student/request/session", response_model=SessionRequestPayload)
+@router.post("/session/student/request", response_model=SessionRequestPayload)
 def request_session(payload: SessionRequestPayload, user=Depends(require_role([0])), db: Session = Depends(get_db)):
     
     # Validation checks
     if payload is None:
         logger.error("Invalid payload")
+
         raise HTTPException(status_code=400, detail="Invalid payload")
         
     if payload.tutor_id is None:
@@ -192,54 +194,79 @@ def request_session(payload: SessionRequestPayload, user=Depends(require_role([0
         logger.error("Student ID is required")
         raise HTTPException(status_code=400, detail="Student ID is required")
     
-    # Check for existing pending session with same parameters
-    existing_session = db.query(SessionModel).filter(
-        SessionModel.tutor_id == payload.tutor_id,
-        SessionModel.topic_id == payload.topic_id,
-        SessionModel.date == payload.date,
-        SessionModel.time == payload.time,
-        SessionModel.student_id == payload.student_id,
-        SessionModel.status == "pending"
-    ).first()
+    try:
+        status_query = db.query(StatusDetail).filter(StatusDetail.status == "Pending")
+        pending_status = status_query.first()
+        
+        if not pending_status:
+            logger.error("Status 'pending' not found in status table")
+            raise HTTPException(status_code=500, detail="System configuration error: status 'pending' not found")
+        
+        pending_status_id = pending_status.status_id
+        
+
+    except Exception as e:
+        logger.error(f"Error querying status table: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving status information")
     
-    if existing_session:
+    try:
 
-        logger.warning(f"Duplicate session request detected for student {payload.student_id} with tutor {payload.tutor_id}")
-        raise HTTPException(
-            status_code=409, 
+        existing_query = db.query(Session).filter(
+            Session.tutor_id == payload.tutor_id,
+            Session.topic_id == payload.topic_id,
+            Session.date == payload.date,
+            Session.time == payload.time,
+            Session.student_id == payload.student_id,
+            Session.status == pending_status_id
 
-            detail="A session request with the same tutor, topic, date, and time is already pending. Please wait for a response or cancel the existing request."
         )
+        existing_session = existing_query.first()
+        
+
+        if existing_session:
+            logger.warning(f"Duplicate session request detected for student {payload.student_id} with tutor {payload.tutor_id}")
+            raise HTTPException(
+
+                status_code=409, 
+                detail="A session request with the same tutor, topic, date, and time is already pending. Please wait for a response or cancel the existing request."
+
+            )
+            
+
+    except Exception as e:
+        logger.error(f"Error checking for existing sessions: {e}")
+        raise HTTPException(status_code=500, detail="Error checking for existing sessions")
         
     logger.info(f"Requesting session with tutor {payload.tutor_id} for student {payload.student_id}")
     
     try:
-        session = SessionModel(
+        session = Session(
             date=payload.date,
             time=payload.time,
             tutor_id=payload.tutor_id,
             student_id=payload.student_id,
             topic_id=payload.topic_id,
-            status="pending",  # Default to pending status for new requests
+            status=0,
             time_started=payload.time_started,
             time_ended=payload.time_ended,
             duration=payload.duration,
             room_number=payload.room_number,
             modality=payload.modality
         )
+        
+        # Add and commit to database
         db.add(session)
-
         db.commit()
-
         db.refresh(session)
-
+        
+        # Return the created session
         return session
+
     
-
     except Exception as e:
-        logger.error(f"Error requesting session: {e}")
-
-        raise HTTPException(status_code=500, detail="Internal server error")
+        db.rollback()
+        logger.error(f"Error creating session: {e}")
+        raise HTTPException(status_code=500, detail="Error creating session request")
 
 @router.delete("/session/delete/{session_id}")
 def delete_session_request(session_id: str, user=Depends(verify_token), db: Session = Depends(get_db)):
