@@ -1,7 +1,6 @@
 import type { Schedule } from '@/types';
 import { api } from '@/utils/axios';
 import { useEffect, useState } from 'react';
-// import axios from 'axios';
 
 const TutorSchedule = () => {
   const [, setSidebarOpen] = useState(true);
