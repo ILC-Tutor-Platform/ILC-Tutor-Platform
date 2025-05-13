@@ -177,6 +177,6 @@ export const router = createBrowserRouter([
   },
   {
     path: 'sessions/approved-sessions',
-    element: <StudentScheduleTracking/>
+    element: <StudentScheduleTracking />,
   },
 ]);
