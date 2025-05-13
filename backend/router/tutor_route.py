@@ -163,6 +163,8 @@ async def get_tutor_by_id( tutor_id: str ,db: DBSession = Depends(get_db)):
 
         return tutor_data;
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching tutor: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching tutor: {str(e)}")

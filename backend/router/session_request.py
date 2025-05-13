@@ -38,6 +38,8 @@ def update_session_status( payload: SessionStatusUpdate, user=Depends(require_ro
         db.commit()
 
         logger.info(f"Session {session_id} was accepted by the tutor {session.tutor_id}")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error retrieving sessions: {e}")
         raise HTTPException(status_code=500, detail="Internal server error during authentication")

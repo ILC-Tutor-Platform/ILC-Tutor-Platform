@@ -80,6 +80,9 @@ async def login(credentials: LoginRequest):
             uid=auth_response.user.id
         )
     
+    except HTTPException:
+        raise
+    
     except Exception as e:
         logger.error(f"Login failed: {e}")
         raise HTTPException(status_code=401, detail="Authentication failed")
@@ -98,6 +101,9 @@ async def refresh_token(payload: RefreshRequest):
             refresh_token=session.refresh_token,
             uid=session.user.id
         )
+    
+    except HTTPException:
+        raise
     
     except Exception as e:
         logger.error(f"Refresh failed: {e}")
