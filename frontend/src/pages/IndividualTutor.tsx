@@ -47,6 +47,18 @@ const IndividualTutor = () => {
     fetchTutor();
   }, [tutor_id]);
 
+  // Helper function to safely join array values or return default
+  const safeJoin = (
+    value: string | string[] | undefined,
+    separator = ', ',
+    defaultValue = 'Not specified',
+  ) => {
+    if (Array.isArray(value)) {
+      return value.join(separator) || defaultValue;
+    }
+    return value || defaultValue;
+  };
+
   if (loading) {
     return <TutorLoadingSkeleton />;
   }
@@ -63,9 +75,9 @@ const IndividualTutor = () => {
       >
         <TutorCard
           name={tutor.name || 'Guest'}
-          subject={tutor.subject?.join(', ') || 'Not specified'}
-          available={tutor.availability?.join(', ') || 'Not specified'}
-          expertise={tutor.expertise?.join(', ') || 'Not specified'}
+          subject={safeJoin(tutor.expertise)}
+          available={safeJoin(tutor.availability)}
+          expertise={safeJoin(tutor.expertise)}
           className="bg-white"
         />
         <div
@@ -81,9 +93,9 @@ const IndividualTutor = () => {
             <DropdownDatesAvail
               dates={[
                 [
-                  tutor.availability.join(','),
-                  tutor.available_time_from.join(','),
-                  tutor.available_time_to.join(','),
+                  safeJoin(tutor.availability, ','),
+                  safeJoin(tutor.available_time_from, ','),
+                  safeJoin(tutor.available_time_to, ','),
                 ],
               ]}
               selectedDates={selectedDates}
