@@ -83,7 +83,7 @@ const Tutors = () => {
                 <TutorCard
                   key={tutor.userid}
                   name={tutor.name}
-                  subject={tutor.affiliations.join(', ')}
+                  subject={tutor.subject}
                   available={getAvailability(tutor)}
                   expertise={tutor.expertise.join(', ')}
                   className="mx-auto"
