@@ -135,6 +135,7 @@ async def get_tutor_by_id( tutor_id: str ,db: DBSession = Depends(get_db)):
             .outerjoin(TutorAvailability, UserDetail.userid == TutorAvailability.tutor_id)\
             .outerjoin(TutorExpertise, UserDetail.userid == TutorExpertise.tutor_id)\
             .outerjoin(TutorSocials, UserDetail.userid == TutorSocials.tutor_id)\
+            .outerjoin(SubjectDetail, UserDetail.userid == SubjectDetail.tutor_id)\
             .options(
                 joinedload(UserDetail.tutor_detail),
                 joinedload(UserDetail.tutor_affiliation),
@@ -151,6 +152,7 @@ async def get_tutor_by_id( tutor_id: str ,db: DBSession = Depends(get_db)):
             "name": user.name,
             "email": user.email,
             "datejoined": user.datejoined,
+            "subject": user.subject_detail.subject_name if hasattr(user, 'subject_detail') and user.subject_detail else None,
             "description": user.tutor_detail.description if hasattr(user, 'tutor_detail') and user.tutor_detail else None,
             "status": str(user.tutor_detail.status) if hasattr(user, 'tutor_detail') and user.tutor_detail else None,
             "affiliations": [user.tutor_affiliation.affiliations] if hasattr(user, 'tutor_affiliation') and user.tutor_affiliation else None,
