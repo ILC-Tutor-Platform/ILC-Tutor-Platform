@@ -1,9 +1,13 @@
 import Logo from '@/assets/AralLinkLogo.svg';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useAuthStore } from '@/stores/authStore';
+import { useRoleStore } from '@/stores/roleStore';
 import { Label } from '@radix-ui/react-dropdown-menu';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { UserAuth } from '../context/AuthContext';
 
 const SigninAsAdmin = () => {
   const [email, setEmail] = useState('');
@@ -19,6 +23,10 @@ const SigninAsAdmin = () => {
   const handleShowPassword = () => {
     setShowPassword((prev) => !prev);
   };
+
+  const authContext = UserAuth();
+  const { signInAdmin } = authContext || {};
+  const navigate = useNavigate();
 
   const validateFields = () => {
     const newErrors: {
@@ -43,17 +51,46 @@ const SigninAsAdmin = () => {
       setLoading(false);
       return;
     }
-
     try {
-      console.log('email', email);
-      console.log('password', password);
+      const { success, error } = await signInAdmin(email, password);
+      if (success) {
+        const user = useAuthStore.getState().user;
+        if (!user || !user.role) {
+          throw new Error('Role not found after successful login');
+        }
 
+        const { setActiveRole } = useRoleStore.getState();
+
+        const role = Number(user.role);
+
+        setActiveRole(role);
+        navigate('/admin/session-tracking');
+      } else {
+        setErrors({ invalidCredentials: error });
+        toast.error('Sign in failed.', {
+          className: 'green-shadow-card text-black',
+
+          duration: 3000,
+          style: {
+            background: '#ffffff',
+            color: '#8A1538',
+            fontSize: '16px',
+            border: '0px',
+            padding: '1.5rem',
+
+            boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
+          },
+        });
+        console.error('Sign in failed:', error);
+      }
       setTimeout(() => {
         setLoading(false);
       }, 1200);
     } catch (error) {
       console.error('Error signing in:', error);
       setErrors({ invalidCredentials: 'Invalid email or password.' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -68,7 +105,9 @@ const SigninAsAdmin = () => {
       >
         <div className="grid gap-10">
           <img src={Logo} alt="Logo" className="w-35 h-auto mx-auto" />
-          <h2 className="font-bold text-5xl text-center">Admin Sign in</h2>
+          <h2 className="font-bold text-4xl md:text-5xl text-center">
+            Admin Sign in
+          </h2>
         </div>
         <div className="flex flex-col gap-5">
           <div>
@@ -84,6 +123,7 @@ const SigninAsAdmin = () => {
               name="email"
               placeholder="Email address"
               className={`p-3 mt-2 ${errors.email ? 'border-red-500' : ''}`}
+              autoComplete="email"
             />
           </div>
           <div>
@@ -100,6 +140,7 @@ const SigninAsAdmin = () => {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Password"
                 className={`p-3 mt-2 ${errors.password ? 'border-red-500' : ''}`}
+                autoComplete="current-password"
               />
             </div>
             <div className="flex items-center mt-2">
@@ -117,7 +158,7 @@ const SigninAsAdmin = () => {
           </div>
         </div>
         <Button type="submit" disabled={loading} variant={'yellow-button'}>
-          Sign In as Admin
+          {loading ? 'Signing in...' : 'Sign in as admin'}
         </Button>
 
         <div className="mx-auto">

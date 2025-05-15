@@ -6,6 +6,8 @@ import { Menu } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import BadgeIcon from '../assets/user2.svg';
+import AdminSidebar from './AdminSidebar';
 import StudentSidebar from './StudentSidebar';
 import TutorSidebar from './TutorSidebar';
 import { Button } from './ui/button';
@@ -70,10 +72,35 @@ const Navbar = () => {
           />
           {activeRole === 0 && <StudentSidebar />}
           {activeRole === 1 && <TutorSidebar />}
+          {activeRole === 2 && <AdminSidebar />}
         </span>
       )}
-      <NavLink to={'/'}>
+      <NavLink to={'/'} className="flex gap-4 items-center">
         <img src={Logo} alt="Logo" className="w-35 h-auto" />
+        {activeRole == 0 && (
+          <div className="py-1 px-3 bg-[#307B74] rounded-xl flex items-center gap-2 shadow-md">
+            <img className="w-4 h-4" src={BadgeIcon} alt="badge icon" />
+            <div className="text-white text-xs lg:text-base font-montserrat">
+              Student
+            </div>
+          </div>
+        )}
+        {activeRole == 1 && (
+          <div className="py-1 px-3 bg-[#307B74] rounded-xl flex items-center gap-2 shadow-md">
+            <img className="w-4 h-4" src={BadgeIcon} alt="badge icon" />
+            <div className="text-white text-xs lg:text-base font-montserrat">
+              Tutor
+            </div>
+          </div>
+        )}
+        {activeRole == 2 && (
+          <div className="py-1 px-3 bg-[#307B74] rounded-xl flex items-center gap-2 shadow-md">
+            <img className="w-4 h-4" src={BadgeIcon} alt="badge icon" />
+            <div className="text-white text-xs lg:text-base font-montserrat">
+              Admin
+            </div>
+          </div>
+        )}
       </NavLink>
 
       <ul className="flex gap-10 items-center relative">
@@ -89,21 +116,24 @@ const Navbar = () => {
             Home
           </NavLink>
         </li>
-        <li>
-          <NavLink
-            to={'/tutors'}
-            className={({ isActive }) =>
-              isActive
-                ? 'text-ilc-yellow underline underline-offset-[15px]'
-                : 'hover:text-ilc-yellow underline-offset-[15px] hover:underline'
-            }
-          >
-            Tutors
-          </NavLink>
-        </li>
+
+        {activeRole !== 2 && (
+          <li>
+            <NavLink
+              to={'/tutors'}
+              className={({ isActive }) =>
+                isActive
+                  ? 'text-ilc-yellow underline underline-offset-[15px]'
+                  : 'hover:text-ilc-yellow underline-offset-[15px] hover:underline'
+              }
+            >
+              Tutors
+            </NavLink>
+          </li>
+        )}
 
         {isAuthenticated && user && (
-          <li>
+          <li className="flex gap-5">
             {activeRole === 0 && (
               <NavLink
                 to={'/profile/student'}
@@ -126,6 +156,30 @@ const Navbar = () => {
                 }
               >
                 Profile
+              </NavLink>
+            )}
+            {activeRole === 2 && (
+              <NavLink
+                to={'/admin/session-tracking'}
+                className={({ isActive }) =>
+                  isActive
+                    ? 'text-ilc-yellow underline underline-offset-[15px]'
+                    : 'hover:text-ilc-yellow underline-offset-[15px] hover:underline'
+                }
+              >
+                Sessions
+              </NavLink>
+            )}
+            {activeRole === 2 && (
+              <NavLink
+                to={'/admin/tutor-tracking'}
+                className={({ isActive }) =>
+                  isActive
+                    ? 'text-ilc-yellow underline underline-offset-[15px]'
+                    : 'hover:text-ilc-yellow underline-offset-[15px] hover:underline'
+                }
+              >
+                Tutor Tracking
               </NavLink>
             )}
           </li>

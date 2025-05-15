@@ -36,7 +36,11 @@ export const router = createBrowserRouter([
       },
       {
         path: '/tutors',
-        element: <Tutors />,
+        element: (
+          <ProtectedRoute allowUnauthenticated={true} allowedRoles={[0, 1]}>
+            <Tutors />
+          </ProtectedRoute>
+        ),
       },
       {
         path: '/tutors/:tutor_id',
