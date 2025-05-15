@@ -78,27 +78,23 @@ const Navbar = () => {
       <NavLink to={'/'} className="flex gap-4 items-center">
         <img src={Logo} alt="Logo" className="w-35 h-auto" />
         {activeRole == 0 && (
-          <div className="py-1 px-3 bg-[#307B74] rounded-xl flex items-center gap-2 shadow-md">
+          <div className="py-1 px-2 bg-[#307B74] rounded-xl flex items-center gap-2 shadow-md">
             <img className="w-4 h-4" src={BadgeIcon} alt="badge icon" />
-            <div className="text-white text-xs lg:text-base font-montserrat">
+            <div className="text-white text-[10px] font-montserrat">
               Student
             </div>
           </div>
         )}
         {activeRole == 1 && (
-          <div className="py-1 px-3 bg-[#307B74] rounded-xl flex items-center gap-2 shadow-md">
+          <div className="py-1 px-2 bg-[#307B74] rounded-xl flex items-center gap-2 shadow-md">
             <img className="w-4 h-4" src={BadgeIcon} alt="badge icon" />
-            <div className="text-white text-xs lg:text-base font-montserrat">
-              Tutor
-            </div>
+            <div className="text-white text-[10px] font-montserrat">Tutor</div>
           </div>
         )}
         {activeRole == 2 && (
-          <div className="py-1 px-3 bg-[#307B74] rounded-xl flex items-center gap-2 shadow-md">
+          <div className="py-1 px-2 bg-[#307B74] rounded-xl flex items-center gap-2 shadow-md">
             <img className="w-4 h-4" src={BadgeIcon} alt="badge icon" />
-            <div className="text-white text-xs lg:text-base font-montserrat">
-              Admin
-            </div>
+            <div className="text-white text-[10px] font-montserrat">Admin</div>
           </div>
         )}
       </NavLink>
