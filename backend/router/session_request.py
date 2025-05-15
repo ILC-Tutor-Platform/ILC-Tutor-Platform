@@ -311,3 +311,47 @@ def delete_session_request(session_id: str, user=Depends(verify_token), db: Sess
         db.rollback()
         logger.exception("Unexpected error during deletion:")
         raise HTTPException(status_code=500, detail="Internal server error.")
+
+@router.get("/sessions/admin")
+def get_sessions(db: Session = Depends(get_db)):
+    try:
+        sessions = (
+            db.query(
+                Session.student_id.label("student_name"),
+                Session.tutor_id.label("tutor_name"),
+                SubjectDetail.subject_name,
+                TopicDetail.topic_title,
+                Session.date,
+                Session.time,
+                Session.session_id,
+                Session.status
+            )
+            .join(TutorDetail, TutorDetail.tutor_id == Session.tutor_id)
+            .join(StudentDetail, StudentDetail.student_id == Session.student_id)
+            .join(UserDetail, UserDetail.userid == TutorDetail.tutor_id)
+            .join(TopicDetail, TopicDetail.topic_id == Session.topic_id)
+            .join(SubjectDetail, SubjectDetail.subject_id == TopicDetail.subject_id)
+            .filter(Session.status == 1)
+            .all()
+        )
+
+        logger.info("Fetching all sessions....")
+        return {
+            "session": [
+                {
+                    "tutor_name": s.tutor_name,
+                    "student_name": s.student_name,
+                    "subject": s.subject_name,
+                    "topic": s.topic_title,
+                    "date": s.date.isoformat(),
+                    "time": s.time.strftime("%H:%M"),
+                    "session_id": s.session_id,
+                    "status_id": s.status
+                }
+                for s in sessions
+            ]
+        }
+
+    except Exception as e:
+        logger.error(f"Error retrieving sessions: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error during authentication")
