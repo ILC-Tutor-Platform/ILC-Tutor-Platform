@@ -1,7 +1,7 @@
 from fastapi import Depends, APIRouter, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from database.config import get_db
-from models import UserDetail, StudentDetail, TutorDetail, TutorAffiliation, TutorAvailability, TutorExpertise, TutorSocials, AdminDetail
+from models import UserDetail, StudentDetail, TutorDetail, TutorAffiliation, TutorAvailability, TutorExpertise, TutorSocials, AdminDetail, SubjectDetail
 from constants.supabase_client import supabase
 from jose import jwt, JWTError
 from constants import settings
@@ -115,6 +115,7 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
             affiliation = db.query(TutorAffiliation).filter(TutorAffiliation.tutor_id == uid).all()
             expertise = db.query(TutorExpertise).filter(TutorExpertise.tutor_id == uid).all()
             socials = db.query(TutorSocials).filter(TutorSocials.tutor_id == uid).all()
+            subject = db.query(SubjectDetail).filter(SubjectDetail.tutor_id == uid).all()
             if tutor:
                 response["tutor"] = {
                     "description": tutor.description,
@@ -122,7 +123,8 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
                     "affiliations": [a.affiliations for a in affiliation],
                     "expertise": [e.expertise for e in expertise],
                     "socials": [s.socials for s in socials],
-                    "availability": [a.availability for a in availability]
+                    "availability": [a.availability for a in availability],
+                    "subject": [s.subject for s in subject]
                 }
 
         if 2 in role_ids:
