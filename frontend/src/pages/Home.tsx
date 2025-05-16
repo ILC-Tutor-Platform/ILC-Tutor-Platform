@@ -1,9 +1,11 @@
 import Logo from '@/assets/AralLinkLogo.svg';
 import { Button } from '@/components/ui/button';
+import { useRoleStore } from '@/stores/roleStore';
 import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const navigate = useNavigate();
+  const activeRole = useRoleStore((state) => state.activeRole);
   return (
     <section className="relative overflow-clip h-screen">
       {/* BOOKS BG ELEMENTS */}
@@ -21,12 +23,12 @@ const Home = () => {
           connecting students with tutors and booking academic support
           sessions—all in one place.
         </p>
-
         <div>
           <Button
             variant={'yellow-button-outline'}
             className="px-10 py-5 md:py-7 md:text-xl font-bold rounded-3xl"
             onClick={() => navigate('/tutors')}
+            disabled={activeRole === 2}
           >
             BROWSE TUTORS
           </Button>

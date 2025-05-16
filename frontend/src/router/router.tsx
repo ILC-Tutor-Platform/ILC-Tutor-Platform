@@ -6,6 +6,7 @@ import Home from '@/pages/Home';
 import IndividualTutor from '@/pages/IndividualTutor';
 import PageNotFound from '@/pages/PageNotFound';
 import Signin from '@/pages/Signin';
+import SigninAsAdmin from '@/pages/SigninAsAdmin';
 import SignupAs from '@/pages/SignUpAs';
 import SignUpAsStudent from '@/pages/SignUpAsStudent';
 import SignUpAsTutor from '@/pages/SignUpAsTutor';
@@ -35,7 +36,11 @@ export const router = createBrowserRouter([
       },
       {
         path: '/tutors',
-        element: <Tutors />,
+        element: (
+          <ProtectedRoute allowUnauthenticated={true} allowedRoles={[0, 1]}>
+            <Tutors />
+          </ProtectedRoute>
+        ),
       },
       {
         path: '/tutors/:tutor_id',
@@ -178,5 +183,13 @@ export const router = createBrowserRouter([
   {
     path: 'sessions/approved-sessions',
     element: <StudentScheduleTracking />,
+  },
+  {
+    path: '/signin-as-admin',
+    element: (
+      <RedirectIfAuthenticated>
+        <SigninAsAdmin />
+      </RedirectIfAuthenticated>
+    ),
   },
 ]);

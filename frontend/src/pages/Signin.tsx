@@ -213,12 +213,19 @@ const Signin = () => {
                   Sign in
                 </Button>
               </div>
-
-              <div className="flex items-center justify-center gap-1 text-ilc-grey">
-                <p>Don't have an account? </p>
-                <Link to="/signup" className="font-bold text-black">
-                  Sign up
-                </Link>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-center gap-1 text-ilc-grey">
+                  <p>Don't have an account? </p>
+                  <Link to="/signup" className="font-bold text-black">
+                    Sign up
+                  </Link>
+                </div>
+                <div className="flex items-center justify-center gap-1 text-ilc-grey">
+                  <p>Admin? </p>
+                  <Link to="/signin-as-admin" className="font-bold text-black">
+                    Sign in here
+                  </Link>
+                </div>
               </div>
               <div className="mx-auto">
                 <Link
