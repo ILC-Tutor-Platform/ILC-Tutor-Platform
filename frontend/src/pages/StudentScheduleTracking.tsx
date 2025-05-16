@@ -111,12 +111,13 @@ const StudentScheduleTracking = () => {
                     <div>{schedule.subject}</div>
                     <div>
                       <span
-                        className={`border text-xs px-3 py-1 rounded-full ${schedule.status_id == 1
+                        className={`border text-xs px-3 py-1 rounded-full ${
+                          schedule.status_id == 1
                             ? 'border-[#307B74] text-[#307B74]' // Approved - green
                             : schedule.status_id == 2
                               ? 'border-[#8A1538] text-[#8A1538]' // Declined - red
                               : 'border-yellow-400 text-yellow-600' // Pending - yellow
-                          }`}
+                        }`}
                       >
                         {schedule.status_id == 1
                           ? 'Approved'
@@ -132,10 +133,11 @@ const StudentScheduleTracking = () => {
                           schedule.status_id == 1 || schedule.status_id == 2
                         }
                         className={`px-3 py-1 rounded-md text-xs sm:text-sm transition-colors duration-200
-                        ${schedule.status_id == 1 || schedule.status_id == 2
+                        ${
+                          schedule.status_id == 1 || schedule.status_id == 2
                             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                             : 'bg-[#8A1538] hover:bg-[#6A102C] text-white'
-                          }`}
+                        }`}
                       >
                         {schedule.status_id == 1 || schedule.status_id == 2
                           ? 'Delete'

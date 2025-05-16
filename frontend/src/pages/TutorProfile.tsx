@@ -271,8 +271,8 @@ const TutorProfile = () => {
             description: res.data.tutor?.description || '',
             dates_available: res.data.tutor?.dates_available
               ? res.data.tutor.dates_available.map(
-                (date: string) => new Date(date),
-              )
+                  (date: string) => new Date(date),
+                )
               : [],
           });
         }
@@ -811,8 +811,8 @@ const TutorProfile = () => {
                       <span className="text-black font-semibold text-right w-2/3">
                         {tutor.dates_available.length > 0
                           ? tutor.dates_available
-                            .map((date) => date.toLocaleDateString())
-                            .join(', ')
+                              .map((date) => date.toLocaleDateString())
+                              .join(', ')
                           : 'N/A'}
                       </span>
                     </div>
