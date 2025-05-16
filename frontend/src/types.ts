@@ -135,3 +135,14 @@ export interface Schedule {
   status_id: number;
   session_id: string;
 }
+
+export interface AdminSessionTracking {
+  tutor_name: string;
+  student_name: string;
+  subject: string;
+  topic: string;
+  date: string;
+  time: string;
+  session_id: string;
+  status_id: number;
+}

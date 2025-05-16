@@ -45,7 +45,7 @@ const TutorTracking = () => {
   }, []);
 
   return (
-    <div className="min-h-screen font-manrope flex relative">
+    <div className="min-h-screen flex relative lg:w-[80%] lg:mx-auto">
       <div className="transition-all duration-300 ease-in-out flex-1">
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
           <div
@@ -62,7 +62,7 @@ const TutorTracking = () => {
           </div>
 
           <div className="w-full min-h-[calc(100vh-10rem)] bg-[#F9F8F4] shadow-md border border-black/30 rounded-2xl p-4 md:p-6 lg:p-8">
-            <div className="flex flex-wrap justify-center gap-4 md:gap-6 mt-4 md:mt-6">
+            <div className="flex  justify-center gap-4 md:gap-6 mt-4 md:mt-6">
               {tutors.map((tutor) => (
                 <TutorCard
                   key={tutor.id}

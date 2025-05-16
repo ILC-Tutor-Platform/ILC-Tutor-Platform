@@ -271,8 +271,8 @@ const TutorProfile = () => {
             description: res.data.tutor?.description || '',
             dates_available: res.data.tutor?.dates_available
               ? res.data.tutor.dates_available.map(
-                  (date: string) => new Date(date),
-                )
+                (date: string) => new Date(date),
+              )
               : [],
           });
         }
@@ -288,7 +288,7 @@ const TutorProfile = () => {
   }, [user, accessToken]);
 
   return (
-    <div className="min-h-screen font-manrope relative flex">
+    <div className="min-h-screen relative flex lg:w-[80%] lg:mx-auto">
       {/* Personal Information Modal */}
       {activeModal === 'personal' && (
         <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4">
@@ -811,8 +811,8 @@ const TutorProfile = () => {
                       <span className="text-black font-semibold text-right w-2/3">
                         {tutor.dates_available.length > 0
                           ? tutor.dates_available
-                              .map((date) => date.toLocaleDateString())
-                              .join(', ')
+                            .map((date) => date.toLocaleDateString())
+                            .join(', ')
                           : 'N/A'}
                       </span>
                     </div>

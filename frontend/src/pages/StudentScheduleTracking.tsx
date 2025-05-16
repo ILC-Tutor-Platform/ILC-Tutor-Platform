@@ -63,7 +63,7 @@ const StudentScheduleTracking = () => {
   };
 
   return (
-    <div className="min-h-screen font-manrope relative flex">
+    <div className="min-h-screen relative flex lg:w-[80%] lg:mx-auto">
       <div className="transition-all duration-300 ease-in-out flex-1">
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
           <div
@@ -111,13 +111,12 @@ const StudentScheduleTracking = () => {
                     <div>{schedule.subject}</div>
                     <div>
                       <span
-                        className={`border text-xs px-3 py-1 rounded-full ${
-                          schedule.status_id == 1
+                        className={`border text-xs px-3 py-1 rounded-full ${schedule.status_id == 1
                             ? 'border-[#307B74] text-[#307B74]' // Approved - green
                             : schedule.status_id == 2
                               ? 'border-[#8A1538] text-[#8A1538]' // Declined - red
                               : 'border-yellow-400 text-yellow-600' // Pending - yellow
-                        }`}
+                          }`}
                       >
                         {schedule.status_id == 1
                           ? 'Approved'
@@ -133,11 +132,10 @@ const StudentScheduleTracking = () => {
                           schedule.status_id == 1 || schedule.status_id == 2
                         }
                         className={`px-3 py-1 rounded-md text-xs sm:text-sm transition-colors duration-200
-                        ${
-                          schedule.status_id == 1 || schedule.status_id == 2
+                        ${schedule.status_id == 1 || schedule.status_id == 2
                             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                             : 'bg-[#8A1538] hover:bg-[#6A102C] text-white'
-                        }`}
+                          }`}
                       >
                         {schedule.status_id == 1 || schedule.status_id == 2
                           ? 'Delete'
