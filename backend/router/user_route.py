@@ -90,7 +90,7 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
 
         # Fetch roles from Supabase
         role_ids = [int(r) for r in roles]
-
+        logger.info(f"Role ids: {role_ids}")
         response = {
             "user": {
                 "name": user_detail.name,
@@ -99,6 +99,7 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
             }
         }
 
+        logger.info(f"Details: {response}")
         # Add student data if applicable
         if 0 in role_ids:
             student = db.query(StudentDetail).filter(StudentDetail.student_id == uid).first()
@@ -116,6 +117,7 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
             expertise = db.query(TutorExpertise).filter(TutorExpertise.tutor_id == uid).all()
             socials = db.query(TutorSocials).filter(TutorSocials.tutor_id == uid).all()
             subject = db.query(SubjectDetail).filter(SubjectDetail.tutor_id == uid).all()
+
             if tutor:
                 response["tutor"] = {
                     "description": tutor.description,
@@ -124,7 +126,7 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
                     "expertise": [e.expertise for e in expertise],
                     "socials": [s.socials for s in socials],
                     "availability": [a.availability for a in availability],
-                    "subject": [s.subject for s in subject]
+                    "subject": [s.subject_name for s in subject]
                 }
 
         if 2 in role_ids:
