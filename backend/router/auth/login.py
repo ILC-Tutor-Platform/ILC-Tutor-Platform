@@ -1,8 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from constants.supabase_client import supabase
 from pydantic import BaseModel
+from sqlalchemy.orm import Session as DBSession
 from typing import List
+from database.config import get_db
 from constants.logger import logger
+from models import UserRoleDetail, UserDetail
 
 router = APIRouter()
 
@@ -24,6 +27,11 @@ class RefreshResponse(BaseModel):
     access_token: str
     refresh_token: str
     uid: str
+class AdminLoginResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    uid: str
+    role: str
     
 @router.post("/auth/login", response_model=LoginResponse)
 async def login(credentials: LoginRequest):
@@ -57,8 +65,10 @@ async def login(credentials: LoginRequest):
         logger.error(f"Login failed: {e}")
         raise HTTPException(status_code=401, detail="Authentication failed")
 
-@router.post("/auth/login/admin", response_model=LoginResponse)
-async def login(credentials: LoginRequest):
+
+
+@router.post("/auth/login/admin", response_model=AdminLoginResponse)
+async def login(credentials: LoginRequest, db: DBSession = Depends(get_db)):
     try:
         auth_response = supabase.auth.sign_in_with_password({
             "email": credentials.email, 
@@ -70,14 +80,20 @@ async def login(credentials: LoginRequest):
         if not user:
             raise HTTPException(status_code=401, detail="Invalid credentials")
         
-        role = auth_response.user.user_metadata.get("role", [])
-        if "2" not in role:
-            raise HTTPException(status_code=403, detail="User is not a tutor")
+        uid = user.id
+        
+        # Query roles associated with the user
+        roles = db.query(UserRoleDetail.role_id).join(UserDetail).filter(UserDetail.userid == uid).all()
+        role_ids = [str(r.role_id) for r in roles]
 
-        return LoginResponse(
+        if "2" not in role_ids:
+            raise HTTPException(status_code=403, detail="User is not an admin.")
+
+        return AdminLoginResponse(
             access_token=auth_response.session.access_token,
             refresh_token=auth_response.session.refresh_token,
-            uid=auth_response.user.id
+            uid=uid,
+            role = "2"
         )
     
     except HTTPException:

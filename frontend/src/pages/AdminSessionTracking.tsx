@@ -1,4 +1,3 @@
-import { useSidebarStore } from '@/stores/sidebarStore';
 import { useEffect, useState } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
 
@@ -11,24 +10,25 @@ interface Schedule {
 }
 
 const AdminSessionTracking = () => {
-  const { isOpen, toggle } = useSidebarStore();
-  const sidebarWidth = isOpen ? 7 : 0;
-
+  const [, setSidebarOpen] = useState(true);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
 
   useEffect(() => {
+    setSidebarOpen(false);
     const navbar = document.querySelector('nav');
+
     if (navbar) {
-      (navbar as HTMLElement).style.marginLeft = isOpen
-        ? `${sidebarWidth}rem`
-        : '0rem';
+      (navbar as HTMLElement).style.marginLeft = '0rem';
     }
+
+    // fetchSchedule();
+
     return () => {
       if (navbar) {
         (navbar as HTMLElement).style.marginLeft = '0rem';
       }
     };
-  }, [isOpen, sidebarWidth]);
+  }, []);
 
   useEffect(() => {
     const mockData: Schedule[] = [
@@ -59,12 +59,9 @@ const AdminSessionTracking = () => {
 
   return (
     <div className="min-h-screen font-manrope relative flex">
-      <AdminSidebar sidebarOpen={isOpen} setSidebarOpen={toggle} />
+      <AdminSidebar />
 
-      <div
-        className="transition-all duration-300 ease-in-out flex-1"
-        style={{ marginLeft: `${sidebarWidth}rem` }}
-      >
+      <div className="transition-all duration-300 ease-in-out flex-1">
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
           <div
             className="flex items-center gap-2 md:gap-4 mb-4 md:mb-6"
