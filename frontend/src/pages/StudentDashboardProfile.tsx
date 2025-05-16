@@ -1,6 +1,6 @@
 import { useTokenStore } from '@/stores/authStore';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import EditIcon from '../assets/edit.svg';
 import ProfilePlaceholder from '../assets/ProfilePlaceholder.svg';
 import BadgeIcon from '../assets/user2.svg';
@@ -32,6 +32,8 @@ const StudentDashboardProfile = () => {
   });
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
 
   const openPersonalModal = () => {
     setEditPersonalData({
@@ -40,6 +42,8 @@ const StudentDashboardProfile = () => {
       last_name: student.last_name,
     });
     setActiveModal('personal');
+    setUpdateError(null);
+    setUpdateSuccess(null);
   };
 
   const openEducationModal = () => {
@@ -48,11 +52,11 @@ const StudentDashboardProfile = () => {
       degree_program: student.degree_program,
     });
     setActiveModal('education');
+    setUpdateError(null);
+    setUpdateSuccess(null);
   };
 
-  const handlePersonalInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handlePersonalInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setEditPersonalData((prev) => ({
       ...prev,
@@ -61,7 +65,7 @@ const StudentDashboardProfile = () => {
   };
 
   const handleEducationInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setEditEducationData((prev) => ({
@@ -73,34 +77,62 @@ const StudentDashboardProfile = () => {
   const handleSavePersonalChanges = async () => {
     setIsUpdating(true);
     setUpdateError(null);
+    setUpdateSuccess(null);
 
     try {
-      if (user?.uid && accessToken) {
-        await axios.patch(
-          `${import.meta.env.VITE_BACKEND_URL}users/profile`,
-          {
-            name: `${editPersonalData.first_name} ${editPersonalData.middle_initial} ${editPersonalData.last_name}`.trim(),
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          },
-        );
-
-        setStudent((prev) => ({
-          ...prev,
-          first_name: editPersonalData.first_name,
-          middle_initial: editPersonalData.middle_initial,
-          last_name: editPersonalData.last_name,
-        }));
-
-        setActiveModal(null);
+      if (!user?.uid || !accessToken) {
+        throw new Error('User not authenticated');
       }
-    } catch (err) {
+
+      if (
+        !editPersonalData.first_name.trim() ||
+        !editPersonalData.last_name.trim()
+      ) {
+        setUpdateError('First name and last name are required');
+        setIsUpdating(false);
+        return;
+      }
+
+      const fullName = editPersonalData.middle_initial.trim()
+        ? `${editPersonalData.first_name} ${editPersonalData.middle_initial} ${editPersonalData.last_name}`.trim()
+        : `${editPersonalData.first_name} ${editPersonalData.last_name}`.trim();
+
+      console.log('Sending update request with name:', fullName);
+
+      const response = await axios.patch(
+        `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
+        {
+          user: {
+            name: fullName,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+
+      console.log('Update response:', response.data);
+
+      setStudent((prev) => ({
+        ...prev,
+        first_name: editPersonalData.first_name,
+        middle_initial: editPersonalData.middle_initial,
+        last_name: editPersonalData.last_name,
+      }));
+
+      setUpdateSuccess('Personal information updated successfully!');
+
+      setTimeout(() => {
+        setActiveModal(null);
+        setRefreshKey((prevKey) => prevKey + 1);
+      }, 1500);
+    } catch (err: any) {
       console.error('Failed to update student data:', err);
       setUpdateError(
-        'Failed to update personal information. Please try again.',
+        err.response?.data?.detail ||
+          'Failed to update personal information. Please try again.',
       );
     } finally {
       setIsUpdating(false);
@@ -110,34 +142,61 @@ const StudentDashboardProfile = () => {
   const handleSaveEducationChanges = async () => {
     setIsUpdating(true);
     setUpdateError(null);
+    setUpdateSuccess(null);
 
     try {
-      if (user?.uid && accessToken) {
-        await axios.patch(
-          `${import.meta.env.VITE_BACKEND_URL}students/profile`,
-          {
+      if (!user?.uid || !accessToken) {
+        throw new Error('User not authenticated');
+      }
+
+      if (
+        !editEducationData.student_number.trim() ||
+        !editEducationData.degree_program.trim()
+      ) {
+        setUpdateError('Student number and degree program are required');
+        setIsUpdating(false);
+        return;
+      }
+
+      console.log('Sending education update request:', {
+        student_number: editEducationData.student_number,
+        degree_program: editEducationData.degree_program,
+      });
+
+      const response = await axios.patch(
+        `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
+        {
+          student: {
             student_number: editEducationData.student_number,
             degree_program: editEducationData.degree_program,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
           },
-        );
+        },
+      );
 
-        setStudent((prev) => ({
-          ...prev,
-          student_number: editEducationData.student_number,
-          degree_program: editEducationData.degree_program,
-        }));
+      console.log('Education update response:', response.data);
 
+      setStudent((prev) => ({
+        ...prev,
+        student_number: editEducationData.student_number,
+        degree_program: editEducationData.degree_program,
+      }));
+
+      setUpdateSuccess('Education information updated successfully!');
+
+      setTimeout(() => {
         setActiveModal(null);
-      }
-    } catch (err) {
+        setRefreshKey((prevKey) => prevKey + 1);
+      }, 1500);
+    } catch (err: any) {
       console.error('Failed to update education data:', err);
       setUpdateError(
-        'Failed to update education information. Please try again.',
+        err.response?.data?.detail ||
+          'Failed to update education information. Please try again.',
       );
     } finally {
       setIsUpdating(false);
@@ -147,41 +206,117 @@ const StudentDashboardProfile = () => {
   useEffect(() => {
     const fetchStudent = async () => {
       try {
-        if (user?.uid && accessToken) {
-          const res = await axios.get(
-            `${import.meta.env.VITE_BACKEND_URL}users/profile`,
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-            },
-          );
-
-          const fullName = res.data.user?.name || '';
-          const nameParts = fullName.split(' ');
-          const firstName = nameParts[0] || '';
-          const middleInitial = nameParts.length > 2 ? nameParts[1] : '';
-          const lastName =
-            nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
-
-          setStudent({
-            first_name: firstName,
-            middle_initial: middleInitial,
-            last_name: lastName,
-            student_number: res.data.student?.student_number || '',
-            degree_program: res.data.student?.degree_program || '',
-          });
+        if (!user?.uid || !accessToken) {
+          setError('Not authenticated');
+          setLoading(false);
+          return;
         }
-      } catch (err) {
+
+        console.log(
+          'Fetching student profile with token:',
+          accessToken.substring(0, 10) + '...',
+        );
+
+        const res = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/users/profile`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+
+        console.log('Profile response:', res.data);
+
+        if (!res.data.user) {
+          throw new Error('User data not found in response');
+        }
+
+        const fullName = res.data.user.name || '';
+        console.log('Full name to parse:', fullName);
+
+        const extractNameParts = (name: string) => {
+          const nameParts = name.trim().split(' ');
+
+          if (nameParts.length === 0) {
+            return { firstName: '', middleInitial: '', lastName: '' };
+          }
+
+          if (nameParts.length === 1) {
+            return { firstName: nameParts[0], middleInitial: '', lastName: '' };
+          }
+
+          if (nameParts.length === 2) {
+            return {
+              firstName: nameParts[0],
+              middleInitial: '',
+              lastName: nameParts[1],
+            };
+          }
+
+          let firstName, middleInitial, lastName;
+
+          const singleLetterIndices = nameParts
+            .map((part, index) => (part.length === 1 ? index : -1))
+            .filter((index) => index !== -1);
+
+          if (singleLetterIndices.length === 1) {
+            const miIndex = singleLetterIndices[0];
+
+            firstName = nameParts.slice(0, miIndex).join(' ');
+            middleInitial = nameParts[miIndex];
+            lastName = nameParts.slice(miIndex + 1).join(' ');
+          } else {
+            firstName = nameParts[0];
+            lastName = nameParts[nameParts.length - 1];
+
+            if (nameParts.length > 2) {
+              middleInitial =
+                nameParts[nameParts.length - 2].length === 1
+                  ? nameParts[nameParts.length - 2]
+                  : '';
+
+              if (middleInitial === '') {
+                firstName = nameParts.slice(0, nameParts.length - 1).join(' ');
+              }
+            } else {
+              middleInitial = '';
+            }
+          }
+
+          return { firstName, middleInitial, lastName };
+        };
+
+        const { firstName, middleInitial, lastName } =
+          extractNameParts(fullName);
+
+        console.log('Name parts extracted:', {
+          firstName,
+          middleInitial,
+          lastName,
+        });
+
+        setStudent({
+          first_name: firstName,
+          middle_initial: middleInitial,
+          last_name: lastName,
+          student_number: res.data.student?.student_number || '',
+          degree_program: res.data.student?.degree_program || '',
+        });
+      } catch (err: any) {
         console.error('Failed to fetch student data:', err);
-        setError('Failed to load student data. Please try again later.');
+        setError(
+          err.response?.data?.detail ||
+            `Failed to load student data: ${err.message || 'Unknown error'}. Please try again later.`,
+        );
       } finally {
         setLoading(false);
       }
     };
 
+    setLoading(true);
     fetchStudent();
-  }, [user, accessToken]);
+  }, [user, accessToken, refreshKey]);
 
   return (
     <div className="min-h-screen relative flex lg:w-[80%] lg:mx-auto">
@@ -214,17 +349,6 @@ const StudentDashboardProfile = () => {
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-1">Last Name</label>
-                <input
-                  type="text"
-                  name="last_name"
-                  value={editPersonalData.last_name}
-                  onChange={handlePersonalInputChange}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
-                />
-              </div>
-
-              <div>
                 <label className="block text-gray-700 mb-1">
                   Middle Initial
                 </label>
@@ -237,10 +361,25 @@ const StudentDashboardProfile = () => {
                   maxLength={1}
                 />
               </div>
+
+              <div>
+                <label className="block text-gray-700 mb-1">Last Name</label>
+                <input
+                  type="text"
+                  name="last_name"
+                  value={editPersonalData.last_name}
+                  onChange={handlePersonalInputChange}
+                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
+                />
+              </div>
             </div>
 
             {updateError && (
               <div className="text-red-500 mb-4 text-sm">{updateError}</div>
+            )}
+
+            {updateSuccess && (
+              <div className="text-green-500 mb-4 text-sm">{updateSuccess}</div>
             )}
 
             <div className="flex justify-end space-x-3">
@@ -338,6 +477,10 @@ const StudentDashboardProfile = () => {
               <div className="text-red-500 mb-4 text-sm">{updateError}</div>
             )}
 
+            {updateSuccess && (
+              <div className="text-green-500 mb-4 text-sm">{updateSuccess}</div>
+            )}
+
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setActiveModal(null)}
@@ -408,7 +551,9 @@ const StudentDashboardProfile = () => {
 
             {/* Loading/Error */}
             {loading ? (
-              <div className="text-center text-gray-500">Loading...</div>
+              <div className="text-center text-gray-500">
+                Loading profile information...
+              </div>
             ) : error ? (
               <div className="text-center text-red-500">{error}</div>
             ) : (
