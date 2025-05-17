@@ -282,14 +282,13 @@ const TutorProfile = () => {
         return;
       }
 
-      // Format dates correctly for the backend
-      const datesArray = editTutoringData.dates_available.map(
-        (date) => date.toISOString().split('T')[0],
-      );
-      const timesFromArray = datesArray.map(() => '09:00:00');
-      const timesToArray = datesArray.map(() => '17:00:00');
+      const formattedDates = editTutoringData.dates_available.map((date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      });
 
-      // Create payload that matches backend expectations
       const payload = {
         tutor: {
           description: editTutoringData.description,
@@ -304,15 +303,13 @@ const TutorProfile = () => {
           affiliation: editTutoringData.affiliations,
         },
         availability: {
-          availability: datesArray,
-          available_time_from: timesFromArray,
-          available_time_to: timesToArray,
+          availability: formattedDates,
+          available_time_from: Array(formattedDates.length).fill('09:00:00'),
+          available_time_to: Array(formattedDates.length).fill('17:00:00'),
         },
       };
 
-      console.log('Sending update payload:', payload);
-
-      const response = await axios.patch(
+      await axios.patch(
         `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
         payload,
         {
@@ -321,8 +318,6 @@ const TutorProfile = () => {
           },
         },
       );
-
-      console.log('Update response:', response.data);
 
       setTutor((prev) => ({
         ...prev,
@@ -389,16 +384,18 @@ const TutorProfile = () => {
           (dateStr: string) => new Date(dateStr),
         );
 
-        // Handle subjects data properly
         const subjectsData = res.data.tutor?.subject || [];
-        const subjects = Array.isArray(subjectsData)
-          ? subjectsData.map((sub) => {
-              if (typeof sub === 'object') {
-                return sub.subject_name || sub.subject || '';
-              }
-              return sub;
-            })
-          : [];
+        const subjects = subjectsData.map(
+          (sub: any) => sub.subject_name || sub,
+        );
+
+        const expertiseData = res.data.tutor?.expertise || [];
+        const expertise = expertiseData.map((exp: any) => exp.expertise || exp);
+
+        const affiliationsData = res.data.tutor?.affiliations || [];
+        const affiliations = affiliationsData.map(
+          (aff: any) => aff.affiliation || aff,
+        );
 
         setTutor({
           first_name: firstName,
@@ -406,9 +403,9 @@ const TutorProfile = () => {
           last_name: lastName,
           facebook_link: facebookLink,
           linkedin_link: linkedinLink,
-          subjects: subjects.filter((s) => s), // Remove empty strings
-          affiliations: res.data.tutor?.affiliations || [],
-          expertise: res.data.tutor?.expertise || [],
+          subjects: subjects.filter(Boolean),
+          affiliations: affiliations.filter(Boolean),
+          expertise: expertise.filter(Boolean),
           description: res.data.tutor?.description || '',
           dates_available: parsedDates,
         });
@@ -568,6 +565,7 @@ const TutorProfile = () => {
                     type="text"
                     value={currentSubject}
                     onChange={(e) => setCurrentSubject(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addSubject()}
                     className="w-full p-[0.5rem] pr-[4rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
                     placeholder="Add a subject"
                   />
@@ -607,6 +605,7 @@ const TutorProfile = () => {
                     type="text"
                     value={currentAffiliation}
                     onChange={(e) => setCurrentAffiliation(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addAffiliation()}
                     className="w-full p-[0.5rem] pr-[4rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
                     placeholder="Add an affiliation"
                   />
@@ -646,6 +645,7 @@ const TutorProfile = () => {
                     type="text"
                     value={currentExpertise}
                     onChange={(e) => setCurrentExpertise(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addExpertise()}
                     className="w-full p-[0.5rem] pr-[4rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
                     placeholder="Add an expertise"
                   />
@@ -756,19 +756,18 @@ const TutorProfile = () => {
       {/* Main Profile Content */}
       <div className="transition-all duration-300 ease-in-out flex-1">
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
-          <div
-            className="flex items-center gap-2 md:gap-4 mb-4 md:mb-6"
-            style={{
-              color: '#8A1538',
-              fontFamily: 'Montserrat',
-              fontWeight: 700,
-            }}
-          >
-            <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
+          <div className="flex items-center gap-4 mb-4 md:mb-6 flex-nowrap">
+            <h1
+              className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl whitespace-nowrap"
+              style={{
+                color: '#8A1538',
+                fontFamily: 'Montserrat',
+                fontWeight: 700,
+              }}
+            >
               My Profile
-            </span>
-
-            <div className="pl-3 pr-3 pt-1 pb-1 md:pl-4 md:pr-4 md:pt-2 md:pb-2 bg-[#307B74] rounded-xl flex items-center gap-2">
+            </h1>
+            <div className="pl-3 pr-3 pt-1 pb-1 md:pl-4 md:pr-4 md:pt-2 md:pb-2 bg-[#307B74] rounded-xl flex items-center gap-2 whitespace-nowrap">
               <img
                 className="w-5 h-5 md:w-6 md:h-6"
                 src={BadgeIcon}
@@ -821,44 +820,44 @@ const TutorProfile = () => {
                     </button>
                   </div>
                   <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         First Name
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3">
                         {tutor.first_name || 'N/A'}
                       </span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Last Name
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3">
                         {tutor.last_name || 'N/A'}
                       </span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Middle Initial
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3">
                         {tutor.middle_initial || 'N/A'}
                       </span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Facebook Link
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 break-all">
                         {tutor.facebook_link ? (
                           <a
                             href={tutor.facebook_link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline break-all"
+                            className="text-blue-600 hover:underline"
                           >
                             {tutor.facebook_link}
                           </a>
@@ -868,17 +867,17 @@ const TutorProfile = () => {
                       </span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         LinkedIn Link
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 break-all">
                         {tutor.linkedin_link ? (
                           <a
                             href={tutor.linkedin_link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline break-all"
+                            className="text-blue-600 hover:underline"
                           >
                             {tutor.linkedin_link}
                           </a>
@@ -908,33 +907,33 @@ const TutorProfile = () => {
                     </button>
                   </div>
                   <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Subjects
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {tutor.subjects.length > 0
                           ? tutor.subjects.join(', ')
                           : 'N/A'}
                       </span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Affiliations
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {tutor.affiliations.length > 0
                           ? tutor.affiliations.join(', ')
                           : 'N/A'}
                       </span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Expertise
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {tutor.expertise.length > 0
                           ? tutor.expertise.join(', ')
                           : 'N/A'}
@@ -942,19 +941,21 @@ const TutorProfile = () => {
                     </div>
 
                     <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                      <span className="text-[#A19A9A] font-semibold w-1/3 shrink-0">
                         Description
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
-                        {tutor.description || 'N/A'}
-                      </span>
+                      <div className="w-2/3 min-w-0">
+                        <p className="text-black font-semibold text-right truncate">
+                          {tutor.description || 'N/A'}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Dates Available
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {tutor.dates_available.length > 0
                           ? tutor.dates_available
                               .map((date) => date.toLocaleDateString())
