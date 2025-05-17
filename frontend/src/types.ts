@@ -149,7 +149,7 @@ export interface AdminSessionTracking {
 }
 
 export interface TutorRequests {
-  tutor_name: string; 
+  tutor_name: string;
   email: string;
   description: string;
   status_id: number;
@@ -157,4 +157,3 @@ export interface TutorRequests {
   expertise: string;
   tutor_id: string;
 }
-
