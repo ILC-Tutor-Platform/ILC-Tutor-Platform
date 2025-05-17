@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from .user_route import require_role, verify_token
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from sqlalchemy import or_
 from database.config import get_db
 from models import SubjectDetail, Session, StatusDetail, UserDetail, TopicDetail, StudentDetail, TutorDetail
@@ -25,8 +25,8 @@ class SessionRequestPayload(BaseModel):
     student_id: UUID
     topic_id: UUID
     status: int 
-    time_started: Optional[time] = None
-    time_ended: Optional[time] = None
+    time_started: Optional[str] = None
+    time_ended: Optional[str] = None
     duration: Optional[int] = None  
     room_number: Optional[str] = None
     modality: str
@@ -314,11 +314,13 @@ def delete_session_request(session_id: str, user=Depends(verify_token), db: Sess
 
 @router.get("/sessions/admin")
 def get_sessions(db: Session = Depends(get_db)):
+    StudentUser = aliased(UserDetail)
+    TutorUser = aliased(UserDetail)
     try:
         sessions = (
             db.query(
-                Session.student_id.label("student_name"),
-                Session.tutor_id.label("tutor_name"),
+                StudentUser.name.label("student_name"),
+                TutorUser.name.label("tutor_name"),
                 SubjectDetail.subject_name,
                 TopicDetail.topic_title,
                 Session.date,
@@ -331,6 +333,8 @@ def get_sessions(db: Session = Depends(get_db)):
             .join(UserDetail, UserDetail.userid == TutorDetail.tutor_id)
             .join(TopicDetail, TopicDetail.topic_id == Session.topic_id)
             .join(SubjectDetail, SubjectDetail.subject_id == TopicDetail.subject_id)
+            .join(StudentUser, StudentUser.userid == StudentDetail.student_id)
+            .join(TutorUser, TutorUser.userid == TutorDetail.tutor_id)
             .filter(Session.status == 1)
             .all()
         )

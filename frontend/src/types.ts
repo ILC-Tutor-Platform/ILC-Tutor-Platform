@@ -136,6 +136,7 @@ export interface Schedule {
   session_id: string;
 }
 
+
 export interface AdminSessionTracking {
   tutor_name: string;
   student_name: string;
@@ -146,3 +147,14 @@ export interface AdminSessionTracking {
   session_id: string;
   status_id: number;
 }
+
+export interface TutorRequests {
+  tutor_name: string; 
+  email: string;
+  description: string;
+  status_id: number;
+  subject: string;
+  expertise: string;
+  tutor_id: string;
+}
+
