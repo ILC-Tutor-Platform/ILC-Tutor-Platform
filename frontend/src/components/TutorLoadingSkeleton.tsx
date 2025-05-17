@@ -29,13 +29,13 @@ export const TutorLoadingSkeleton = () => (
 
 export const TutorCardLoadingSkeleton = () => (
   <div className="flex flex-col bg-ilc-tutor-card p-5 gap-5 rounded-2xl mx-auto">
-    <div className="bg-white p-5 rounded-xl">
-      <div className="flex">
-        <Skeleton className="h-12 w-12 rounded-full mb-2" />
-        <Skeleton className="h-12 w-full mb-2" />
+    <div className="bg-white p-5 rounded-xl flex flex-col gap-4">
+      <div className="flex gap-4">
+        <Skeleton className="h-12 w-12 rounded-full" />
+        <Skeleton className="h-12 w-full" />
       </div>
 
-      <Skeleton className="h-6 w-full mb-2 bg-ilc-yellow" />
+      <Skeleton className="h-6 w-full bg-ilc-yellow" />
       <Skeleton className="h-6 w-1/2" />
     </div>
 
@@ -44,3 +44,18 @@ export const TutorCardLoadingSkeleton = () => (
     </div>
   </div>
 );
+
+export const AdminSessionTrackingLoading = () => {
+  return (
+    <div className="flex flex-col bg-ilc-tutor-card rounded-2xl mx-auto w-full shadow-md">
+      <div className="bg-white p-5 rounded-xl flex flex-col gap-3">
+        <Skeleton className="h-3 w-full " />
+        <Skeleton className="h-3 w-1/2" />
+      </div>
+
+      <div className="mx-auto">
+        <Skeleton className="w-80" />
+      </div>
+    </div>
+  );
+};

@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from models import UserDetail, TutorAffiliation, TutorDetail, TutorAvailability, TutorExpertise, TutorSocials, SubjectDetail, StudentDetail, Session, TopicDetail
 from uuid import UUID
 from datetime import date, time
-from .user_route import require_role
+from .user_route import require_role, verify_token
 
 router = APIRouter()
 
@@ -206,3 +206,53 @@ def get_students_for_tutor( user=Depends(require_role([1])), db: DBSession = Dep
         for s in students
     ]
 
+@router.get("/tutor-requests")
+def get_tutor_requests(db: DBSession = Depends(get_db)):
+    try:
+        tutor_requests = (
+            db.query(
+                UserDetail.name.label("tutor_name"),
+                UserDetail.email,
+                TutorDetail.tutor_id,
+                TutorDetail.status.label("status_id"),
+                TutorExpertise.expertise, 
+                SubjectDetail.subject_name,
+            )
+            .join(TutorDetail, TutorDetail.tutor_id == UserDetail.userid)
+            .join(TutorExpertise, TutorExpertise.tutor_id == TutorDetail.tutor_id)
+            .join(SubjectDetail, SubjectDetail.tutor_id == TutorDetail.tutor_id)
+            .filter(TutorDetail.status == 0)
+            .all()
+        )
+
+        return {
+            "tutor_requests": [
+                {
+                    "tutor_name": r.tutor_name,
+                    "email": r.email,
+                    "subject": r.subject_name,
+                    "status_id": r.status_id,
+                    "expertise": r.expertise,
+                    "tutor_id": r.tutor_id
+                }
+                for r in tutor_requests
+            ]
+        }
+
+    except Exception as e:
+        logger.error(f"Error retrieving tutor requests: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error during authentication")
+
+
+class StatusUpdate(BaseModel):
+    status: int  # 1 for approve, 2 for reject
+
+@router.put("/tutor-requests/{tutor_id}/status")
+def update_tutor_status(tutor_id: str, update: StatusUpdate, db: DBSession = Depends(get_db)):
+    tutor = db.query(TutorDetail).filter_by(tutor_id=tutor_id).first()
+    if not tutor:
+        raise HTTPException(status_code=404, detail="Tutor not found")
+    
+    tutor.status = update.status
+    db.commit()
+    logger.info(f"Tutor status updated to {tutor.status} for tutor_id={tutor.tutor_id}")
