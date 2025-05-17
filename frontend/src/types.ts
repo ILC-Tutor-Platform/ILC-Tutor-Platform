@@ -135,3 +135,13 @@ export interface Schedule {
   status_id: number;
   session_id: string;
 }
+
+export interface TutorRequests {
+  tutor_name: string; 
+  email: string;
+  description: string;
+  status_id: number;
+  subject: string;
+  expertise: string;
+  tutor_id: string;
+}
