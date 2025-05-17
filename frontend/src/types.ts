@@ -137,7 +137,7 @@ export interface Schedule {
 }
 
 export interface TutorRequests {
-  tutor_name: string; 
+  tutor_name: string;
   email: string;
   description: string;
   status_id: number;
