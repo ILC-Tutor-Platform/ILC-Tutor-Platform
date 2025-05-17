@@ -184,7 +184,7 @@ const StudentDashboardProfile = () => {
   }, [user, accessToken]);
 
   return (
-    <div className="min-h-screen font-manrope relative flex">
+    <div className="min-h-screen relative flex lg:w-[80%] lg:mx-auto">
       {/* Personal Information Modal */}
       {activeModal === 'personal' && (
         <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4">

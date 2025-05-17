@@ -28,7 +28,7 @@ const Home = () => {
             variant={'yellow-button-outline'}
             className="px-10 py-5 md:py-7 md:text-xl font-bold rounded-3xl"
             onClick={() => navigate('/tutors')}
-            disabled={activeRole === 2}
+            disabled={activeRole === 1 || activeRole === 2}
           >
             BROWSE TUTORS
           </Button>

@@ -113,7 +113,7 @@ const Navbar = () => {
           </NavLink>
         </li>
 
-        {activeRole !== 2 && (
+        {activeRole !== 1 && activeRole !== 2 && (
           <li>
             <NavLink
               to={'/tutors'}
