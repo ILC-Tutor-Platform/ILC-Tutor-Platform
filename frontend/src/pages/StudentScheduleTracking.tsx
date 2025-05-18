@@ -6,6 +6,8 @@ const StudentScheduleTracking = () => {
   const [, setSidebarOpen] = useState(true);
   const [schedules, setSchedule] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(false);
+  const [activeModal, setActiveModal] = useState<'history' | null>(null);
+  const [historySessions, setHistorySessions] = useState<Schedule[]>([]);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -14,9 +16,8 @@ const StudentScheduleTracking = () => {
     if (navbar) {
       (navbar as HTMLElement).style.marginLeft = '0rem';
     }
-
-    fetchSchedule();
-
+    
+    fetchUpcomingSchedule();
     return () => {
       if (navbar) {
         (navbar as HTMLElement).style.marginLeft = '0rem';
@@ -24,21 +25,50 @@ const StudentScheduleTracking = () => {
     };
   }, []);
 
-  const fetchSchedule = async () => {
+  const fetchUpcomingSchedule = async () => {
     setLoading(true);
     try {
-      const response = await api.get<{ session: Schedule[] }>(
-        '/sessions/student',
-      );
+      const response = await api.get<{ session: Schedule[] }>('/sessions/student');
 
-      const acceptedSchedules = response.data.session;
-      setSchedule(acceptedSchedules);
+      const allSchedules = response.data.session;
+
+      // Filter out past sessions — assuming each session has a `start_time` field in ISO format
+      const now = new Date();
+
+      const upcomingSchedules = allSchedules.filter((session) => {
+        const sessionDate = new Date(session.date); 
+        return sessionDate >= now;
+      });
+
+      setSchedule(upcomingSchedules);
     } catch (error) {
       console.error('Error fetching schedule:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  const fetchHistorySchedule = async () => {
+  setLoading(true);
+  try {
+    const response = await api.get<{ session: Schedule[] }>('/sessions/student');
+
+    const allSchedules = response.data.session;
+
+    const now = new Date();
+    const pastSchedules = allSchedules.filter((session) => {
+      const sessionDate = new Date(session.date); // Replace with correct date field
+      return sessionDate < now;
+    });
+
+    setHistorySessions(pastSchedules); // ✅ correct this line
+  } catch (error) {
+    console.error('Error fetching history schedule:', error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleDelete = async (index: number) => {
     try {
@@ -79,10 +109,63 @@ const StudentScheduleTracking = () => {
             <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
               My Schedule
             </span>
-            <button className="see-history-button text-sm sm:text-base md:text-base lg:text-lg xl:text-xl">
+            <button className="see-history-button text-sm sm:text-base md:text-base lg:text-lg xl:text-xl" 
+                onClick={() => {
+                  fetchHistorySchedule();
+                  setActiveModal('history');
+                }}>
               See History
             </button>
           </div>
+          {activeModal === 'history' && (
+            <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 max-h-[80vh] overflow-y-auto">
+                <h2
+                  className="text-2xl font-bold mb-6"
+                  style={{
+                    color: '#8A1538',
+                    fontFamily: 'Montserrat',
+                    fontSize: '1.25rem',
+                    fontWeight: 700,
+                  }}
+                >
+                  Session History
+                </h2>
+
+                {historySessions.length === 0 ? (
+                  <p className="text-gray-600">No past sessions available.</p>
+                ) : (
+                  <ul className="space-y-4">
+                    {historySessions.map((session, index) => (
+                      <li key={index} className="p-4 border border-gray-300 rounded-md">
+                        <p className="text-lg font-semibold text-[#8A1538]">
+                          {session.subject || 'Session Title'}
+                        </p>
+                        <p className="text-sm text-gray-700">
+                          Date: {new Date(session.date).toLocaleDateString()}
+                        </p>
+                        <p className="text-sm text-gray-700">
+                          Time: {session.time}
+                        </p>
+                        <p className="text-sm text-gray-700">
+                          Tutor: {session.name || 'N/A'}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <div className="flex justify-end mt-6">
+                  <button
+                    onClick={() => setActiveModal(null)}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="w-full min-h-[calc(100vh-10rem)] bg-[#F9F8F4] border border-black border-opacity-30 rounded-[1.25rem] p-4 md:p-6 lg:p-8 xl:p-10 shadow-md">
             <div className="w-full">
