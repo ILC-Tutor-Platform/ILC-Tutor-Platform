@@ -8,7 +8,8 @@ class Settings(BaseSettings):
     SUPABASE_KEY: str
     DATABASE_URL: str
     SUPABASE_SERVICE_ROLE_KEY: str
-    SUPABASE_JWT_SECRET: str    
+    SUPABASE_JWT_SECRET: str   
+    BUCKET: str 
 
     model_config = SettingsConfigDict(env_file=f".env.{STAGE}" if os.path.exists(f".env.{STAGE}") else ".env")
     
