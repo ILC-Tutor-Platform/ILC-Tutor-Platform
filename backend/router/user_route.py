@@ -60,9 +60,7 @@ def verify_token(token: str = Depends(get_authorization_token)):
     
     except HTTPException:
         raise
-    
-    except HTTPException:
-        raise
+
     except JWTError as e:
         logger.error(f"Token verification failed: {str(e)}")
         raise HTTPException(status_code=401, detail=f"Invalid or expired token: {str(e)}")
@@ -125,6 +123,7 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
             expertise = db.query(TutorExpertise).filter(TutorExpertise.tutor_id == uid).all()
             socials = db.query(TutorSocials).filter(TutorSocials.tutor_id == uid).all()
             subject = db.query(SubjectDetail).filter(SubjectDetail.tutor_id == uid).all()
+
             if tutor:
                 response["tutor"] = {
                     "description": tutor.description,
@@ -133,7 +132,7 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
                     "expertise": [e.expertise for e in expertise],
                     "socials": [s.socials for s in socials],
                     "availability": [a.availability for a in availability],
-                    "subjects": [s.subject_name for s in subject]
+                    "subject": [s.subject_name for s in subject]
                 }
 
         if 2 in role_ids:
@@ -300,9 +299,7 @@ def update_user_profile(
     
     except HTTPException:
         raise
-    
-    except HTTPException:
-        raise
+
     except Exception as e:
         logger.error(f"User detail cannot be updated. Error: {str(e)}")
         raise HTTPException(status_code=400, detail="Update user failed.")
