@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from models import UserDetail, TutorAffiliation, TutorDetail, TutorAvailability, TutorExpertise, TutorSocials, SubjectDetail, StudentDetail, Session, TopicDetail
 from uuid import UUID
 from datetime import date, time
+from datetime import date
 from .user_route import require_role, verify_token
 
 router = APIRouter()
@@ -81,7 +82,7 @@ async def get_tutors(
         # Apply pagination
         offset = (page - 1) * limit
         users = query.offset(offset).limit(limit).all()
-        
+                
         # response data 
         tutors_data = []
         for user in users:
@@ -256,3 +257,4 @@ def update_tutor_status(tutor_id: str, update: StatusUpdate, db: DBSession = Dep
     tutor.status = update.status
     db.commit()
     logger.info(f"Tutor status updated to {tutor.status} for tutor_id={tutor.tutor_id}")
+
