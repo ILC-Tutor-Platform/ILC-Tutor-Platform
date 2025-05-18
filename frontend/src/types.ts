@@ -156,3 +156,17 @@ export interface TutorRequests {
   expertise: string;
   tutor_id: string;
 }
+
+export interface TutorRequestSession {
+  date: string;
+  time: string;
+  tutor_id: string;
+  student_id: string;
+  topic_id: string;
+  status: number;
+  time_started?: string;
+  time_ended?: string;
+  duration?: number;
+  room_number?: string;
+  modality: string;
+}

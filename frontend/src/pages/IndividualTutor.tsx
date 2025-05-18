@@ -3,7 +3,7 @@ import { TutorErrorState } from '@/components/TutorErrorState';
 import { TutorLoadingSkeleton } from '@/components/TutorLoadingSkeleton';
 import TutorCard from '@/components/ui/TutorCard';
 import { Button } from '@/components/ui/button';
-import type { TutorDetail } from '@/types';
+import type { TutorDetail, TutorRequestSession } from '@/types';
 import { api } from '@/utils/axios';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -47,7 +47,6 @@ const IndividualTutor = () => {
     fetchTutor();
   }, [tutor_id]);
 
-  // Helper function to safely join array values or return default
   const safeJoin = (
     value: string | string[] | undefined,
     separator = ', ',
@@ -57,6 +56,14 @@ const IndividualTutor = () => {
       return value.join(separator) || defaultValue;
     }
     return value || defaultValue;
+  };
+
+  const handleBookSession = async () => {
+    try {
+      const response = await api.post('session/student/request', {
+        TutorRequestSession,
+      });
+    } catch (error) { }
   };
 
   if (loading) {
@@ -104,7 +111,9 @@ const IndividualTutor = () => {
           </div>
         </div>
         <div className="mx-auto">
-          <Button variant={'yellow-button'}>BOOK A SESSION</Button>
+          <Button variant={'yellow-button'} onClick={handleBookSession}>
+            BOOK A SESSION
+          </Button>
         </div>
       </div>
     </section>
