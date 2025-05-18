@@ -61,6 +61,7 @@ export interface TutorDetail {
   available_time_to: string[];
   expertise: string[];
   socials: string[];
+  subject: string;
 }
 
 export interface StudentDetail {
@@ -113,7 +114,7 @@ export interface Schedule {
   topic: string;
   time: string;
   subject: string;
-  status_id: number;
+  status: number;
 }
 
 export interface StudentResponse {
@@ -127,9 +128,31 @@ export interface StudentResponse {
 
 export interface Schedule {
   name: string;
-  date: Date;
-  topic: string;
-  time: string;
   subject: string;
+  topic: string;
+  date: Date;
+  time: string;
   status_id: number;
+  session_id: string;
+}
+
+export interface AdminSessionTracking {
+  tutor_name: string;
+  student_name: string;
+  subject: string;
+  topic: string;
+  date: string;
+  time: string;
+  session_id: string;
+  status_id: number;
+}
+
+export interface TutorRequests {
+  tutor_name: string;
+  email: string;
+  description: string;
+  status_id: number;
+  subject: string;
+  expertise: string;
+  tutor_id: string;
 }

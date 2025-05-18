@@ -26,9 +26,27 @@ interface AuthContextType {
   signUpTutor: (
     user: TutorSignUp,
   ) => Promise<{ success: boolean; error?: string }>;
+
+  signInAdmin: (
+    email: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
+// Helper function to ensure roles are properly converted to an array of numbers
+const processRoles = (role: any): number[] => {
+  if (!role) return [];
+
+  // If it's already an array, map it to numbers
+  if (Array.isArray(role)) {
+    return role.map((r) => (typeof r === 'string' ? Number(r) : Number(r)));
+  }
+
+  // If it's a single value, convert it to a number and wrap in array
+  return [typeof role === 'string' ? Number(role) : Number(role)];
+};
 
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
@@ -51,7 +69,26 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
       const userData = { uid, name, role };
       setUser(userData);
-      setRoles(role.map(Number));
+      setRoles(processRoles(role));
+
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.detail || 'Login failed.',
+      };
+    }
+  };
+
+  const signInAdmin = async (email: string, password: string) => {
+    try {
+      const res = await api.post(`auth/login/admin`, { email, password });
+      const { access_token, refresh_token, uid, role } = res.data;
+      setAccessToken(access_token);
+      setRefreshToken(refresh_token);
+
+      const adminData = { uid, role };
+      setUser(adminData);
 
       return { success: true };
     } catch (error: any) {
@@ -183,7 +220,8 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         const refreshSuccess = await refreshSession();
 
         if (refreshSuccess) {
-          setRoles(storedUser.role?.map(Number) || []);
+          // Fixed: use processRoles helper instead of directly mapping
+          setRoles(processRoles(storedUser.role));
         } else {
           clearAuth();
           setAccessToken(null);
@@ -215,6 +253,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         refreshSession,
         isAuthenticated,
         signUpTutor,
+        signInAdmin,
       }}
     >
       {children}

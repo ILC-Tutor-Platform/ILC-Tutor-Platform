@@ -1,7 +1,6 @@
 import type { Schedule } from '@/types';
 import { api } from '@/utils/axios';
 import { useEffect, useState } from 'react';
-// import axios from 'axios';
 
 const TutorSchedule = () => {
   const [, setSidebarOpen] = useState(true);
@@ -40,7 +39,7 @@ const TutorSchedule = () => {
   };
 
   return (
-    <div className="min-h-screen font-manrope relative flex">
+    <div className="min-h-screen relative flex lg:w-[80%] lg:mx-auto">
       <div className="transition-all duration-300 ease-in-out flex-1">
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
           <div

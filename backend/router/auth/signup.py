@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from database.config import get_db
 from sqlalchemy.orm import Session
 from models import UserDetail, StudentDetail, UserRoleDetail, TutorDetail, StatusDetail, TutorSocials, TutorAffiliation, TutorAvailability, TutorExpertise, SubjectDetail
@@ -6,6 +6,7 @@ from constants.supabase_client import supabase_admin, supabase # supabase for lo
 from schema import StudentSignupSchema, TutorSignupSchema
 from constants.logger import logger
 from pydantic import BaseModel
+import traceback
 
 router = APIRouter()
 
@@ -69,9 +70,8 @@ def verify_email(payload: EmailPayload, db: Session = Depends(get_db)):
         else:
             return {"message": "Email not yet verified", "email": user.email}
 
-    except HTTPException as he:
-        # Re-raise HTTP exceptions
-        raise he
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Unexpected error in email verification: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Verification failed: {str(e)}")
@@ -254,10 +254,11 @@ def create_tutor_profile(user, db, tutor_status):
         # Final commit to save everything else if we didn't add a role
         db.commit()
 
-
-#Register a student and send verification email
 @router.post("/auth/signup/student")
-def signup_student(payload: StudentSignupSchema):
+def signup_student(payload: StudentSignupSchema, request: Request):
+    method = request.method
+    logger.info(f"HTTP method used: {method}")
+    logger.info(f"Received payload: {payload}")
     try:
         user = payload.user
         student = payload.student
@@ -309,8 +310,9 @@ def signup_student(payload: StudentSignupSchema):
             return {"message": "Student registered successfully. Email verification sent."}
 
     except Exception as e:
-        logger.error(f"Signup failed. {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
+            logger.error(f"Signup failed: {str(e)}")
+            logger.error(traceback.format_exc())  # 🔥 Full traceback in logs
+            raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/auth/signup/tutor")
 def signup_tutor(payload: TutorSignupSchema):

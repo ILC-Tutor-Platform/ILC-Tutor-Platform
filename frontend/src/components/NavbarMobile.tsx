@@ -8,6 +8,7 @@ import { Menu } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import AdminSidebar from './AdminSidebar';
 import StudentSidebar from './StudentSidebar';
 import TutorSidebar from './TutorSidebar';
 import { Button } from './ui/button';
@@ -69,6 +70,7 @@ const NavbarMobile = () => {
               <Menu className="cursor-pointer" onClick={toggle} />
               {activeRole === 0 && <StudentSidebar />}
               {activeRole === 1 && <TutorSidebar />}
+              {activeRole === 2 && <AdminSidebar />}
             </span>
           )}
           <Link to={'/'} onClick={close}>
@@ -91,11 +93,6 @@ const NavbarMobile = () => {
                       <img src={bell} alt="" />
                     </Link>
                   )}
-                  {activeRole === 2 && (
-                    <Link to={'/profile/admin/announcements'}>
-                      <img src={bell} alt="" />
-                    </Link>
-                  )}
                 </li>
                 <li>
                   {activeRole === 0 && (
@@ -105,11 +102,6 @@ const NavbarMobile = () => {
                   )}
                   {activeRole === 1 && (
                     <Link to={'/profile/tutor'}>
-                      <img src={profile} alt="" />
-                    </Link>
-                  )}
-                  {activeRole === 2 && (
-                    <Link to={'/profile/admin'}>
                       <img src={profile} alt="" />
                     </Link>
                   )}

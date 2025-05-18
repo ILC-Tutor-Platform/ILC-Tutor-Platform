@@ -62,14 +62,14 @@ const Tutors = () => {
   };
 
   return (
-    <section className="flex flex-col gap-10 px-5 xl:px-40 relative top-[2vh] min-h-screen">
+    <section className="flex flex-col gap-10 px-5 py-10 xl:px-40 relative top-[2vh] min-h-screen">
       <h2 className="text-6xl md:text-[64px] text-ilc-red font-bold text-center md:text-left">
         Tutor List
       </h2>
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-10">
-          {Array(6)
+          {Array(9)
             .fill(0)
             .map((_, i) => (
               <TutorCardLoadingSkeleton key={i} />
@@ -83,7 +83,7 @@ const Tutors = () => {
                 <TutorCard
                   key={tutor.userid}
                   name={tutor.name}
-                  subject={tutor.affiliations.join(', ')}
+                  subject={tutor.subject}
                   available={getAvailability(tutor)}
                   expertise={tutor.expertise.join(', ')}
                   className="mx-auto"

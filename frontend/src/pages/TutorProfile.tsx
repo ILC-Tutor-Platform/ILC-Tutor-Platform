@@ -8,6 +8,35 @@ import ProfilePlaceholder from '../assets/ProfilePlaceholder.svg';
 import BadgeIcon from '../assets/user2.svg';
 import { UserAuth } from '../context/AuthContext';
 
+const extractNameParts = (fullName: string) => {
+  if (!fullName) return { firstName: '', middleInitial: '', lastName: '' };
+
+  const nameParts = fullName.trim().split(/\s+/);
+
+  if (nameParts.length === 1) {
+    return { firstName: nameParts[0], middleInitial: '', lastName: '' };
+  }
+
+  const middleInitialIndex = nameParts.findIndex(
+    (part, index) =>
+      index > 0 && index < nameParts.length - 1 && part.length === 1,
+  );
+
+  if (middleInitialIndex !== -1) {
+    return {
+      firstName: nameParts.slice(0, middleInitialIndex).join(' '),
+      middleInitial: nameParts[middleInitialIndex],
+      lastName: nameParts.slice(middleInitialIndex + 1).join(' '),
+    };
+  }
+
+  return {
+    firstName: nameParts.slice(0, -1).join(' '),
+    middleInitial: '',
+    lastName: nameParts[nameParts.length - 1],
+  };
+};
+
 const TutorProfile = () => {
   const { user } = UserAuth();
   const accessToken = useTokenStore((state) => state.accessToken);
@@ -47,6 +76,8 @@ const TutorProfile = () => {
   const [currentExpertise, setCurrentExpertise] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
+  const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const openPersonalModal = () => {
     setEditPersonalData({
@@ -57,6 +88,8 @@ const TutorProfile = () => {
       linkedin_link: tutor.linkedin_link,
     });
     setActiveModal('personal');
+    setUpdateError(null);
+    setUpdateSuccess(null);
   };
 
   const openTutoringModal = () => {
@@ -68,6 +101,8 @@ const TutorProfile = () => {
       dates_available: [...tutor.dates_available],
     });
     setActiveModal('tutoring');
+    setUpdateError(null);
+    setUpdateSuccess(null);
   };
 
   const handlePersonalInputChange = (
@@ -160,38 +195,71 @@ const TutorProfile = () => {
   const handleSavePersonalChanges = async () => {
     setIsUpdating(true);
     setUpdateError(null);
+    setUpdateSuccess(null);
 
     try {
-      if (user?.uid && accessToken) {
-        await axios.patch(
-          `${import.meta.env.VITE_BACKEND_URL}users/profile`,
-          {
-            name: `${editPersonalData.first_name} ${editPersonalData.middle_initial} ${editPersonalData.last_name}`.trim(),
-            facebook_link: editPersonalData.facebook_link,
-            linkedin_link: editPersonalData.linkedin_link,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          },
-        );
-
-        setTutor((prev) => ({
-          ...prev,
-          first_name: editPersonalData.first_name,
-          middle_initial: editPersonalData.middle_initial,
-          last_name: editPersonalData.last_name,
-          facebook_link: editPersonalData.facebook_link,
-          linkedin_link: editPersonalData.linkedin_link,
-        }));
-
-        setActiveModal(null);
+      if (!user?.uid || !accessToken) {
+        throw new Error('User not authenticated');
       }
-    } catch (err) {
-      console.error('Failed to update tutor data:', err);
+
+      if (
+        !editPersonalData.first_name.trim() ||
+        !editPersonalData.last_name.trim()
+      ) {
+        setUpdateError('First name and last name are required');
+        setIsUpdating(false);
+        return;
+      }
+
+      const fullName = [
+        editPersonalData.first_name.trim(),
+        editPersonalData.middle_initial.trim(),
+        editPersonalData.last_name.trim(),
+      ]
+        .filter((part) => part)
+        .join(' ');
+
+      const socialLinks = [
+        editPersonalData.facebook_link,
+        editPersonalData.linkedin_link,
+      ].filter((link) => link);
+
+      await axios.patch(
+        `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
+        {
+          user: {
+            name: fullName,
+          },
+          socials: {
+            socials: socialLinks,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+
+      setTutor((prev) => ({
+        ...prev,
+        first_name: editPersonalData.first_name,
+        middle_initial: editPersonalData.middle_initial,
+        last_name: editPersonalData.last_name,
+        facebook_link: editPersonalData.facebook_link,
+        linkedin_link: editPersonalData.linkedin_link,
+      }));
+
+      setUpdateSuccess('Personal information updated successfully!');
+      setTimeout(() => {
+        setActiveModal(null);
+        setRefreshKey((prevKey) => prevKey + 1);
+      }, 1500);
+    } catch (err: any) {
+      console.error('Failed to update tutor data:', err.response?.data || err);
       setUpdateError(
-        'Failed to update personal information. Please try again.',
+        err.response?.data?.detail ||
+          'Failed to update personal information. Please try again.',
       );
     } finally {
       setIsUpdating(false);
@@ -201,39 +269,79 @@ const TutorProfile = () => {
   const handleSaveTutoringChanges = async () => {
     setIsUpdating(true);
     setUpdateError(null);
+    setUpdateSuccess(null);
 
     try {
-      if (user?.uid && accessToken) {
-        await axios.patch(
-          `${import.meta.env.VITE_BACKEND_URL}tutors/profile`,
-          {
-            subjects: editTutoringData.subjects,
-            affiliations: editTutoringData.affiliations,
-            expertise: editTutoringData.expertise,
-            description: editTutoringData.description,
-            dates_available: editTutoringData.dates_available,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          },
-        );
-
-        setTutor((prev) => ({
-          ...prev,
-          subjects: editTutoringData.subjects,
-          affiliations: editTutoringData.affiliations,
-          expertise: editTutoringData.expertise,
-          description: editTutoringData.description,
-          dates_available: editTutoringData.dates_available,
-        }));
-
-        setActiveModal(null);
+      if (!user?.uid || !accessToken) {
+        throw new Error('User not authenticated');
       }
-    } catch (err) {
-      console.error('Failed to update tutoring data:', err);
-      setUpdateError('Failed to update tutoring details. Please try again.');
+
+      if (!editTutoringData.description.trim()) {
+        setUpdateError('Description is required');
+        setIsUpdating(false);
+        return;
+      }
+
+      const formattedDates = editTutoringData.dates_available.map((date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      });
+
+      const payload = {
+        tutor: {
+          description: editTutoringData.description,
+        },
+        subject: {
+          subject_name: editTutoringData.subjects,
+        },
+        expertise: {
+          expertise: editTutoringData.expertise,
+        },
+        affiliation: {
+          affiliation: editTutoringData.affiliations,
+        },
+        availability: {
+          availability: formattedDates,
+          available_time_from: Array(formattedDates.length).fill('09:00:00'),
+          available_time_to: Array(formattedDates.length).fill('17:00:00'),
+        },
+      };
+
+      await axios.patch(
+        `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+
+      setTutor((prev) => ({
+        ...prev,
+        subjects: editTutoringData.subjects,
+        affiliations: editTutoringData.affiliations,
+        expertise: editTutoringData.expertise,
+        description: editTutoringData.description,
+        dates_available: editTutoringData.dates_available,
+      }));
+
+      setUpdateSuccess('Tutoring information updated successfully!');
+      setTimeout(() => {
+        setActiveModal(null);
+        setRefreshKey((prevKey) => prevKey + 1);
+      }, 1500);
+    } catch (err: any) {
+      console.error(
+        'Failed to update tutoring data:',
+        err.response?.data || err,
+      );
+      setUpdateError(
+        err.response?.data?.detail ||
+          'Failed to update tutoring information. Please try again.',
+      );
     } finally {
       setIsUpdating(false);
     }
@@ -242,53 +350,82 @@ const TutorProfile = () => {
   useEffect(() => {
     const fetchTutor = async () => {
       try {
-        if (user?.uid && accessToken) {
-          const res = await axios.get(
-            `${import.meta.env.VITE_BACKEND_URL}users/profile`,
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-            },
-          );
-
-          const fullName = res.data.user?.name || '';
-          const nameParts = fullName.split(' ');
-          const firstName = nameParts[0] || '';
-          const middleInitial = nameParts.length > 2 ? nameParts[1] : '';
-          const lastName =
-            nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
-
-          setTutor({
-            first_name: firstName,
-            middle_initial: middleInitial,
-            last_name: lastName,
-            facebook_link: res.data.tutor?.facebook_link || '',
-            linkedin_link: res.data.tutor?.linkedin_link || '',
-            subjects: res.data.tutor?.subjects || [],
-            affiliations: res.data.tutor?.affiliations || [],
-            expertise: res.data.tutor?.expertise || [],
-            description: res.data.tutor?.description || '',
-            dates_available: res.data.tutor?.dates_available
-              ? res.data.tutor.dates_available.map(
-                  (date: string) => new Date(date),
-                )
-              : [],
-          });
+        if (!user?.uid || !accessToken) {
+          setError('Not authenticated');
+          setLoading(false);
+          return;
         }
-      } catch (err) {
+
+        const res = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/users/profile`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+
+        console.log('API Response:', res.data);
+
+        if (!res.data.user) {
+          throw new Error('User data not found in response');
+        }
+
+        const fullName = res.data.user.name || '';
+        const { firstName, middleInitial, lastName } =
+          extractNameParts(fullName);
+
+        const socials = res.data.tutor?.socials || [];
+        const facebookLink = socials.length > 0 ? socials[0] : '';
+        const linkedinLink = socials.length > 1 ? socials[1] : '';
+
+        const availabilityDates = res.data.tutor?.availability || [];
+        const parsedDates = availabilityDates.map(
+          (dateStr: string) => new Date(dateStr),
+        );
+
+        const subjectsData = res.data.tutor?.subject || [];
+        const subjects = subjectsData.map(
+          (sub: any) => sub.subject_name || sub,
+        );
+
+        const expertiseData = res.data.tutor?.expertise || [];
+        const expertise = expertiseData.map((exp: any) => exp.expertise || exp);
+
+        const affiliationsData = res.data.tutor?.affiliations || [];
+        const affiliations = affiliationsData.map(
+          (aff: any) => aff.affiliation || aff,
+        );
+
+        setTutor({
+          first_name: firstName,
+          middle_initial: middleInitial,
+          last_name: lastName,
+          facebook_link: facebookLink,
+          linkedin_link: linkedinLink,
+          subjects: subjects.filter(Boolean),
+          affiliations: affiliations.filter(Boolean),
+          expertise: expertise.filter(Boolean),
+          description: res.data.tutor?.description || '',
+          dates_available: parsedDates,
+        });
+      } catch (err: any) {
         console.error('Failed to fetch tutor data:', err);
-        setError('Failed to load tutor data. Please try again later.');
+        setError(
+          err.response?.data?.detail ||
+            `Failed to load tutor data: ${err.message || 'Unknown error'}. Please try again later.`,
+        );
       } finally {
         setLoading(false);
       }
     };
 
+    setLoading(true);
     fetchTutor();
-  }, [user, accessToken]);
+  }, [user, accessToken, refreshKey]);
 
   return (
-    <div className="min-h-screen font-manrope relative flex">
+    <div className="min-h-screen relative flex lg:w-[80%] lg:mx-auto">
       {/* Personal Information Modal */}
       {activeModal === 'personal' && (
         <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4">
@@ -373,6 +510,10 @@ const TutorProfile = () => {
               <div className="text-red-500 mb-4 text-sm">{updateError}</div>
             )}
 
+            {updateSuccess && (
+              <div className="text-green-500 mb-4 text-sm">{updateSuccess}</div>
+            )}
+
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setActiveModal(null)}
@@ -397,10 +538,10 @@ const TutorProfile = () => {
         </div>
       )}
 
+      {/* Tutoring Details Modal */}
       {activeModal === 'tutoring' && (
         <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-[1rem]">
           <div className="bg-white rounded-xl shadow-lg w-full max-w-md mx-auto my-auto flex flex-col max-h-[90vh]">
-            {/* Header */}
             <h2
               className="text-2xl font-bold p-[1.5rem] pb-0"
               style={{
@@ -413,7 +554,6 @@ const TutorProfile = () => {
               Update Tutoring Details
             </h2>
 
-            {/* Scrollable Content */}
             <div className="overflow-y-auto px-[1.5rem] pb-[1rem] pt-[1rem] space-y-[1rem]">
               {/* Subjects */}
               <div>
@@ -425,6 +565,7 @@ const TutorProfile = () => {
                     type="text"
                     value={currentSubject}
                     onChange={(e) => setCurrentSubject(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addSubject()}
                     className="w-full p-[0.5rem] pr-[4rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
                     placeholder="Add a subject"
                   />
@@ -464,6 +605,7 @@ const TutorProfile = () => {
                     type="text"
                     value={currentAffiliation}
                     onChange={(e) => setCurrentAffiliation(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addAffiliation()}
                     className="w-full p-[0.5rem] pr-[4rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
                     placeholder="Add an affiliation"
                   />
@@ -503,6 +645,7 @@ const TutorProfile = () => {
                     type="text"
                     value={currentExpertise}
                     onChange={(e) => setCurrentExpertise(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addExpertise()}
                     className="w-full p-[0.5rem] pr-[4rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
                     placeholder="Add an expertise"
                   />
@@ -542,7 +685,7 @@ const TutorProfile = () => {
                   value={editTutoringData.description}
                   onChange={handleTutoringInputChange}
                   className="w-full p-[0.5rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
-                  rows={2}
+                  rows={4}
                 />
               </div>
 
@@ -556,6 +699,7 @@ const TutorProfile = () => {
                   onChange={handleDateChange}
                   className="w-full p-[0.5rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
                   placeholderText="Select a date"
+                  minDate={new Date()}
                 />
                 <div className="mt-[0.5rem] flex flex-wrap gap-[0.5rem]">
                   {editTutoringData.dates_available.map((date, index) => (
@@ -576,14 +720,18 @@ const TutorProfile = () => {
               </div>
             </div>
 
-            {/* Error Message */}
             {updateError && (
               <div className="text-red-500 text-sm px-[1.5rem]">
                 {updateError}
               </div>
             )}
 
-            {/* Footer Buttons */}
+            {updateSuccess && (
+              <div className="text-green-500 text-sm px-[1.5rem]">
+                {updateSuccess}
+              </div>
+            )}
+
             <div className="flex justify-end space-x-[0.75rem] px-[1.5rem] py-[1rem] border-t border-gray-200">
               <button
                 onClick={() => setActiveModal(null)}
@@ -605,23 +753,21 @@ const TutorProfile = () => {
         </div>
       )}
 
-      {/* Rest of the component remains the same */}
+      {/* Main Profile Content */}
       <div className="transition-all duration-300 ease-in-out flex-1">
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
-          {/* Profile Header */}
-          <div
-            className="flex items-center gap-2 md:gap-4 mb-4 md:mb-6"
-            style={{
-              color: '#8A1538',
-              fontFamily: 'Montserrat',
-              fontWeight: 700,
-            }}
-          >
-            <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
+          <div className="flex items-center gap-4 mb-4 md:mb-6 flex-nowrap">
+            <h1
+              className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl whitespace-nowrap"
+              style={{
+                color: '#8A1538',
+                fontFamily: 'Montserrat',
+                fontWeight: 700,
+              }}
+            >
               My Profile
-            </span>
-
-            <div className="pl-3 pr-3 pt-1 pb-1 md:pl-4 md:pr-4 md:pt-2 md:pb-2 bg-[#307B74] rounded-xl flex items-center gap-2">
+            </h1>
+            <div className="pl-3 pr-3 pt-1 pb-1 md:pl-4 md:pr-4 md:pt-2 md:pb-2 bg-[#307B74] rounded-xl flex items-center gap-2 whitespace-nowrap">
               <img
                 className="w-5 h-5 md:w-6 md:h-6"
                 src={BadgeIcon}
@@ -633,12 +779,10 @@ const TutorProfile = () => {
             </div>
           </div>
 
-          {/* Profile Content */}
           <div className="w-full min-h-[calc(100vh-10rem)] bg-[#F9F8F4] shadow-md rounded-2xl border border-black border-opacity-30 p-6 md:p-8 lg:p-10 flex flex-col gap-8">
-            {/* Profile Picture */}
             <div className="flex flex-col items-center mb-8">
               <img
-                className="w-36 h-36 md:w-44 md:h-44 lg:w-52 lg:h-52"
+                className="w-36 h-36 md:w-44 md:h-44 lg:w-52 lg:h-52 rounded-full object-cover"
                 src={ProfilePlaceholder}
                 alt="Profile"
               />
@@ -650,9 +794,10 @@ const TutorProfile = () => {
               </button>
             </div>
 
-            {/* Loading/Error */}
             {loading ? (
-              <div className="text-center text-gray-500">Loading...</div>
+              <div className="text-center text-gray-500">
+                Loading profile data...
+              </div>
             ) : error ? (
               <div className="text-center text-red-500">{error}</div>
             ) : (
@@ -675,38 +820,38 @@ const TutorProfile = () => {
                     </button>
                   </div>
                   <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         First Name
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3">
                         {tutor.first_name || 'N/A'}
                       </span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Last Name
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3">
                         {tutor.last_name || 'N/A'}
                       </span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Middle Initial
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3">
                         {tutor.middle_initial || 'N/A'}
                       </span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Facebook Link
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 break-all">
                         {tutor.facebook_link ? (
                           <a
                             href={tutor.facebook_link}
@@ -722,11 +867,11 @@ const TutorProfile = () => {
                       </span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         LinkedIn Link
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 break-all">
                         {tutor.linkedin_link ? (
                           <a
                             href={tutor.linkedin_link}
@@ -762,33 +907,33 @@ const TutorProfile = () => {
                     </button>
                   </div>
                   <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Subjects
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {tutor.subjects.length > 0
                           ? tutor.subjects.join(', ')
                           : 'N/A'}
                       </span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Affiliations
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {tutor.affiliations.length > 0
                           ? tutor.affiliations.join(', ')
                           : 'N/A'}
                       </span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Expertise
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {tutor.expertise.length > 0
                           ? tutor.expertise.join(', ')
                           : 'N/A'}
@@ -796,19 +941,21 @@ const TutorProfile = () => {
                     </div>
 
                     <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                      <span className="text-[#A19A9A] font-semibold w-1/3 shrink-0">
                         Description
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
-                        {tutor.description || 'N/A'}
-                      </span>
+                      <div className="w-2/3 min-w-0">
+                        <p className="text-black font-semibold text-right truncate">
+                          {tutor.description || 'N/A'}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Dates Available
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {tutor.dates_available.length > 0
                           ? tutor.dates_available
                               .map((date) => date.toLocaleDateString())

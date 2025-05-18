@@ -1,7 +1,7 @@
 from fastapi import Depends, APIRouter, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from database.config import get_db
-from models import UserDetail, StudentDetail, TutorDetail, TutorAffiliation, TutorAvailability, TutorExpertise, TutorSocials, AdminDetail
+from models import UserDetail, StudentDetail, TutorDetail, TutorAffiliation, TutorAvailability, TutorExpertise, TutorSocials, AdminDetail, SubjectDetail
 from constants.supabase_client import supabase
 from jose import jwt, JWTError
 from constants import settings
@@ -60,6 +60,9 @@ def verify_token(token: str = Depends(get_authorization_token)):
     
     except HTTPException:
         raise
+    
+    except HTTPException:
+        raise
     except JWTError as e:
         logger.error(f"Token verification failed: {str(e)}")
         raise HTTPException(status_code=401, detail=f"Invalid or expired token: {str(e)}")
@@ -93,9 +96,9 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
         # Fetch user from supabase
         user_detail = db.query(UserDetail).filter(UserDetail.userid == uid).first()
 
-        # Fetch roles from supabase
+        # Fetch roles from Supabase
         role_ids = [int(r) for r in roles]
-
+        logger.info(f"Role ids: {role_ids}")
         response = {
             "user": {
                 "name": user_detail.name,
@@ -104,6 +107,7 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
             }
         }
 
+        logger.info(f"Details: {response}")
         # Add student data if applicable
         if 0 in role_ids:
             student = db.query(StudentDetail).filter(StudentDetail.student_id == uid).first()
@@ -120,6 +124,7 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
             affiliation = db.query(TutorAffiliation).filter(TutorAffiliation.tutor_id == uid).all()
             expertise = db.query(TutorExpertise).filter(TutorExpertise.tutor_id == uid).all()
             socials = db.query(TutorSocials).filter(TutorSocials.tutor_id == uid).all()
+            subject = db.query(SubjectDetail).filter(SubjectDetail.tutor_id == uid).all()
             if tutor:
                 response["tutor"] = {
                     "description": tutor.description,
@@ -127,7 +132,8 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
                     "affiliations": [a.affiliations for a in affiliation],
                     "expertise": [e.expertise for e in expertise],
                     "socials": [s.socials for s in socials],
-                    "availability": [a.availability for a in availability]
+                    "availability": [a.availability for a in availability],
+                    "subjects": [s.subject_name for s in subject]
                 }
 
         if 2 in role_ids:
@@ -291,6 +297,9 @@ def update_user_profile(
                 raise HTTPException(status_code=403, detail="Permission denied")        
 
         return {"message": "Profile updated successfully."}
+    
+    except HTTPException:
+        raise
     
     except HTTPException:
         raise

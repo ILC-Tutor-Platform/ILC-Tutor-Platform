@@ -1,17 +1,57 @@
 from fastapi import APIRouter, Depends, HTTPException
 from .user_route import require_role, verify_token
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from sqlalchemy import or_
 from database.config import get_db
-from models import SubjectDetail, Session, StatusDetail, UserDetail, TopicDetail, StudentDetail
+from models import SubjectDetail, Session, StatusDetail, UserDetail, TopicDetail, StudentDetail, TutorDetail
 from constants.logger import logger
 from pydantic import BaseModel
+from datetime import date, time
+from typing import Optional
+from uuid import UUID
 
 router = APIRouter()
 
 class SessionStatusUpdate(BaseModel):
     session_id:str
     status_id: int
+    status: str
+
+# Payload definition
+class SessionRequestPayload(BaseModel):
+    date: date
+    time: time
+    tutor_id: UUID
+    student_id: UUID
+    topic_id: UUID
+    status: int 
+    time_started: Optional[str] = None
+    time_ended: Optional[str] = None
+    duration: Optional[int] = None  
+    room_number: Optional[str] = None
+    modality: str
+    
+    class Config:
+        from_attributes = True
+
+
+
+# Tutor API to view session requests
+@router.get("/tutors/requests")
+def view_session_requests(user=Depends(require_role([1])), db: Session = Depends(get_db)):
+    try:
+        uid = user["user_id"]
+        pending_session_requests = []
+
+        session = db.query(Session).filter(UserDetail.userid == uid).all()    
+        for s in session:
+           if s.status == 0:
+               pending_session_requests.append(s) 
+    
+        return pending_session_requests
+    except Exception as e:
+        logger.error(f"Error retrieving tutor requests: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error during authentication")
 
 # Tutor API to accept session requests
 @router.post("/session/update-requests")
@@ -38,13 +78,15 @@ def update_session_status( payload: SessionStatusUpdate, user=Depends(require_ro
         db.commit()
 
         logger.info(f"Session {session_id} was accepted by the tutor {session.tutor_id}")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error retrieving sessions: {e}")
         raise HTTPException(status_code=500, detail="Internal server error during authentication")
 
 # Tutor views accepted student sessions
 @router.get("/sessions/accepted-requests")
-def get_student_accepted_requests(user=Depends(require_role([0])), db: Session = Depends(get_db)):
+def get_student_accepted_requests(user=Depends(require_role([1])), db: Session = Depends(get_db)):
     uid = user["user_id"]  # Tutor's ID
 
     try:
@@ -88,15 +130,15 @@ def get_student_accepted_requests(user=Depends(require_role([0])), db: Session =
         logger.error(f"Error retrieving sessions: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-# Student views accepted sessions
-@router.get("/sessions/approved-sessions")
-def get_approved_requests(user=Depends(require_role([1])), db: Session = Depends(get_db)):
-    uid = user["user_id"]  # Tutor's ID
+# Student views all sessions
+@router.get("/sessions/student")
+def get_approved_requests(user=Depends(require_role([0])), db: Session = Depends(get_db)):
+    uid = user["user_id"]  # Student's ID
 
     try:
         sessions = (
             db.query(
-                UserDetail.name.label("student_name"),
+                UserDetail.name.label("tutor_name"),
                 SubjectDetail.subject_name,
                 TopicDetail.topic_title,
                 Session.date,
@@ -104,26 +146,27 @@ def get_approved_requests(user=Depends(require_role([1])), db: Session = Depends
                 Session.session_id,
                 Session.status
             )
+
+            .join(TutorDetail, TutorDetail.tutor_id == Session.tutor_id)
             .join(StudentDetail, StudentDetail.student_id == Session.student_id)
-            .join(UserDetail, UserDetail.userid == StudentDetail.student_id)
+            .join(UserDetail, UserDetail.userid == TutorDetail.tutor_id)
             .join(TopicDetail, TopicDetail.topic_id == Session.topic_id)
             .join(SubjectDetail, SubjectDetail.subject_id == TopicDetail.subject_id)
-            .filter(Session.tutor_id == uid)
-            .filter(Session.status == 1)
+            .filter(Session.student_id == uid)
             .all()
         )
 
-        logger.info("Fetching accepted sessions with student info for tutor")
+        logger.info("Fetching approved sessions of the student.")
         return {
             "session": [
                 {
-                    "name": s.student_name,
+                    "name": s.tutor_name,
                     "subject": s.subject_name,
                     "topic": s.topic_title,
                     "date": s.date.isoformat(),
                     "time": s.time.strftime("%H:%M"),
                     "session_id": s.session_id,
-                    "status": s.status
+                    "status_id": s.status
                 }
                 for s in sessions
             ]
@@ -131,12 +174,106 @@ def get_approved_requests(user=Depends(require_role([1])), db: Session = Depends
 
     except Exception as e:
         logger.error(f"Error retrieving sessions: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail="Internal server error during authentication")
 
-@router.delete("/session/{session_id}")
+# Student API to request sessions from tutor
+@router.post("/session/student/request", response_model=SessionRequestPayload)
+def request_session(payload: SessionRequestPayload, user=Depends(require_role([0])), db: Session = Depends(get_db)):
+    
+    # Validation checks
+    if payload is None:
+        logger.error("Invalid payload")
+
+        raise HTTPException(status_code=400, detail="Invalid payload")
+        
+    if payload.tutor_id is None:
+        logger.error("Tutor ID is required")
+        raise HTTPException(status_code=400, detail="Tutor ID is required")
+        
+    if payload.student_id is None:
+        logger.error("Student ID is required")
+        raise HTTPException(status_code=400, detail="Student ID is required")
+    
+    try:
+        status_query = db.query(StatusDetail).filter(StatusDetail.status == "Pending")
+        pending_status = status_query.first()
+        
+        if not pending_status:
+            logger.error("Status 'pending' not found in status table")
+            raise HTTPException(status_code=500, detail="System configuration error: status 'pending' not found")
+        
+        pending_status_id = pending_status.status_id
+        
+
+    except Exception as e:
+        logger.error(f"Error querying status table: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving status information")
+    
+    try:
+
+        existing_query = db.query(Session).filter(
+            Session.tutor_id == payload.tutor_id,
+            Session.topic_id == payload.topic_id,
+            Session.date == payload.date,
+            Session.time == payload.time,
+            Session.student_id == payload.student_id,
+            Session.status == pending_status_id
+
+        )
+        existing_session = existing_query.first()
+        
+
+        if existing_session:
+            logger.warning(f"Duplicate session request detected for student {payload.student_id} with tutor {payload.tutor_id}")
+            raise HTTPException(
+
+                status_code=409, 
+                detail="A session request with the same tutor, topic, date, and time is already pending. Please wait for a response or cancel the existing request."
+
+            )
+            
+
+    except Exception as e:
+        logger.error(f"Error checking for existing sessions: {e}")
+        raise HTTPException(status_code=500, detail="Error checking for existing sessions")
+        
+    logger.info(f"Requesting session with tutor {payload.tutor_id} for student {payload.student_id}")
+    
+    try:
+        session = Session(
+            date=payload.date,
+            time=payload.time,
+            tutor_id=payload.tutor_id,
+            student_id=payload.student_id,
+            topic_id=payload.topic_id,
+            status=0,
+            time_started=payload.time_started,
+            time_ended=payload.time_ended,
+            duration=payload.duration,
+            room_number=payload.room_number,
+            modality=payload.modality
+        )
+        
+        # Add and commit to database
+        db.add(session)
+        db.commit()
+        db.refresh(session)
+        
+        # Return the created session
+        return session
+
+    
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error creating session: {e}")
+        raise HTTPException(status_code=500, detail="Error creating session request")
+
+@router.delete("/session/delete/{session_id}")
 def delete_session_request(session_id: str, user=Depends(verify_token), db: Session = Depends(get_db)):
     uid = user["user_id"]
+
     try:
+        # Get session owned by the student and not yet approved
         session = db.query(Session).filter(
             Session.session_id == session_id,
             Session.student_id == uid,
@@ -144,36 +281,81 @@ def delete_session_request(session_id: str, user=Depends(verify_token), db: Sess
         ).first()
 
         if not session:
-            raise HTTPException(status_code=404, detail="Session not found. Session is already approved.")
-
-        session_id = session.session_id
-        topic_id = session.topic_id
-
-        db.delete(session)
-        db.commit()
-
-        logger.info(f"Session {session_id} has been deleted.")
-
-        # Check if the topic_id exists on the sessions added, else it will delete the topic
-        active_sessions = db.query(Session).filter(Session.topic_id == topic_id).first()
-
-        if active_sessions:
             raise HTTPException(
-                status_code=400,
-                detail="Topic cannot be deleted, it is still used in sessions."
+                status_code=403, 
+                detail="You are not allowed to delete this session. It may not exist or is already approved."
             )
 
-        # Safe to delete topic
-        topic = db.query(TopicDetail).filter(TopicDetail.topic_id == topic_id).first()
+        topic_id = session.topic_id
 
-        if not topic:
-            raise HTTPException(status_code=404, detail="Topic not found.")
-
-        db.delete(topic)
+        # Delete the session first
+        db.delete(session)
         db.commit()
-        logger.info(f"Topic {topic_id} has been deleted.")
+        logger.info(f"Session {session_id} deleted.")
 
+        # Check if topic is still used in other sessions
+        still_used = db.query(Session).filter(Session.topic_id == topic_id).first()
+
+        if not still_used:
+            topic = db.query(TopicDetail).filter(TopicDetail.topic_id == topic_id).first()
+            if topic:
+                db.delete(topic)
+                db.commit()
+                logger.info(f"Topic {topic_id} deleted.")
+        
+        return {"message": "Session deleted successfully."}
+
+    except HTTPException:
+        raise 
     except Exception as e:
         db.rollback()
-        logger.exception("Error deleting session:")
-        raise HTTPException(status_code=500, detail="User is not allowed to delete this session.")
+        logger.exception("Unexpected error during deletion:")
+        raise HTTPException(status_code=500, detail="Internal server error.")
+
+@router.get("/sessions/admin")
+def get_sessions(db: Session = Depends(get_db)):
+    StudentUser = aliased(UserDetail)
+    TutorUser = aliased(UserDetail)
+    try:
+        sessions = (
+            db.query(
+                StudentUser.name.label("student_name"),
+                TutorUser.name.label("tutor_name"),
+                SubjectDetail.subject_name,
+                TopicDetail.topic_title,
+                Session.date,
+                Session.time,
+                Session.session_id,
+                Session.status
+            )
+            .join(TutorDetail, TutorDetail.tutor_id == Session.tutor_id)
+            .join(StudentDetail, StudentDetail.student_id == Session.student_id)
+            .join(UserDetail, UserDetail.userid == TutorDetail.tutor_id)
+            .join(TopicDetail, TopicDetail.topic_id == Session.topic_id)
+            .join(SubjectDetail, SubjectDetail.subject_id == TopicDetail.subject_id)
+            .join(StudentUser, StudentUser.userid == StudentDetail.student_id)
+            .join(TutorUser, TutorUser.userid == TutorDetail.tutor_id)
+            .filter(Session.status == 1)
+            .all()
+        )
+
+        logger.info("Fetching all sessions....")
+        return {
+            "session": [
+                {
+                    "tutor_name": s.tutor_name,
+                    "student_name": s.student_name,
+                    "subject": s.subject_name,
+                    "topic": s.topic_title,
+                    "date": s.date.isoformat(),
+                    "time": s.time.strftime("%H:%M"),
+                    "session_id": s.session_id,
+                    "status_id": s.status
+                }
+                for s in sessions
+            ]
+        }
+
+    except Exception as e:
+        logger.error(f"Error retrieving sessions: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error during authentication")
