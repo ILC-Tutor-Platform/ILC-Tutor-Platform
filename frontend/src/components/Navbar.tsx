@@ -42,19 +42,20 @@ const Navbar = () => {
 
   const handleSignOut = async () => {
     try {
-      await signOut();
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      navigate('/signin');
-      console.log('Signed out successfully!');
-      toast.success('Signed out successfully!', {
-        duration: 3000,
-        style: {
-          backgroundColor: '#ffffff',
-          color: '#307B74',
-          fontSize: '16px',
-          boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
-        },
-      });
+      setTimeout(async () => {
+        await signOut();
+        navigate('/signin');
+        console.log('Signed out successfully!');
+        toast.success('Signed out successfully!', {
+          duration: 3000,
+          style: {
+            backgroundColor: '#ffffff',
+            color: '#307B74',
+            fontSize: '16px',
+            boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
+          },
+        });
+      }, 1000);
     } catch (error) {
       console.error('Error signing out:', error);
     }

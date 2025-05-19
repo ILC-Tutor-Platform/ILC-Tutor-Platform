@@ -1,12 +1,17 @@
-import { DropdownDatesAvail } from '@/components/DropdownDatesAvail';
+import DropdownDatesAvail from '@/components/DropdownDatesAvail';
+import DropdownTopicsAvail from '@/components/DropdownTopicsAvail';
 import { TutorErrorState } from '@/components/TutorErrorState';
 import { TutorLoadingSkeleton } from '@/components/TutorLoadingSkeleton';
 import TutorCard from '@/components/ui/TutorCard';
 import { Button } from '@/components/ui/button';
-import type { TutorDetail, TutorRequestSession } from '@/types';
+import { Input } from '@/components/ui/input';
+import { useAuthStore } from '@/stores/authStore';
+import type { TutorDetail } from '@/types';
 import { api } from '@/utils/axios';
+import { Check, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const IndividualTutor = () => {
   const [tutor, setTutor] = useState<TutorDetail | null>(null);
@@ -14,6 +19,15 @@ const IndividualTutor = () => {
   const [error, setError] = useState<string | null>(null);
   const { tutor_id } = useParams<{ tutor_id: string }>();
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [selectedModality, setSelectedModality] = useState<string>('online');
+  const [roomNumber, setRoomNumber] = useState<string | null>(null);
+  const { user } = useAuthStore();
+  const [selectedDateTime] = selectedDates;
+  const [date, time_from] = selectedDateTime?.split('|') || [];
+  const [validateError, setValidateError] = useState<string | null>(null);
+  const [requestLoading, setRequestLoading] = useState(false);
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  const [selectedTopicID, setSelectedTopicID] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchTutor = async () => {
@@ -23,8 +37,15 @@ const IndividualTutor = () => {
       setError(null);
 
       try {
-        const response = await api.get(`/tutors/${tutor_id}`);
-        const tutorData = response.data;
+        //const response = await api.get(`/tutors/${tutor_id}`);
+        //const tutorData = response.data;
+        //console.log(response.data)
+        const response = await fetch(
+          `http://127.0.0.1:8000/tutors/${tutor_id}`,
+        );
+        const data = await response.json();
+        const tutorData = data;
+        console.log(data);
 
         if (!tutorData) {
           throw new Error('Tutor data not found in response');
@@ -58,12 +79,68 @@ const IndividualTutor = () => {
     return value || defaultValue;
   };
 
-  const handleBookSession = async () => {
+  const handleModalityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target;
+    setSelectedModality(value);
+  };
+
+  const payload = {
+    date: date,
+    time: time_from,
+    tutor_id: tutor_id,
+    student_id: user?.uid,
+    topic_id: selectedTopicID[0],
+    status: 0,
+    time_started: null,
+    time_ended: null,
+    duration: null,
+    room_number: roomNumber,
+    modality: selectedModality,
+  };
+
+  const handleRequestSession = async () => {
+    console.log('REQUESTING SESSION...');
+    setRequestLoading(true);
+    if (!selectedDateTime) {
+      setValidateError('Please select a date and time.');
+      setRequestLoading(false);
+      return;
+    }
+    if (selectedModality === 'in-person' && !roomNumber) {
+      setValidateError('Please input room number.');
+      setRequestLoading(false);
+      return;
+    }
     try {
-      const response = await api.post('session/student/request', {
-        TutorRequestSession,
-      });
-    } catch (error) { }
+      await api.post('session/student/request', payload);
+      setTimeout(() => {
+        toast.success(
+          'Successfully requested session. Please wait for the tutor to accept.',
+          {
+            className: 'green-shadow-card text-black',
+            duration: 3000,
+            style: {
+              background: '#ffffff',
+              color: '#307B74',
+              fontSize: '16px',
+              border: '0px',
+              padding: '1.5rem',
+              boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
+            },
+          },
+        );
+        console.log(payload);
+        setValidateError(null);
+        setSelectedDates([]);
+        setRoomNumber(null);
+      }, 1000);
+    } catch (error) {
+      console.log('Error: ', error);
+    } finally {
+      setTimeout(() => {
+        setRequestLoading(false);
+      }, 1000);
+    }
   };
 
   if (loading) {
@@ -75,14 +152,18 @@ const IndividualTutor = () => {
   }
 
   return (
-    <section className="grid relative top-[10vh] items-center justify-center px-5 w-full">
-      <div
+    <section className="grid relative top-[5vh] items-center justify-center px-5 w-full">
+      <form
         className="flex flex-col bg-ilc-tutor-card p-5 gap-5 rounded-2xl mx-auto md:w-[60%] xl:w-[100%] w-full"
         style={{ boxShadow: '0px 4px 4px rgba(48, 123, 116, 0.3)' }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleRequestSession();
+        }}
       >
         <TutorCard
           name={tutor.name || 'Guest'}
-          subject={safeJoin(tutor.expertise)}
+          subject={safeJoin(tutor.subject)}
           available={safeJoin(tutor.availability)}
           expertise={safeJoin(tutor.expertise)}
           className="bg-white"
@@ -96,7 +177,7 @@ const IndividualTutor = () => {
         </div>
         <div className="grid gap-5">
           <p className="text-2xl font-bold">Select Date</p>
-          <div className="mx-auto">
+          <div className="flex flex-col items-center gap-4">
             <DropdownDatesAvail
               dates={[
                 [
@@ -107,15 +188,117 @@ const IndividualTutor = () => {
               ]}
               selectedDates={selectedDates}
               setSelectedDates={setSelectedDates}
+              className="mx-auto"
             />
+            {selectedDates[0] && (
+              <div className="text-sm text-gray-700 flex flex-col gap-2">
+                {(() => {
+                  const [date, from, to] = selectedDates[0].split('|');
+                  return (
+                    <div className="flex items-center gap-2">
+                      <Check className="text-ilc-yellow" />
+                      <p>
+                        {date} - {from} to {to}
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+          {/* DROPDOWN TOPICS */}
+          <div className="flex flex-col items-center gap-4">
+            <DropdownTopicsAvail
+              topics={tutor?.topic_title?.map((title, index) => [
+                title,
+                tutor.topic_id?.[index] ?? title,
+              ]) || []}
+              selectedTopics={selectedTopics}
+              setSelectedTopics={setSelectedTopics}
+              setSelectedTopicID={setSelectedTopicID}
+              className="mx-auto" selectedTopicID={[]}            />
+            {selectedTopics[0] && (
+              <div className="text-sm text-gray-700 flex flex-col gap-2">
+                {(() => {
+                  return (
+                    <div className="flex items-center gap-2">
+                      <Check className="text-ilc-yellow" />
+                      <p>
+                        {selectedTopics.length > 0
+                          ? selectedTopics
+                          : 'No topic selected'}
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
           </div>
         </div>
-        <div className="mx-auto">
-          <Button variant={'yellow-button'} onClick={handleBookSession}>
-            BOOK A SESSION
-          </Button>
+        <div className="flex flex-col gap-10">
+          {/* IF MODALITY IS IN-PERSON, THEN SHOW INPUT ROOM NUMBER. ELSE HIDE */}
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-center">
+              <p>Select Modality:</p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  id="online"
+                  name="modality"
+                  value="online"
+                  defaultChecked
+                  onChange={handleModalityChange}
+                />
+                <label htmlFor="online">Online</label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  id="in-person"
+                  name="modality"
+                  value="in-person"
+                  onChange={handleModalityChange}
+                />
+                <label htmlFor="in-person">In-Person</label>
+              </div>
+            </div>
+            {selectedModality === 'in-person' && (
+              <>
+                {/* INPUT ROOM NUMBER IF ONLINE */}
+                <div className="flex justify-between items-center">
+                  <label htmlFor="roomNumber">Room number:</label>
+                  <Input
+                    type="text"
+                    id="roomNumber"
+                    name="roomNumber"
+                    placeholder="Input room number"
+                  />
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="mx-auto">
+            <Button variant={'yellow-button'} type="submit">
+              {requestLoading ? (
+                <>
+                  <div className="flex gap-2 items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+                    <p>Requesting Session...</p>
+                  </div>
+                </>
+              ) : (
+                'BOOK SESSION'
+              )}
+            </Button>
+          </div>
+          {validateError && (
+            <div className="text-red-500 text-sm text-center">
+              {validateError}
+            </div>
+          )}
         </div>
-      </div>
+      </form>
     </section>
   );
 };

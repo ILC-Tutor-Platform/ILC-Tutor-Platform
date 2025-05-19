@@ -17,7 +17,7 @@ interface DropdownDatesAvailProps {
   className?: string;
 }
 
-export const DropdownDatesAvail = ({
+const DropdownDatesAvail = ({
   dates = [],
   selectedDates = [],
   setSelectedDates,
@@ -25,9 +25,11 @@ export const DropdownDatesAvail = ({
 }: DropdownDatesAvailProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const toggleDate = (date: string) => {
+  const selectDate = (dateKey: string) => {
     setSelectedDates((prev) =>
-      prev.includes(date) ? prev.filter((d) => d !== date) : [...prev, date],
+      prev.includes(dateKey)
+        ? prev.filter((date) => date !== dateKey)
+        : [...prev, dateKey],
     );
   };
 
@@ -42,24 +44,24 @@ export const DropdownDatesAvail = ({
               <ChevronDown className="text-ilc-yellow" />
             )}
           </div>
-          DATES AVAILABLE
+          Dates Available
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-56">
+      <DropdownMenuContent className="w-64">
         <DropdownMenuLabel>DATES AVAILABLE</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {dates.length > 0 ? (
           dates.map(([availability, time_from, time_to], index) => {
-            const dateKey = `${availability}-${time_from}-${time_to}`;
+            const dateKey = `${availability}|${time_from}|${time_to}`;
             return (
               <DropdownMenuCheckboxItem
                 key={index}
                 checked={selectedDates.includes(dateKey)}
-                onCheckedChange={() => toggleDate(dateKey)}
+                onCheckedChange={() => selectDate(dateKey)}
               >
                 {availability}
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500 ml-2">
                   {time_from} - {time_to}
                 </span>
               </DropdownMenuCheckboxItem>
@@ -72,3 +74,5 @@ export const DropdownDatesAvail = ({
     </DropdownMenu>
   );
 };
+
+export default DropdownDatesAvail;

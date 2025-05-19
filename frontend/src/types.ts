@@ -61,7 +61,9 @@ export interface TutorDetail {
   available_time_to: string[];
   expertise: string[];
   socials: string[];
-  subject: string;
+  subject: string[];
+  topic_title: string[];
+  topic_id: string[];
 }
 
 export interface StudentDetail {
@@ -155,6 +157,20 @@ export interface TutorRequests {
   subject: string;
   expertise: string;
   tutor_id: string;
+}
+
+export interface TutorRequestSession {
+  date: string;
+  time: string;
+  tutor_id: string;
+  student_id: string;
+  topic_id: string;
+  status: number;
+  time_started?: string;
+  time_ended?: string;
+  duration?: number;
+  room_number?: string;
+  modality: string;
 }
 
 export interface TutorRequestSession {
