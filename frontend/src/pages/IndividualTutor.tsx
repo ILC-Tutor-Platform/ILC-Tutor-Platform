@@ -6,6 +6,7 @@ import TutorCard from '@/components/ui/TutorCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/stores/authStore';
+import { useRoleStore } from '@/stores/roleStore';
 import type { TutorDetail } from '@/types';
 import { api } from '@/utils/axios';
 import { Check, Loader2 } from 'lucide-react';
@@ -28,6 +29,7 @@ const IndividualTutor = () => {
   const [requestLoading, setRequestLoading] = useState(false);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [selectedTopicID, setSelectedTopicID] = useState<string[]>([]);
+  const activeRole = useRoleStore((state) => state.activeRole);
 
   useEffect(() => {
     const fetchTutor = async () => {
@@ -37,16 +39,9 @@ const IndividualTutor = () => {
       setError(null);
 
       try {
-        //const response = await api.get(`/tutors/${tutor_id}`);
-        //const tutorData = response.data;
-        //console.log(response.data)
-        const response = await fetch(
-          `http://127.0.0.1:8000/tutors/${tutor_id}`,
-        );
-        const data = await response.json();
-        const tutorData = data;
-        console.log(data);
-
+        const response = await api.get(`/tutors/${tutor_id}`);
+        const tutorData = response.data;
+        console.log(response.data);
         if (!tutorData) {
           throw new Error('Tutor data not found in response');
         }
@@ -111,6 +106,13 @@ const IndividualTutor = () => {
       setRequestLoading(false);
       return;
     }
+    if (activeRole !== 0) {
+      setValidateError(
+        'You are not allowed to request a session. Please login as a student.',
+      );
+      setRequestLoading(false);
+      return;
+    }
     try {
       await api.post('session/student/request', payload);
       setTimeout(() => {
@@ -121,7 +123,7 @@ const IndividualTutor = () => {
             duration: 3000,
             style: {
               background: '#ffffff',
-              color: '#307B74',
+              color: 'green',
               fontSize: '16px',
               border: '0px',
               padding: '1.5rem',
@@ -136,8 +138,26 @@ const IndividualTutor = () => {
       }, 1000);
     } catch (error) {
       console.log('Error: ', error);
+      toast.error('Failed to request session. Please try again later.', {
+        className: 'green-shadow-card text-black',
+        duration: 3000,
+        style: {
+          background: '#ffffff',
+          color: 'red',
+          fontSize: '16px',
+          border: '0px',
+          padding: '1.5rem',
+          boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
+        },
+      });
     } finally {
       setTimeout(() => {
+        setValidateError(null);
+        setRoomNumber(null);
+        setSelectedDates([]);
+        setSelectedTopics([]);
+        setSelectedTopicID([]);
+        setSelectedModality('online');
         setRequestLoading(false);
       }, 1000);
     }
@@ -154,8 +174,7 @@ const IndividualTutor = () => {
   return (
     <section className="grid relative top-[5vh] items-center justify-center px-5 w-full">
       <form
-        className="flex flex-col bg-ilc-tutor-card p-5 gap-5 rounded-2xl mx-auto md:w-[60%] xl:w-[100%] w-full"
-        style={{ boxShadow: '0px 4px 4px rgba(48, 123, 116, 0.3)' }}
+        className="flex flex-col bg-ilc-tutor-card p-5 gap-5 rounded-2xl mx-auto md:w-[60%] lg:w-[100%] w-full green-shadow-card"
         onSubmit={(e) => {
           e.preventDefault();
           handleRequestSession();
@@ -172,11 +191,11 @@ const IndividualTutor = () => {
           className="flex flex-col gap-4 rounded-xl bg-ilc-green p-5 text-white"
           style={{ boxShadow: '0px 4px 4px rgba(48, 123, 116, 0.3)' }}
         >
-          <p className="text-2xl">Hi, I'm {tutor?.name ?? 'Guest'}!</p>
+          <p className="text-xl font-thin">Hi, I'm {tutor?.name ?? 'Guest'}!</p>
           <p>{tutor?.description}</p>
         </div>
         <div className="grid gap-5">
-          <p className="text-2xl font-bold">Select Date</p>
+          <p className="text-xl font-semibold">Select Date</p>
           <div className="flex flex-col items-center gap-4">
             <DropdownDatesAvail
               dates={[
@@ -206,6 +225,7 @@ const IndividualTutor = () => {
               </div>
             )}
           </div>
+          <p className="text-xl font-semibold">Select Topic</p>
           {/* DROPDOWN TOPICS */}
           <div className="flex flex-col items-center gap-4">
             <DropdownTopicsAvail
@@ -301,6 +321,7 @@ const IndividualTutor = () => {
               {validateError}
             </div>
           )}
+          {}
         </div>
       </form>
     </section>

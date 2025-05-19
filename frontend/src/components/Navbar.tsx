@@ -50,7 +50,7 @@ const Navbar = () => {
           duration: 3000,
           style: {
             backgroundColor: '#ffffff',
-            color: '#307B74',
+            color: 'green',
             fontSize: '16px',
             boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
           },
