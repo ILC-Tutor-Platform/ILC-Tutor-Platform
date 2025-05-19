@@ -123,14 +123,7 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
             expertise = db.query(TutorExpertise).filter(TutorExpertise.tutor_id == uid).all()
             socials = db.query(TutorSocials).filter(TutorSocials.tutor_id == uid).all()
             subject = db.query(SubjectDetail).filter(SubjectDetail.tutor_id == uid).all()
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-=======
->>>>>>> b742d9f (Fix: Update student profile education info modal and tutor view bugs)
-=======
-
->>>>>>> develop
             if tutor:
                 response["tutor"] = {
                     "description": tutor.description,
@@ -139,15 +132,7 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
                     "expertise": [e.expertise for e in expertise],
                     "socials": [s.socials for s in socials],
                     "availability": [a.availability for a in availability],
-<<<<<<< HEAD
-<<<<<<< HEAD
                     "subject": [s.subject_name for s in subject]
-=======
-                    "subjects": [s.subject for s in subject]
->>>>>>> b742d9f (Fix: Update student profile education info modal and tutor view bugs)
-=======
-                    "subject": [s.subject_name for s in subject]
->>>>>>> develop
                 }
 
         if 2 in role_ids:
