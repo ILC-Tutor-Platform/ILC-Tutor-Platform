@@ -209,14 +209,18 @@ const IndividualTutor = () => {
           {/* DROPDOWN TOPICS */}
           <div className="flex flex-col items-center gap-4">
             <DropdownTopicsAvail
-              topics={tutor?.topic_title?.map((title, index) => [
-                title,
-                tutor.topic_id?.[index] ?? title,
-              ]) || []}
+              topics={
+                tutor?.topic_title?.map((title, index) => [
+                  title,
+                  tutor.topic_id?.[index] ?? title,
+                ]) || []
+              }
               selectedTopics={selectedTopics}
               setSelectedTopics={setSelectedTopics}
               setSelectedTopicID={setSelectedTopicID}
-              className="mx-auto" selectedTopicID={[]}            />
+              className="mx-auto"
+              selectedTopicID={[]}
+            />
             {selectedTopics[0] && (
               <div className="text-sm text-gray-700 flex flex-col gap-2">
                 {(() => {
