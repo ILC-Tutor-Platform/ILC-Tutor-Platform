@@ -30,6 +30,8 @@ const IndividualTutor = () => {
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [selectedTopicID, setSelectedTopicID] = useState<string[]>([]);
   const activeRole = useRoleStore((state) => state.activeRole);
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
   useEffect(() => {
     const fetchTutor = async () => {
@@ -56,7 +58,8 @@ const IndividualTutor = () => {
         );
         setTutor(null);
       } finally {
-        setTimeout(() => setLoading(false), 1000);
+        await sleep(1000);
+        setLoading(false);
       }
     };
 
@@ -114,28 +117,28 @@ const IndividualTutor = () => {
       return;
     }
     try {
+      await sleep(1000);
       await api.post('session/student/request', payload);
-      setTimeout(() => {
-        toast.success(
-          'Successfully requested session. Please wait for the tutor to accept.',
-          {
-            className: 'green-shadow-card text-black',
-            duration: 3000,
-            style: {
-              background: '#ffffff',
-              color: 'green',
-              fontSize: '16px',
-              border: '0px',
-              padding: '1.5rem',
-              boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
-            },
+      console.log('Session requested successfully');
+      toast.success(
+        'Successfully requested session. Please wait for the tutor to accept.',
+        {
+          className: 'green-shadow-card text-black',
+          duration: 3000,
+          style: {
+            background: '#ffffff',
+            color: 'green',
+            fontSize: '16px',
+            border: '0px',
+            padding: '1.5rem',
+            boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
           },
-        );
-        console.log(payload);
-        setValidateError(null);
-        setSelectedDates([]);
-        setRoomNumber(null);
-      }, 1000);
+        },
+      );
+      console.log(payload);
+      setValidateError(null);
+      setSelectedDates([]);
+      setRoomNumber(null);
     } catch (error) {
       console.log('Error: ', error);
       toast.error('Failed to request session. Please try again later.', {
@@ -151,15 +154,13 @@ const IndividualTutor = () => {
         },
       });
     } finally {
-      setTimeout(() => {
-        setValidateError(null);
-        setRoomNumber(null);
-        setSelectedDates([]);
-        setSelectedTopics([]);
-        setSelectedTopicID([]);
-        setSelectedModality('online');
-        setRequestLoading(false);
-      }, 1000);
+      setValidateError(null);
+      setRoomNumber(null);
+      setSelectedDates([]);
+      setSelectedTopics([]);
+      setSelectedTopicID([]);
+      setSelectedModality('online');
+      setRequestLoading(false);
     }
   };
 

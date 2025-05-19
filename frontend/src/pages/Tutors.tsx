@@ -29,7 +29,7 @@ const Tutors = () => {
     } catch (error) {
       console.error('Error fetching tutors:', error);
     } finally {
-      setTimeout(() => setLoading(false), 1000);
+      setLoading(false);
     }
   };
 

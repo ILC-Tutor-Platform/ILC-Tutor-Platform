@@ -18,6 +18,8 @@ const Navbar = () => {
   const activeRole = useRoleStore((state) => state.activeRole);
   const { isAuthenticated, user, signOut, refreshSession } = UserAuth();
   const [, setSessionChecked] = useState(false);
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
   useEffect(() => {
     const checkSession = async () => {
@@ -42,20 +44,19 @@ const Navbar = () => {
 
   const handleSignOut = async () => {
     try {
-      setTimeout(async () => {
-        await signOut();
-        navigate('/signin');
-        console.log('Signed out successfully!');
-        toast.success('Signed out successfully!', {
-          duration: 3000,
-          style: {
-            backgroundColor: '#ffffff',
-            color: 'green',
-            fontSize: '16px',
-            boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
-          },
-        });
-      }, 1000);
+      await sleep(1000); // Simulate a delay
+      await signOut();
+      navigate('/signin');
+      console.log('Signed out successfully!');
+      toast.success('Signed out successfully!', {
+        duration: 3000,
+        style: {
+          backgroundColor: '#ffffff',
+          color: 'green',
+          fontSize: '16px',
+          boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
+        },
+      });
     } catch (error) {
       console.error('Error signing out:', error);
     }
