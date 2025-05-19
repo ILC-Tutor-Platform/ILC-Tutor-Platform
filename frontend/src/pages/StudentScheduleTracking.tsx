@@ -57,11 +57,11 @@ const StudentScheduleTracking = () => {
 
     const now = new Date();
     const pastSchedules = allSchedules.filter((session) => {
-      const sessionDate = new Date(session.date); // Replace with correct date field
+      const sessionDate = new Date(session.date); 
       return sessionDate < now;
     });
 
-    setHistorySessions(pastSchedules); // ✅ correct this line
+    setHistorySessions(pastSchedules); 
   } catch (error) {
     console.error('Error fetching history schedule:', error);
   } finally {
@@ -149,6 +149,16 @@ const StudentScheduleTracking = () => {
                         </p>
                         <p className="text-sm text-gray-700">
                           Tutor: {session.name || 'N/A'}
+                        </p>
+                        <p className="text-sm text-gray-700">
+                          Status:{' '}
+                          {session.status_id === 0
+                            ? 'Not accepted'
+                            : session.status_id === 1
+                            ? 'Marked as done'
+                            : session.status_id === 2
+                            ? 'Declined'
+                            : 'N/A'}
                         </p>
                       </li>
                     ))}

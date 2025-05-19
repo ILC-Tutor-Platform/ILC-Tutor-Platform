@@ -93,6 +93,7 @@ const SignUpAsStudent = () => {
     };
 
     const { success, error } = await signUpStudent(payload);
+    console.log("PAYLOAD", payload)
 
     if (success) {
       console.log('User signed up successfully:', concatenatedName);
@@ -139,7 +140,6 @@ const SignUpAsStudent = () => {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          signUpAsStudentHandler();
           signUpAsStudentHandler();
         }}
         className="grid w-[90%] xl:w-[30%] mx-auto py-15 px-4 xl:px-10 gap-10 rounded-2xl green-shadow-card"
