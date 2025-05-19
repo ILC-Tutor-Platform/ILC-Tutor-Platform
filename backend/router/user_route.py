@@ -1,4 +1,4 @@
-from fastapi import Depends, APIRouter, HTTPException, status, Request
+from fastapi import Depends, APIRouter, HTTPException, status, Request, File, UploadFile
 from sqlalchemy.orm import Session
 from database.config import get_db
 from models import UserDetail, StudentDetail, TutorDetail, TutorAffiliation, TutorAvailability, TutorExpertise, TutorSocials, AdminDetail, SubjectDetail
@@ -13,6 +13,7 @@ SETTINGS = settings.get_settings()
 
 JWT_SECRET = SETTINGS.SUPABASE_JWT_SECRET
 JWT_ALGORITHM = "HS256"
+BUCKET_NAME = 'avatar'
 
 # Role-based access function
 def require_role(allowed_roles: list[int]):
@@ -95,7 +96,8 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
             "user": {
                 "name": user_detail.name,
                 "email": user_detail.email,
-                "datejoined": str(user_detail.datejoined)
+                "datejoined": str(user_detail.datejoined),
+                "image_public_url": user_detail.image_public_url
             }
         }
 
@@ -296,3 +298,82 @@ def update_user_profile(
         logger.error(f"User detail cannot be updated. Error: {str(e)}")
         raise HTTPException(status_code=400, detail="Update user failed.")
     
+@router.post("/profile/upload-image")
+@router.put("/profile/upload-image")
+async def upload_image(
+    request: Request,
+    user_id: str,
+    file: UploadFile = File(...), db: Session = Depends(get_db)
+):
+    if request.method == "POST":
+        print("Creating new profile image")
+    elif request.method == "PUT":
+        print("Updating existing profile image")
+        
+    try:
+        allowed_types = {
+            "image/png": "png",
+            "image/jpeg": "jpeg",
+            "image/jpg": "jpeg",
+        }
+
+        if file.content_type not in allowed_types:
+            raise HTTPException(status_code=400, detail="Only PNG or JPEG files are allowed.")
+        
+        # Validate file size (e.g., 5MB limit)
+        if file.size and file.size > 5 * 1024 * 1024:
+            raise HTTPException(status_code=400,detail="File size too large. Maximum size is 5MB.")
+        
+        file_extension = allowed_types[file.content_type]
+        filename = f"{user_id}.{file_extension}"
+        file_bytes = await file.read()
+
+        # Validate file content
+        if not file_bytes:
+            raise HTTPException(status_code=400,detail="File is empty or corrupted.")
+        
+        # Delete existing files first (handle errors gracefully)
+        try:
+            remove_response = supabase.storage.from_(BUCKET_NAME).remove([
+                f"{user_id}.png",
+                f"{user_id}.jpeg",
+                f"{user_id}.jpg"
+            ])
+            
+            # Log removal response but don't fail if files don't exist
+            if hasattr(remove_response, 'error') and remove_response.error:
+                logger.warning(f"Could not remove existing files for user {user_id}: {remove_response.error}")
+            else:
+                logger.info(f"Existing files removed {remove_response}")
+                
+        except Exception as e:
+            logger.warning(f"Error removing existing files for user {user_id}: {str(e)}")
+            # Continue with upload even if removal fails
+
+
+        # Upload and overwrite if exists
+        response = supabase.storage.from_(BUCKET_NAME).upload(
+            filename,
+            file_bytes,
+            {"content-type": file.content_type},
+        )
+
+        public_url = supabase.storage.from_(BUCKET_NAME).get_public_url(filename)
+        logger.info(f"PUBLIC URL: {public_url}")
+        if response: 
+            logger.info(f"File {filename} uploaded by user {user_id}, URL: {public_url}")
+         
+        # Update DB
+        user_detail = db.query(UserDetail).filter(UserDetail.userid == user_id).first()
+        if not user_detail:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        user_detail.image_public_url = public_url
+        db.commit()
+
+        return {"image_public_url": public_url}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
