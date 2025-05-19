@@ -92,6 +92,7 @@ const SignUpAsStudent = () => {
       },
     };
 
+    console.log('PAYLOAD: ', payload);
     const { success, error } = await signUpStudent(payload);
     console.log("PAYLOAD", payload)
 
