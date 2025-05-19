@@ -14,8 +14,10 @@ SETTINGS = settings.get_settings()
 JWT_SECRET = SETTINGS.SUPABASE_JWT_SECRET
 JWT_ALGORITHM = "HS256"
 
-# Role-based access function
 def require_role(allowed_roles: list[int]):
+    """
+    Ensures role based access to routes.
+    """
     def checker(user=Depends(verify_token)):
         if not any(str(role) in user["role"] for role in allowed_roles):
             logger.error("The user's role is not allowed to access this endpoint.")
@@ -25,6 +27,9 @@ def require_role(allowed_roles: list[int]):
 
 
 def get_authorization_token(request: Request):
+    """
+    Ensures that the authorization token exists.
+    """
     auth_header = request.headers.get("Authorization")
     
     if not auth_header:
@@ -55,6 +60,7 @@ def verify_token(token: str = Depends(get_authorization_token)):
     
     except HTTPException:
         raise
+
     except JWTError as e:
         logger.error(f"Token verification failed: {str(e)}")
         raise HTTPException(status_code=401, detail=f"Invalid or expired token: {str(e)}")
@@ -63,7 +69,7 @@ def verify_token(token: str = Depends(get_authorization_token)):
 def get_all_users(db: Session = Depends(get_db)):
     try:
         users = db.query(UserDetail).all()
-        logger.info("Fetching users from Supabase")
+        logger.info("Fetching all users from Supabase")
         return {"users": [ 
             {
                 "user_id": user.userid,
@@ -83,7 +89,7 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
         uid = user["user_id"] 
         roles = user["role"]
         
-        logger.info(f"uid: {uid}")
+        logger.info(f"Loading information of user {uid}.")
 
         # Fetch user from supabase
         user_detail = db.query(UserDetail).filter(UserDetail.userid == uid).first()
@@ -118,9 +124,13 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
             socials = db.query(TutorSocials).filter(TutorSocials.tutor_id == uid).all()
             subject = db.query(SubjectDetail).filter(SubjectDetail.tutor_id == uid).all()
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> b742d9f (Fix: Update student profile education info modal and tutor view bugs)
+=======
+
+>>>>>>> develop
             if tutor:
                 response["tutor"] = {
                     "description": tutor.description,
@@ -130,10 +140,14 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
                     "socials": [s.socials for s in socials],
                     "availability": [a.availability for a in availability],
 <<<<<<< HEAD
+<<<<<<< HEAD
                     "subject": [s.subject_name for s in subject]
 =======
                     "subjects": [s.subject for s in subject]
 >>>>>>> b742d9f (Fix: Update student profile education info modal and tutor view bugs)
+=======
+                    "subject": [s.subject_name for s in subject]
+>>>>>>> develop
                 }
 
         if 2 in role_ids:
@@ -145,7 +159,7 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
                 }
 
         return response
-
+    
     except Exception:
         logger.error("User requested is not found.")
         raise HTTPException(status_code=500, detail="User not found.")
@@ -300,6 +314,7 @@ def update_user_profile(
     
     except HTTPException:
         raise
+
     except Exception as e:
         logger.error(f"User detail cannot be updated. Error: {str(e)}")
         raise HTTPException(status_code=400, detail="Update user failed.")
