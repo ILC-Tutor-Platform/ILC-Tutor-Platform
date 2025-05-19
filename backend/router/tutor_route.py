@@ -18,8 +18,9 @@ class TutorResponse(BaseModel):
     name: Optional[str] = None
     email: str
     datejoined: date
-    subject: Optional[str] = None
-    topic: Optional[str] = None
+    subject: Optional[List[str]] = None
+    topic_title: Optional[List[str]] = None
+    topic_id: Optional[List[UUID]] = None
     description: Optional[str] = None
     status: Optional[str] = None
     affiliations: Optional[List[str]] = None
@@ -198,16 +199,26 @@ async def get_tutor_by_id(tutor_id: str, db: DBSession = Depends(get_db)):
                 elif isinstance(topic, tuple) and len(topic) >= 3 and topic[2]:
                     print(f"Topic title found in tuple: {topic[2]}")
                     topic_titles.append(topic[2])
+            topic_id = []
+            for topic in topics_query:
+                if hasattr(topic, 'topic_id') and topic.topic_id:
+                    topic_id.append(topic.topic_id)
+                    print(f"Topic ID found: {topic.topic_id}")
+                elif isinstance(topic, tuple) and len(topic) >= 3 and topic[2]:
+                    topic_id.append(topic[2])
+                    print(f"Topic ID found in tuple: {topic[2]}")
         else:
             topic_titles = []
+            topic_id = []
         
         tutor_data = {
             "userid": user.userid,
             "name": user.name,
             "email": user.email,
             "datejoined": user.datejoined,
-            "subject": str(subject_names),
-            "topic": str(topic_titles),
+            "subject": subject_names,
+            "topic_title": topic_titles,
+            "topic_id": topic_id,
             "description": user.tutor_detail.description if hasattr(user, 'tutor_detail') and user.tutor_detail else None,
             "status": str(user.tutor_detail.status) if hasattr(user, 'tutor_detail') and user.tutor_detail else None,
             "affiliations": [user.tutor_affiliation.affiliations] if hasattr(user, 'tutor_affiliation') and user.tutor_affiliation else None,
