@@ -29,7 +29,7 @@ const Tutors = () => {
     } catch (error) {
       console.error('Error fetching tutors:', error);
     } finally {
-      setTimeout(() => setLoading(false), 1000);
+      setLoading(false);
     }
   };
 
@@ -62,7 +62,7 @@ const Tutors = () => {
   };
 
   return (
-    <section className="flex flex-col gap-10 px-5 py-10 xl:px-40 relative top-[2vh] min-h-screen">
+    <section className="flex flex-col gap-10 px-5 py-10 xl:px-40 relative top-[2vh] min-h-screen items-center">
       <h2 className="text-6xl md:text-[64px] text-ilc-red font-bold text-center md:text-left">
         Tutor List
       </h2>
@@ -77,13 +77,17 @@ const Tutors = () => {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-10">
+          <div className="flex flex-wrap gap-5 lg:gap-10 justify-center">
             {tutors.length > 0 ? (
               tutors.map((tutor) => (
                 <TutorCard
                   key={tutor.userid}
                   name={tutor.name}
-                  subject={tutor.subject}
+                  subject={
+                    Array.isArray(tutor.subject)
+                      ? tutor.subject.join(', ')
+                      : tutor.subject
+                  }
                   available={getAvailability(tutor)}
                   expertise={tutor.expertise.join(', ')}
                   className="mx-auto"

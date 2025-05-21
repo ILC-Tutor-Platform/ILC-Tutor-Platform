@@ -19,6 +19,9 @@ const NavbarMobile = () => {
   const { toggle, close } = useSidebarStore();
   const activeRole = useRoleStore((state) => state.activeRole);
   const [, setSessionChecked] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
   useEffect(() => {
     const checkSession = async () => {
@@ -43,7 +46,9 @@ const NavbarMobile = () => {
   }, [isAuthenticated, refreshSession, user]);
 
   const handleSignOut = async () => {
+    setLoading(true);
     try {
+      await sleep(1000);
       await signOut();
       navigate('/signin');
       console.log('Signed out successfully!');
@@ -51,13 +56,15 @@ const NavbarMobile = () => {
         duration: 3000,
         style: {
           backgroundColor: '#ffffff',
-          color: '#307B74',
+          color: 'green',
           fontSize: '16px',
           boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
         },
       });
     } catch (error) {
       console.error('Error signing out:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -132,7 +139,11 @@ const NavbarMobile = () => {
                 variant={'yellow-button'}
                 className="text-xs"
               >
-                {isAuthenticated && user ? 'Sign out' : 'Sign in'}
+                {loading
+                  ? 'Signing out...'
+                  : isAuthenticated && user
+                    ? 'Sign Out'
+                    : 'Sign In'}
               </Button>
             </li>
           </ul>

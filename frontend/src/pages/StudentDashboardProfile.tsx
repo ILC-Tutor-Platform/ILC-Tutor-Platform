@@ -1,6 +1,6 @@
 import { useTokenStore } from '@/stores/authStore';
 import axios from 'axios';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import EditIcon from '../assets/edit.svg';
 import ProfilePlaceholder from '../assets/ProfilePlaceholder.svg';
 import BadgeIcon from '../assets/user2.svg';
@@ -31,6 +31,7 @@ const StudentDashboardProfile = () => {
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string>('');
 
   const openPersonalModal = () => {
     setEditPersonalData({
@@ -189,6 +190,57 @@ const StudentDashboardProfile = () => {
     }
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!accessToken || !user?.uid) {
+      setError('Not authenticated');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file); // matches `file: UploadFile = File(...)` in backend
+
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/profile/upload-image?user_id=${user.uid}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+
+      console.log('Upload response:', res.data);
+
+      const newImageUrl = res.data?.image_public_url;
+
+      if (newImageUrl) {
+        const cleanedUrl = `${newImageUrl.replace(/\?$/, '')}?t=${Date.now()}`;
+        setProfileImageUrl(cleanedUrl);
+        console.log('New profile image URL set:', newImageUrl);
+      } else {
+        throw new Error('No image URL returned from server');
+      }
+    } catch (err: any) {
+      console.error('Image upload failed:', err);
+      setError(
+        err.response?.data?.detail ||
+          `Image upload failed: ${err.message || 'Unknown error'}`,
+      );
+    }
+  };
+
   useEffect(() => {
     const fetchStudent = async () => {
       try {
@@ -218,6 +270,77 @@ const StudentDashboardProfile = () => {
           throw new Error('User data not found in response');
         }
 
+        // Set profile image if available
+        const imageUrl = res.data.user.image_public_url;
+        if (imageUrl) {
+          setProfileImageUrl(imageUrl);
+          console.log('Profile image URL set:', imageUrl);
+        }
+
+        const fullName = res.data.user.name || '';
+        console.log('Full name to parse:', fullName);
+
+        const extractNameParts = (name: string) => {
+          const nameParts = name.trim().split(' ');
+
+          if (nameParts.length === 0) {
+            return { firstName: '', middleInitial: '', lastName: '' };
+          }
+
+          if (nameParts.length === 1) {
+            return { firstName: nameParts[0], middleInitial: '', lastName: '' };
+          }
+
+          if (nameParts.length === 2) {
+            return {
+              firstName: nameParts[0],
+              middleInitial: '',
+              lastName: nameParts[1],
+            };
+          }
+
+          let firstName, middleInitial, lastName;
+
+          const singleLetterIndices = nameParts
+            .map((part, index) => (part.length === 1 ? index : -1))
+            .filter((index) => index !== -1);
+
+          if (singleLetterIndices.length === 1) {
+            const miIndex = singleLetterIndices[0];
+
+            firstName = nameParts.slice(0, miIndex).join(' ');
+            middleInitial = nameParts[miIndex];
+            lastName = nameParts.slice(miIndex + 1).join(' ');
+          } else {
+            firstName = nameParts[0];
+            lastName = nameParts[nameParts.length - 1];
+
+            if (nameParts.length > 2) {
+              middleInitial =
+                nameParts[nameParts.length - 2].length === 1
+                  ? nameParts[nameParts.length - 2]
+                  : '';
+
+              if (middleInitial === '') {
+                firstName = nameParts.slice(0, nameParts.length - 1).join(' ');
+              }
+            } else {
+              middleInitial = '';
+            }
+          }
+
+          return { firstName, middleInitial, lastName };
+        };
+
+        const { firstName, middleInitial, lastName } =
+          extractNameParts(fullName);
+
+        console.log('Name parts extracted:', {
+          firstName,
+          middleInitial,
+          lastName,
+        });
+        
         setStudent({
           name: res.data.user.name || '',
           student_number: res.data.student?.student_number || '',
@@ -433,16 +556,24 @@ const StudentDashboardProfile = () => {
             {/* Profile Picture */}
             <div className="flex flex-col items-center mb-8">
               <img
-                className="w-36 h-36 md:w-44 md:h-44 lg:w-52 lg:h-52"
-                src={ProfilePlaceholder}
+                className="w-50 h-50 rounded-full object-cover"
+                src={profileImageUrl || ProfilePlaceholder}
                 alt="Profile"
               />
               <button
-                className="mt-3 text-center text-base md:text-lg lg:text-xl text-black font-normal underline"
-                onClick={() => console.log('Update Photo clicked')}
+                className="mt-3 text-center text-base md:text-lg lg:text-xl text-black font-normal underline hover:text-green-400 cursor-pointer"
+                onClick={handleUploadClick}
               >
                 Update Photo
               </button>
+
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+              />
             </div>
 
             {/* Loading/Error */}
