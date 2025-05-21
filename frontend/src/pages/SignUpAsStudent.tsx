@@ -94,7 +94,7 @@ const SignUpAsStudent = () => {
 
     console.log('PAYLOAD: ', payload);
     const { success, error } = await signUpStudent(payload);
-    console.log("PAYLOAD", payload)
+    console.log('PAYLOAD', payload);
 
     if (success) {
       console.log('User signed up successfully:', concatenatedName);

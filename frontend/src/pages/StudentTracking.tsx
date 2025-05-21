@@ -10,7 +10,6 @@ const StudentTracking = () => {
   const [activeModal, setActiveModal] = useState<'history' | null>(null);
   const [historyRequests, setHistoryRequests] = useState<StudentResponse[]>([]);
 
-
   useEffect(() => {
     setSidebarOpen(false);
     const navbar = document.querySelector('nav');
@@ -35,11 +34,11 @@ const StudentTracking = () => {
       );
 
       const allStudentRequests = response.data;
-      
+
       const now = new Date();
 
       const upcomingRequests = allStudentRequests.filter((student) => {
-        const sessionDate = new Date(student.date); 
+        const sessionDate = new Date(student.date);
         return sessionDate >= now;
       });
       setStudents(upcomingRequests);
@@ -51,24 +50,27 @@ const StudentTracking = () => {
   };
 
   const fetchHistorySchedule = async () => {
-        setLoading(true);
-        try {
-          const response = await api.get<{ session: StudentResponse[] }>('/tutor/student-requests');
-  
-          const allRequests = response.data.session;
-  
-          const now = new Date();
-          const pastRequests = allRequests.filter((student) => {
-            const studentDate = new Date(student.date); 
-            return studentDate < now;
-          });
-  
-          setHistoryRequests(pastRequests); 
-      } catch (error) {
-          console.error('Error fetching history schedule:', error);
-      } finally {
-          setLoading(false);
-      }};
+    setLoading(true);
+    try {
+      const response = await api.get<{ session: StudentResponse[] }>(
+        '/tutor/student-requests',
+      );
+
+      const allRequests = response.data.session;
+
+      const now = new Date();
+      const pastRequests = allRequests.filter((student) => {
+        const studentDate = new Date(student.date);
+        return studentDate < now;
+      });
+
+      setHistoryRequests(pastRequests);
+    } catch (error) {
+      console.error('Error fetching history schedule:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleStatusUpdate = async (session_id: string, status_id: number) => {
     try {
@@ -109,11 +111,13 @@ const StudentTracking = () => {
             <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
               My Students
             </span>
-            <button className="see-history-button text-sm sm:text-base md:text-base lg:text-lg xl:text-xl" 
-                onClick={() => {
-                  fetchHistorySchedule();
-                  setActiveModal('history');
-                }}>
+            <button
+              className="see-history-button text-sm sm:text-base md:text-base lg:text-lg xl:text-xl"
+              onClick={() => {
+                fetchHistorySchedule();
+                setActiveModal('history');
+              }}
+            >
               See History
             </button>
           </div>
@@ -121,11 +125,16 @@ const StudentTracking = () => {
             <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4">
               <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 max-h-[80vh] overflow-y-auto">
                 {historyRequests.length === 0 ? (
-                  <p className="text-gray-600">No past student requests available.</p>
+                  <p className="text-gray-600">
+                    No past student requests available.
+                  </p>
                 ) : (
                   <ul className="space-y-4">
                     {historyRequests.map((student, index) => (
-                      <li key={index} className="p-4 border border-gray-300 rounded-md">
+                      <li
+                        key={index}
+                        className="p-4 border border-gray-300 rounded-md"
+                      >
                         <p className="text-lg font-semibold text-[#8A1538]">
                           {student.subject || 'student Title'}
                         </p>

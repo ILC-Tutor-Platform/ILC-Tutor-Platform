@@ -16,7 +16,7 @@ const StudentScheduleTracking = () => {
     if (navbar) {
       (navbar as HTMLElement).style.marginLeft = '0rem';
     }
-    
+
     fetchUpcomingSchedule();
     return () => {
       if (navbar) {
@@ -28,7 +28,9 @@ const StudentScheduleTracking = () => {
   const fetchUpcomingSchedule = async () => {
     setLoading(true);
     try {
-      const response = await api.get<{ session: Schedule[] }>('/sessions/student');
+      const response = await api.get<{ session: Schedule[] }>(
+        '/sessions/student',
+      );
 
       const allSchedules = response.data.session;
 
@@ -36,7 +38,7 @@ const StudentScheduleTracking = () => {
       const now = new Date();
 
       const upcomingSchedules = allSchedules.filter((session) => {
-        const sessionDate = new Date(session.date); 
+        const sessionDate = new Date(session.date);
         return sessionDate >= now;
       });
 
@@ -49,26 +51,27 @@ const StudentScheduleTracking = () => {
   };
 
   const fetchHistorySchedule = async () => {
-  setLoading(true);
-  try {
-    const response = await api.get<{ session: Schedule[] }>('/sessions/student');
+    setLoading(true);
+    try {
+      const response = await api.get<{ session: Schedule[] }>(
+        '/sessions/student',
+      );
 
-    const allSchedules = response.data.session;
+      const allSchedules = response.data.session;
 
-    const now = new Date();
-    const pastSchedules = allSchedules.filter((session) => {
-      const sessionDate = new Date(session.date); 
-      return sessionDate < now;
-    });
+      const now = new Date();
+      const pastSchedules = allSchedules.filter((session) => {
+        const sessionDate = new Date(session.date);
+        return sessionDate < now;
+      });
 
-    setHistorySessions(pastSchedules); 
-  } catch (error) {
-    console.error('Error fetching history schedule:', error);
-  } finally {
-    setLoading(false);
-  }
-};
-
+      setHistorySessions(pastSchedules);
+    } catch (error) {
+      console.error('Error fetching history schedule:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDelete = async (index: number) => {
     try {
@@ -109,11 +112,13 @@ const StudentScheduleTracking = () => {
             <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
               My Schedule
             </span>
-            <button className="see-history-button text-sm sm:text-base md:text-base lg:text-lg xl:text-xl" 
-                onClick={() => {
-                  fetchHistorySchedule();
-                  setActiveModal('history');
-                }}>
+            <button
+              className="see-history-button text-sm sm:text-base md:text-base lg:text-lg xl:text-xl"
+              onClick={() => {
+                fetchHistorySchedule();
+                setActiveModal('history');
+              }}
+            >
               See History
             </button>
           </div>
@@ -137,7 +142,10 @@ const StudentScheduleTracking = () => {
                 ) : (
                   <ul className="space-y-4">
                     {historySessions.map((session, index) => (
-                      <li key={index} className="p-4 border border-gray-300 rounded-md">
+                      <li
+                        key={index}
+                        className="p-4 border border-gray-300 rounded-md"
+                      >
                         <p className="text-lg font-semibold text-[#8A1538]">
                           {session.subject || 'Session Title'}
                         </p>
@@ -155,10 +163,10 @@ const StudentScheduleTracking = () => {
                           {session.status_id === 0
                             ? 'Not accepted'
                             : session.status_id === 1
-                            ? 'Marked as done'
-                            : session.status_id === 2
-                            ? 'Declined'
-                            : 'N/A'}
+                              ? 'Marked as done'
+                              : session.status_id === 2
+                                ? 'Declined'
+                                : 'N/A'}
                         </p>
                       </li>
                     ))}

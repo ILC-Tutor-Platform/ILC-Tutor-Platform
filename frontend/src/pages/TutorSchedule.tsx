@@ -9,7 +9,6 @@ const TutorSchedule = () => {
   const [activeModal, setActiveModal] = useState<'history' | null>(null);
   const [historySessions, setHistorySessions] = useState<Schedule[]>([]);
 
-
   useEffect(() => {
     setSidebarOpen(false);
     const navbar = document.querySelector('nav');
@@ -26,30 +25,35 @@ const TutorSchedule = () => {
     };
   }, []);
 
-    const fetchHistorySchedule = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get<{ session: Schedule[] }>('/sessions/student');
+  const fetchHistorySchedule = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get<{ session: Schedule[] }>(
+        '/sessions/student',
+      );
 
-        const allSchedules = response.data.session;
+      const allSchedules = response.data.session;
 
-        const now = new Date();
-        const pastSchedules = allSchedules.filter((session) => {
-          const sessionDate = new Date(session.date); 
-          return sessionDate < now;
-        });
+      const now = new Date();
+      const pastSchedules = allSchedules.filter((session) => {
+        const sessionDate = new Date(session.date);
+        return sessionDate < now;
+      });
 
-        setHistorySessions(pastSchedules); 
+      setHistorySessions(pastSchedules);
     } catch (error) {
-        console.error('Error fetching history schedule:', error);
+      console.error('Error fetching history schedule:', error);
     } finally {
-        setLoading(false);
-    }};
+      setLoading(false);
+    }
+  };
 
   const fetchUpcomingSchedule = async () => {
     setLoading(true);
     try {
-      const response = await api.get<{ session: Schedule[] }>('/sessions/student');
+      const response = await api.get<{ session: Schedule[] }>(
+        '/sessions/student',
+      );
 
       const allSchedules = response.data.session;
 
@@ -57,7 +61,7 @@ const TutorSchedule = () => {
       const now = new Date();
 
       const upcomingSchedules = allSchedules.filter((session) => {
-        const sessionDate = new Date(session.date); 
+        const sessionDate = new Date(session.date);
         return sessionDate >= now;
       });
 
@@ -86,11 +90,13 @@ const TutorSchedule = () => {
             <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
               My Schedule
             </span>
-            <button className="see-history-button text-sm sm:text-base md:text-base lg:text-lg xl:text-xl" 
-                onClick={() => {
-                  fetchHistorySchedule();
-                  setActiveModal('history');
-                }}>
+            <button
+              className="see-history-button text-sm sm:text-base md:text-base lg:text-lg xl:text-xl"
+              onClick={() => {
+                fetchHistorySchedule();
+                setActiveModal('history');
+              }}
+            >
               See History
             </button>
           </div>
@@ -102,7 +108,10 @@ const TutorSchedule = () => {
                 ) : (
                   <ul className="space-y-4">
                     {historySessions.map((session, index) => (
-                      <li key={index} className="p-4 border border-gray-300 rounded-md">
+                      <li
+                        key={index}
+                        className="p-4 border border-gray-300 rounded-md"
+                      >
                         <p className="text-lg font-semibold text-[#8A1538]">
                           {session.subject || 'Session Title'}
                         </p>

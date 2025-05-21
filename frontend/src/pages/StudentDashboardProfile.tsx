@@ -1,12 +1,10 @@
 import { useTokenStore } from '@/stores/authStore';
 import axios from 'axios';
-import { ChangeEvent, useEffect, useState, useRef } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import EditIcon from '../assets/edit.svg';
 import ProfilePlaceholder from '../assets/ProfilePlaceholder.svg';
 import BadgeIcon from '../assets/user2.svg';
 import { UserAuth } from '../context/AuthContext';
-import { toast } from 'sonner';
-
 
 const StudentDashboardProfile = () => {
   const { user } = UserAuth();
@@ -37,7 +35,7 @@ const StudentDashboardProfile = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
   const [profileImageUrl, setProfileImageUrl] = useState<string>('');
-  
+
   const openPersonalModal = () => {
     setEditPersonalData({
       first_name: student.first_name,
@@ -208,22 +206,24 @@ const StudentDashboardProfile = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const handleUploadClick = () => {
-      fileInputRef.current?.click();
-    };
+    fileInputRef.current?.click();
+  };
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-  const file = event.target.files?.[0];
-  if (!file) return;
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-  if (!accessToken || !user?.uid) {
-    setError('Not authenticated');
-    return;
-  }
+    if (!accessToken || !user?.uid) {
+      setError('Not authenticated');
+      return;
+    }
 
-  const formData = new FormData();
-  formData.append('file', file); // matches `file: UploadFile = File(...)` in backend
+    const formData = new FormData();
+    formData.append('file', file); // matches `file: UploadFile = File(...)` in backend
 
-  try {
+    try {
       const res = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/profile/upload-image?user_id=${user.uid}`,
         formData,
@@ -232,12 +232,12 @@ const StudentDashboardProfile = () => {
             'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
 
-      console.log("Upload response:", res.data); 
+      console.log('Upload response:', res.data);
 
-       const newImageUrl = res.data?.image_public_url;
+      const newImageUrl = res.data?.image_public_url;
 
       if (newImageUrl) {
         const cleanedUrl = `${newImageUrl.replace(/\?$/, '')}?t=${Date.now()}`;
@@ -250,136 +250,132 @@ const StudentDashboardProfile = () => {
       console.error('Image upload failed:', err);
       setError(
         err.response?.data?.detail ||
-          `Image upload failed: ${err.message || 'Unknown error'}`
+          `Image upload failed: ${err.message || 'Unknown error'}`,
       );
     }
   };
 
-  
-    useEffect(() => {
-      const fetchStudent = async () => {
-        
-        try {
-          if (!user?.uid || !accessToken) {
-            setError('Not authenticated');
-            setLoading(false);
-            return;
-          }
-
-          console.log(
-            'Fetching student profile with token:',
-            accessToken.substring(0, 10) + '...',
-          );
-
-          const res = await axios.get(
-            `${import.meta.env.VITE_BACKEND_URL}/users/profile`,
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-            },
-          );
-
-          console.log('Profile response:', res.data);
-          
-          if (!res.data.user) {
-            throw new Error('User data not found in response');
-          }
-
-          // Set profile image if available
-          const imageUrl = res.data.user.image_public_url;
-          if (imageUrl) {
-            setProfileImageUrl(imageUrl);
-            console.log('Profile image URL set:', imageUrl);
-          }
-          
-          const fullName = res.data.user.name || '';
-          console.log('Full name to parse:', fullName);
-
-          const extractNameParts = (name: string) => {
-            const nameParts = name.trim().split(' ');
-
-            if (nameParts.length === 0) {
-              return { firstName: '', middleInitial: '', lastName: '' };
-            }
-
-            if (nameParts.length === 1) {
-              return { firstName: nameParts[0], middleInitial: '', lastName: '' };
-            }
-
-            if (nameParts.length === 2) {
-              return {
-                firstName: nameParts[0],
-                middleInitial: '',
-                lastName: nameParts[1],
-              };
-            }
-
-            let firstName, middleInitial, lastName;
-
-            const singleLetterIndices = nameParts
-              .map((part, index) => (part.length === 1 ? index : -1))
-              .filter((index) => index !== -1);
-
-            if (singleLetterIndices.length === 1) {
-              const miIndex = singleLetterIndices[0];
-
-              firstName = nameParts.slice(0, miIndex).join(' ');
-              middleInitial = nameParts[miIndex];
-              lastName = nameParts.slice(miIndex + 1).join(' ');
-            } else {
-              firstName = nameParts[0];
-              lastName = nameParts[nameParts.length - 1];
-
-              if (nameParts.length > 2) {
-                middleInitial =
-                  nameParts[nameParts.length - 2].length === 1
-                    ? nameParts[nameParts.length - 2]
-                    : '';
-
-                if (middleInitial === '') {
-                  firstName = nameParts.slice(0, nameParts.length - 1).join(' ');
-                }
-              } else {
-                middleInitial = '';
-              }
-            }
-
-            
-            return { firstName, middleInitial, lastName };
-          };
-          
-
-          const { firstName, middleInitial, lastName } =
-            extractNameParts(fullName);
-
-          console.log('Name parts extracted:', {
-            firstName,
-            middleInitial,
-            lastName,
-          });
-
-          setStudent({
-            first_name: firstName,
-            middle_initial: middleInitial,
-            last_name: lastName,
-            student_number: res.data.student?.student_number || '',
-            degree_program: res.data.student?.degree_program || '',
-          });
-        } catch (err: any) {
-          console.error('Failed to fetch student data:', err);
-          setError(
-            err.response?.data?.detail ||
-              `Failed to load student data: ${err.message || 'Unknown error'}. Please try again later.`,
-          );
-        } finally {
+  useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        if (!user?.uid || !accessToken) {
+          setError('Not authenticated');
           setLoading(false);
+          return;
         }
-      };
 
-      setLoading(true);
-      fetchStudent();
-    }, [user, accessToken, refreshKey]);
+        console.log(
+          'Fetching student profile with token:',
+          accessToken.substring(0, 10) + '...',
+        );
+
+        const res = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/users/profile`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+
+        console.log('Profile response:', res.data);
+
+        if (!res.data.user) {
+          throw new Error('User data not found in response');
+        }
+
+        // Set profile image if available
+        const imageUrl = res.data.user.image_public_url;
+        if (imageUrl) {
+          setProfileImageUrl(imageUrl);
+          console.log('Profile image URL set:', imageUrl);
+        }
+
+        const fullName = res.data.user.name || '';
+        console.log('Full name to parse:', fullName);
+
+        const extractNameParts = (name: string) => {
+          const nameParts = name.trim().split(' ');
+
+          if (nameParts.length === 0) {
+            return { firstName: '', middleInitial: '', lastName: '' };
+          }
+
+          if (nameParts.length === 1) {
+            return { firstName: nameParts[0], middleInitial: '', lastName: '' };
+          }
+
+          if (nameParts.length === 2) {
+            return {
+              firstName: nameParts[0],
+              middleInitial: '',
+              lastName: nameParts[1],
+            };
+          }
+
+          let firstName, middleInitial, lastName;
+
+          const singleLetterIndices = nameParts
+            .map((part, index) => (part.length === 1 ? index : -1))
+            .filter((index) => index !== -1);
+
+          if (singleLetterIndices.length === 1) {
+            const miIndex = singleLetterIndices[0];
+
+            firstName = nameParts.slice(0, miIndex).join(' ');
+            middleInitial = nameParts[miIndex];
+            lastName = nameParts.slice(miIndex + 1).join(' ');
+          } else {
+            firstName = nameParts[0];
+            lastName = nameParts[nameParts.length - 1];
+
+            if (nameParts.length > 2) {
+              middleInitial =
+                nameParts[nameParts.length - 2].length === 1
+                  ? nameParts[nameParts.length - 2]
+                  : '';
+
+              if (middleInitial === '') {
+                firstName = nameParts.slice(0, nameParts.length - 1).join(' ');
+              }
+            } else {
+              middleInitial = '';
+            }
+          }
+
+          return { firstName, middleInitial, lastName };
+        };
+
+        const { firstName, middleInitial, lastName } =
+          extractNameParts(fullName);
+
+        console.log('Name parts extracted:', {
+          firstName,
+          middleInitial,
+          lastName,
+        });
+
+        setStudent({
+          first_name: firstName,
+          middle_initial: middleInitial,
+          last_name: lastName,
+          student_number: res.data.student?.student_number || '',
+          degree_program: res.data.student?.degree_program || '',
+        });
+      } catch (err: any) {
+        console.error('Failed to fetch student data:', err);
+        setError(
+          err.response?.data?.detail ||
+            `Failed to load student data: ${err.message || 'Unknown error'}. Please try again later.`,
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    setLoading(true);
+    fetchStudent();
+  }, [user, accessToken, refreshKey]);
 
   return (
     <div className="min-h-screen relative flex lg:w-[80%] lg:mx-auto">
@@ -616,7 +612,7 @@ const StudentDashboardProfile = () => {
                 accept="image/*"
                 ref={fileInputRef}
                 onChange={handleFileChange}
-                style={{ display: 'none' }} 
+                style={{ display: 'none' }}
               />
             </div>
 
