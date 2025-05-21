@@ -89,7 +89,7 @@ const Signin = () => {
           duration: 3000,
           style: {
             background: '#ffffff',
-            color: '#307B74',
+            color: 'green',
             fontSize: '16px',
             border: '0px',
             padding: '1.5rem',
@@ -103,7 +103,7 @@ const Signin = () => {
           duration: 3000,
           style: {
             background: '#ffffff',
-            color: '#8A1538',
+            color: 'red',
             fontSize: '16px',
             border: '0px',
             padding: '1.5rem',

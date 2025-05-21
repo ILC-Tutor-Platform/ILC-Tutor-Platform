@@ -31,6 +31,7 @@ const StudentDashboardProfile = () => {
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
   const openPersonalModal = () => {
     setEditPersonalData({
@@ -216,6 +217,13 @@ const StudentDashboardProfile = () => {
 
         if (!res.data.user) {
           throw new Error('User data not found in response');
+        }
+
+        // Set profile image if available
+        const imageUrl = res.data.user.image_public_url;
+        if (imageUrl) {
+          setProfileImageUrl(imageUrl);
+          console.log('Profile image URL set:', imageUrl);
         }
 
         setStudent({
@@ -434,7 +442,7 @@ const StudentDashboardProfile = () => {
             <div className="flex flex-col items-center mb-8">
               <img
                 className="w-36 h-36 md:w-44 md:h-44 lg:w-52 lg:h-52"
-                src={ProfilePlaceholder}
+                src={profileImageUrl || ProfilePlaceholder}
                 alt="Profile"
               />
               <button

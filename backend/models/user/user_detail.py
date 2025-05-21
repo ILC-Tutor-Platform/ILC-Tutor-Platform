@@ -13,6 +13,7 @@ class UserDetail(Base):
     name = Column(String, nullable=True)
     email = Column(String, unique=True, index=True, nullable=False)
     datejoined = Column(Date, nullable=False)
+    image_public_url = Column(String, nullable = True)
 
     # Relationships - tutor and user_detail
     tutor_detail = relationship("TutorDetail", back_populates="user", uselist=False)

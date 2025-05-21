@@ -18,6 +18,8 @@ const Navbar = () => {
   const activeRole = useRoleStore((state) => state.activeRole);
   const { isAuthenticated, user, signOut, refreshSession } = UserAuth();
   const [, setSessionChecked] = useState(false);
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
   useEffect(() => {
     const checkSession = async () => {
@@ -42,15 +44,15 @@ const Navbar = () => {
 
   const handleSignOut = async () => {
     try {
+      await sleep(1000); // Simulate a delay
       await signOut();
-      await new Promise((resolve) => setTimeout(resolve, 1200));
       navigate('/signin');
       console.log('Signed out successfully!');
       toast.success('Signed out successfully!', {
         duration: 3000,
         style: {
           backgroundColor: '#ffffff',
-          color: '#307B74',
+          color: 'green',
           fontSize: '16px',
           boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
         },
@@ -61,7 +63,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="flex items-center justify-between px-20 py-7 shadow-md sticky top-0 bg-white z-50">
+    <nav className="flex items-center justify-between px-20 py-3 shadow-md sticky top-0 bg-white z-50">
       {isAuthenticated && user && (
         <span className="absolute left-7">
           <Menu
