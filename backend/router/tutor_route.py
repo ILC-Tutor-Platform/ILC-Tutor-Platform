@@ -18,7 +18,9 @@ class TutorResponse(BaseModel):
     name: Optional[str] = None
     email: str
     datejoined: date
-    subject: Optional[str] = None
+    subject: Optional[List[str]] = None
+    topic_title: Optional[List[str]] = None
+    topic_id: Optional[List[UUID]] = None
     description: Optional[str] = None
     status: Optional[str] = None
     affiliations: Optional[List[str]] = None
@@ -113,9 +115,16 @@ async def get_tutors(
         logger.error(f"Error fetching tutors: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching tutors: {str(e)}")
 
+        # Query for all subjects associated with this tutor
+        subjects_query = db.query(SubjectDetail)\
+            .filter(SubjectDetail.tutor_id == tutor_id)\
+            .all()
+        
+        subject_names = [subject.subject_name for subject in subjects_query] if subjects_query else []# View tutor details
+
 # View tutor details
 @router.get("/tutors/{tutor_id}", response_model=TutorResponse)
-async def get_tutor_by_id( tutor_id: str ,db: DBSession = Depends(get_db)):
+async def get_tutor_by_id(tutor_id: str, db: DBSession = Depends(get_db)):
     try:
 
         if tutor_id is None:
@@ -127,32 +136,89 @@ async def get_tutor_by_id( tutor_id: str ,db: DBSession = Depends(get_db)):
         except ValueError:
             logger.error("Invalid UUID format")
             raise HTTPException(status_code=400, detail="Invalid UUID format")
+        
 
-        # Build query with all joins at once
+        # Query the user/tutor
         query = db.query(UserDetail)\
             .join(TutorDetail, UserDetail.userid == TutorDetail.tutor_id)\
             .outerjoin(TutorAffiliation, UserDetail.userid == TutorAffiliation.tutor_id)\
             .outerjoin(TutorAvailability, UserDetail.userid == TutorAvailability.tutor_id)\
             .outerjoin(TutorExpertise, UserDetail.userid == TutorExpertise.tutor_id)\
             .outerjoin(TutorSocials, UserDetail.userid == TutorSocials.tutor_id)\
-            .outerjoin(SubjectDetail, UserDetail.userid == SubjectDetail.tutor_id)\
             .options(
+
                 joinedload(UserDetail.tutor_detail),
                 joinedload(UserDetail.tutor_affiliation),
                 joinedload(UserDetail.tutor_availability),
                 joinedload(UserDetail.tutor_expertise),
                 joinedload(UserDetail.tutor_socials)
             )
+        
+        # Filter by tutor_id
 
-        query = query.filter(TutorDetail.tutor_id == tutor_id)
+        query = query.filter(UserDetail.userid == tutor_id)
         user = query.first()
+        
+        if not user:
+            logger.error(f"Tutor with ID {tutor_id} not found")
+            raise HTTPException(status_code=404, detail="Tutor not found")
+        
+        # Query for all subjects associated with this tutor
+        subjects = db.query(SubjectDetail)\
+            .filter(SubjectDetail.tutor_id == tutor_id)\
+            .all()
 
+        
+        subject_names = [subject.subject_name for subject in subjects] if subjects else []
+        subject_ids = [subject.subject_id for subject in subjects] if subjects else []
+        
+
+       # Query for all topics related to the tutor's subjects
+        topics = []
+        if subject_ids:
+            # Debug output for subject IDs
+            logger.info(f"Querying topics for subject IDs: {subject_ids}")
+            print(f"Querying topics for subject IDs: {subject_ids}")
+            
+            # Execute query with explicit column selection to ensure topic_title is retrieved
+
+            topics_query = db.query(TopicDetail.topic_id, TopicDetail.subject_id, TopicDetail.topic_title)\
+                .filter(TopicDetail.subject_id.in_(subject_ids))\
+                .all()
+            
+            # Debug output for found topics
+            logger.info(f"Found topics: {topics_query}")
+            print(f"Found topics: {topics_query}")
+            
+            # Extract topic titles, with checks to ensure topic_title exists
+            topic_titles = []
+            for topic in topics_query:
+                if hasattr(topic, 'topic_title') and topic.topic_title:
+                    print(f"Topic title found: {topic.topic_title}")
+                    topic_titles.append(topic.topic_title)
+                elif isinstance(topic, tuple) and len(topic) >= 3 and topic[2]:
+                    print(f"Topic title found in tuple: {topic[2]}")
+                    topic_titles.append(topic[2])
+            topic_id = []
+            for topic in topics_query:
+                if hasattr(topic, 'topic_id') and topic.topic_id:
+                    topic_id.append(topic.topic_id)
+                    print(f"Topic ID found: {topic.topic_id}")
+                elif isinstance(topic, tuple) and len(topic) >= 3 and topic[2]:
+                    topic_id.append(topic[2])
+                    print(f"Topic ID found in tuple: {topic[2]}")
+        else:
+            topic_titles = []
+            topic_id = []
+        
         tutor_data = {
             "userid": user.userid,
             "name": user.name,
             "email": user.email,
             "datejoined": user.datejoined,
-            "subject": user.subject_detail.subject_name if hasattr(user, 'subject_detail') and user.subject_detail else None,
+            "subject": subject_names,
+            "topic_title": topic_titles,
+            "topic_id": topic_id,
             "description": user.tutor_detail.description if hasattr(user, 'tutor_detail') and user.tutor_detail else None,
             "status": str(user.tutor_detail.status) if hasattr(user, 'tutor_detail') and user.tutor_detail else None,
             "affiliations": [user.tutor_affiliation.affiliations] if hasattr(user, 'tutor_affiliation') and user.tutor_affiliation else None,
@@ -162,9 +228,8 @@ async def get_tutor_by_id( tutor_id: str ,db: DBSession = Depends(get_db)):
             "expertise": [user.tutor_expertise.expertise] if hasattr(user, 'tutor_expertise') and user.tutor_expertise else None,
             "socials": [user.tutor_socials.socials] if hasattr(user, 'tutor_socials') and user.tutor_socials else None
         }
-
-        return tutor_data;
-
+        
+        return tutor_data
     except HTTPException:
         raise
     except Exception as e:
