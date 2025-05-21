@@ -8,42 +8,12 @@ import ProfilePlaceholder from '../assets/ProfilePlaceholder.svg';
 import BadgeIcon from '../assets/user2.svg';
 import { UserAuth } from '../context/AuthContext';
 
-const extractNameParts = (fullName: string) => {
-  if (!fullName) return { firstName: '', middleInitial: '', lastName: '' };
-
-  const nameParts = fullName.trim().split(/\s+/);
-
-  if (nameParts.length === 1) {
-    return { firstName: nameParts[0], middleInitial: '', lastName: '' };
-  }
-
-  const middleInitialIndex = nameParts.findIndex(
-    (part, index) =>
-      index > 0 && index < nameParts.length - 1 && part.length === 1,
-  );
-
-  if (middleInitialIndex !== -1) {
-    return {
-      firstName: nameParts.slice(0, middleInitialIndex).join(' '),
-      middleInitial: nameParts[middleInitialIndex],
-      lastName: nameParts.slice(middleInitialIndex + 1).join(' '),
-    };
-  }
-
-  return {
-    firstName: nameParts.slice(0, -1).join(' '),
-    middleInitial: '',
-    lastName: nameParts[nameParts.length - 1],
-  };
-};
-
 const TutorProfile = () => {
   const { user } = UserAuth();
   const accessToken = useTokenStore((state) => state.accessToken);
   const [tutor, setTutor] = useState({
-    first_name: '',
-    middle_initial: '',
-    last_name: '',
+    name: '',
+    email: '',
     facebook_link: '',
     linkedin_link: '',
     subjects: [] as string[],
@@ -58,9 +28,7 @@ const TutorProfile = () => {
     'personal' | 'tutoring' | null
   >(null);
   const [editPersonalData, setEditPersonalData] = useState({
-    first_name: '',
-    middle_initial: '',
-    last_name: '',
+    name: '',
     facebook_link: '',
     linkedin_link: '',
   });
@@ -81,9 +49,7 @@ const TutorProfile = () => {
 
   const openPersonalModal = () => {
     setEditPersonalData({
-      first_name: tutor.first_name,
-      middle_initial: tutor.middle_initial,
-      last_name: tutor.last_name,
+      name: tutor.name,
       facebook_link: tutor.facebook_link,
       linkedin_link: tutor.linkedin_link,
     });
@@ -202,22 +168,11 @@ const TutorProfile = () => {
         throw new Error('User not authenticated');
       }
 
-      if (
-        !editPersonalData.first_name.trim() ||
-        !editPersonalData.last_name.trim()
-      ) {
-        setUpdateError('First name and last name are required');
+      if (!editPersonalData.name.trim()) {
+        setUpdateError('Name is required');
         setIsUpdating(false);
         return;
       }
-
-      const fullName = [
-        editPersonalData.first_name.trim(),
-        editPersonalData.middle_initial.trim(),
-        editPersonalData.last_name.trim(),
-      ]
-        .filter((part) => part)
-        .join(' ');
 
       const socialLinks = [
         editPersonalData.facebook_link,
@@ -228,7 +183,7 @@ const TutorProfile = () => {
         `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
         {
           user: {
-            name: fullName,
+            name: editPersonalData.name.trim(),
           },
           socials: {
             socials: socialLinks,
@@ -243,9 +198,7 @@ const TutorProfile = () => {
 
       setTutor((prev) => ({
         ...prev,
-        first_name: editPersonalData.first_name,
-        middle_initial: editPersonalData.middle_initial,
-        last_name: editPersonalData.last_name,
+        name: editPersonalData.name,
         facebook_link: editPersonalData.facebook_link,
         linkedin_link: editPersonalData.linkedin_link,
       }));
@@ -282,43 +235,62 @@ const TutorProfile = () => {
         return;
       }
 
+      // Format dates as YYYY-MM-DD strings
       const formattedDates = editTutoringData.dates_available.map((date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        if (date instanceof Date) {
+          return date.toISOString().split('T')[0];
+        }
+        return typeof date === 'string'
+          ? date
+          : new Date().toISOString().split('T')[0];
       });
 
+      // Create the payload using the correct nested structure
       const payload = {
+        // TUTOR INFO
         tutor: {
-          description: editTutoringData.description,
+          description: editTutoringData.description.trim(),
+          status: 'active',
         },
-        subject: {
-          subject_name: editTutoringData.subjects,
+        // AVAILABILITY
+        availability: {
+          availability: formattedDates,
+          available_time_from: formattedDates.map(() => '09:00:00.000Z'),
+          available_time_to: formattedDates.map(() => '17:00:00.000Z'),
         },
-        expertise: {
-          expertise: editTutoringData.expertise,
-        },
+        // AFFILIATION - nested structure
         affiliation: {
           affiliation: editTutoringData.affiliations,
         },
-        availability: {
-          availability: formattedDates,
-          available_time_from: Array(formattedDates.length).fill('09:00:00'),
-          available_time_to: Array(formattedDates.length).fill('17:00:00'),
+        // EXPERTISE - nested structure
+        expertise: {
+          expertise: editTutoringData.expertise,
+        },
+        // SUBJECTS - assuming similar nested structure
+        subjects: {
+          subject_name: editTutoringData.subjects,
         },
       };
 
-      await axios.patch(
+      console.log(
+        'Payload being sent (new format):',
+        JSON.stringify(payload, null, 2),
+      );
+
+      const response = await axios.patch(
         `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
         payload,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
           },
         },
       );
 
+      console.log('API response:', response.data);
+
+      // Update local state to reflect the changes
       setTutor((prev) => ({
         ...prev,
         subjects: editTutoringData.subjects,
@@ -331,22 +303,33 @@ const TutorProfile = () => {
       setUpdateSuccess('Tutoring information updated successfully!');
       setTimeout(() => {
         setActiveModal(null);
-        setRefreshKey((prevKey) => prevKey + 1);
+        setRefreshKey((prev) => prev + 1);
       }, 1500);
     } catch (err: any) {
-      console.error(
-        'Failed to update tutoring data:',
-        err.response?.data || err,
-      );
-      setUpdateError(
-        err.response?.data?.detail ||
-          'Failed to update tutoring information. Please try again.',
-      );
+      console.error('Update error:', err);
+      console.error('Response data:', err.response?.data);
+      console.error('Status code:', err.response?.status);
+
+      let errorMessage =
+        'Failed to update tutoring information. Please try again.';
+
+      if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.status === 400) {
+        errorMessage = 'Invalid data format. Please check your inputs.';
+      } else if (err.response?.status === 401 || err.response?.status === 403) {
+        errorMessage = 'Authentication failed. Please log in again.';
+      }
+
+      setUpdateError(errorMessage);
     } finally {
       setIsUpdating(false);
     }
   };
 
+  // Single useEffect to fetch tutor data
   useEffect(() => {
     const fetchTutor = async () => {
       try {
@@ -365,55 +348,86 @@ const TutorProfile = () => {
           },
         );
 
-        console.log('API Response:', res.data);
+        console.log('API response data:', res.data);
 
-        if (!res.data.user) {
-          throw new Error('User data not found in response');
+        if (!res.data.tutor) {
+          throw new Error('Tutor data not found in response');
         }
 
-        const fullName = res.data.user.name || '';
-        const { firstName, middleInitial, lastName } =
-          extractNameParts(fullName);
+        const tutorData = res.data.tutor;
+        const name = res.data.user?.name || '';
+        const email = res.data.user?.email || user.email || '';
 
-        const socials = res.data.tutor?.socials || [];
-        const facebookLink = socials.length > 0 ? socials[0] : '';
-        const linkedinLink = socials.length > 1 ? socials[1] : '';
+        // Robust parsing for subjects - handle both string arrays and object arrays
+        let subjects: string[] = [];
+        if (tutorData.subject) {
+          if (Array.isArray(tutorData.subject.subject_name)) {
+            subjects = tutorData.subject.subject_name;
+          } else if (Array.isArray(tutorData.subject)) {
+            subjects = tutorData.subject.map((sub: any) => {
+              if (typeof sub === 'string') return sub;
+              if (sub.subject_name) return sub.subject_name;
+              return String(sub);
+            });
+          }
+        }
 
-        const availabilityDates = res.data.tutor?.availability || [];
-        const parsedDates = availabilityDates.map(
-          (dateStr: string) => new Date(dateStr),
-        );
+        // Robust parsing for expertise
+        let expertise: string[] = [];
+        if (Array.isArray(tutorData.expertise)) {
+          expertise = tutorData.expertise.map((exp: any) => {
+            if (typeof exp === 'string') {
+              return exp;
+            } else if (typeof exp === 'object' && exp.expertise) {
+              return exp.expertise;
+            } else if (typeof exp === 'object' && exp.expertise_name) {
+              return exp.expertise_name;
+            }
+            return String(exp); // fallback to string conversion
+          });
+        }
 
-        const subjectsData = res.data.tutor?.subject || [];
-        const subjects = subjectsData.map(
-          (sub: any) => sub.subject_name || sub,
-        );
+        // Robust parsing for affiliations
+        let affiliations: string[] = [];
+        if (Array.isArray(tutorData.affiliations)) {
+          affiliations = tutorData.affiliations.map((aff: any) => {
+            if (typeof aff === 'string') {
+              return aff;
+            } else if (typeof aff === 'object' && aff.affiliation) {
+              return aff.affiliation;
+            } else if (typeof aff === 'object' && aff.affiliation_name) {
+              return aff.affiliation_name;
+            }
+            return String(aff); // fallback to string conversion
+          });
+        }
 
-        const expertiseData = res.data.tutor?.expertise || [];
-        const expertise = expertiseData.map((exp: any) => exp.expertise || exp);
+        // Parse dates from the 'availability' property
+        const datesAvailable = Array.isArray(tutorData.availability)
+          ? tutorData.availability.map((dateStr: string) => new Date(dateStr))
+          : [];
 
-        const affiliationsData = res.data.tutor?.affiliations || [];
-        const affiliations = affiliationsData.map(
-          (aff: any) => aff.affiliation || aff,
-        );
+        // Parse social links correctly from the socials array
+        const socials = Array.isArray(tutorData.socials)
+          ? tutorData.socials
+          : [];
 
         setTutor({
-          first_name: firstName,
-          middle_initial: middleInitial,
-          last_name: lastName,
-          facebook_link: facebookLink,
-          linkedin_link: linkedinLink,
-          subjects: subjects.filter(Boolean),
-          affiliations: affiliations.filter(Boolean),
-          expertise: expertise.filter(Boolean),
-          description: res.data.tutor?.description || '',
-          dates_available: parsedDates,
+          name,
+          email,
+          facebook_link: socials[0] || '',
+          linkedin_link: socials[1] || '',
+          subjects,
+          affiliations,
+          expertise,
+          description: tutorData.description || '',
+          dates_available: datesAvailable,
         });
       } catch (err: any) {
-        console.error('Failed to fetch tutor data:', err);
+        console.error('Fetch error:', err);
         setError(
           err.response?.data?.detail ||
-            `Failed to load tutor data: ${err.message || 'Unknown error'}. Please try again later.`,
+            `Failed to load tutor data: ${err.message || 'Unknown error'}`,
         );
       } finally {
         setLoading(false);
@@ -444,38 +458,13 @@ const TutorProfile = () => {
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-gray-700 mb-1">First Name</label>
+                <label className="block text-gray-700 mb-1">Name</label>
                 <input
                   type="text"
-                  name="first_name"
-                  value={editPersonalData.first_name}
+                  name="name"
+                  value={editPersonalData.name}
                   onChange={handlePersonalInputChange}
                   className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 mb-1">Last Name</label>
-                <input
-                  type="text"
-                  name="last_name"
-                  value={editPersonalData.last_name}
-                  onChange={handlePersonalInputChange}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 mb-1">
-                  Middle Initial
-                </label>
-                <input
-                  type="text"
-                  name="middle_initial"
-                  value={editPersonalData.middle_initial}
-                  onChange={handlePersonalInputChange}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
-                  maxLength={1}
                 />
               </div>
 
@@ -822,28 +811,19 @@ const TutorProfile = () => {
                   <div className="space-y-4">
                     <div className="flex flex-col md:flex-row justify-between">
                       <span className="text-[#A19A9A] font-semibold md:w-1/3">
-                        First Name
+                        Name
                       </span>
                       <span className="text-black font-semibold md:text-right md:w-2/3">
-                        {tutor.first_name || 'N/A'}
+                        {tutor.name || 'N/A'}
                       </span>
                     </div>
 
                     <div className="flex flex-col md:flex-row justify-between">
                       <span className="text-[#A19A9A] font-semibold md:w-1/3">
-                        Last Name
+                        Email
                       </span>
                       <span className="text-black font-semibold md:text-right md:w-2/3">
-                        {tutor.last_name || 'N/A'}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col md:flex-row justify-between">
-                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
-                        Middle Initial
-                      </span>
-                      <span className="text-black font-semibold md:text-right md:w-2/3">
-                        {tutor.middle_initial || 'N/A'}
+                        {tutor.email || 'N/A'}
                       </span>
                     </div>
 
@@ -940,15 +920,13 @@ const TutorProfile = () => {
                       </span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3 shrink-0">
+                    <div className="flex flex-col md:flex-row justify-between">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3 shrink-0">
                         Description
                       </span>
-                      <div className="w-2/3 min-w-0">
-                        <p className="text-black font-semibold text-right truncate">
-                          {tutor.description || 'N/A'}
-                        </p>
-                      </div>
+                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
+                        {tutor.description || 'N/A'}
+                      </span>
                     </div>
 
                     <div className="flex flex-col md:flex-row justify-between">

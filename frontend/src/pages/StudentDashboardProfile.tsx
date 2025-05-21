@@ -1,6 +1,6 @@
 import { useTokenStore } from '@/stores/authStore';
 import axios from 'axios';
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import EditIcon from '../assets/edit.svg';
 import ProfilePlaceholder from '../assets/ProfilePlaceholder.svg';
 import BadgeIcon from '../assets/user2.svg';
@@ -10,11 +10,10 @@ const StudentDashboardProfile = () => {
   const { user } = UserAuth();
   const accessToken = useTokenStore((state) => state.accessToken);
   const [student, setStudent] = useState({
-    first_name: '',
-    middle_initial: '',
-    last_name: '',
+    name: '',
     student_number: '',
     degree_program: '',
+    email: '',
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,9 +21,7 @@ const StudentDashboardProfile = () => {
     'personal' | 'education' | null
   >(null);
   const [editPersonalData, setEditPersonalData] = useState({
-    first_name: '',
-    middle_initial: '',
-    last_name: '',
+    name: '',
   });
   const [editEducationData, setEditEducationData] = useState({
     student_number: '',
@@ -34,13 +31,11 @@ const StudentDashboardProfile = () => {
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
-  const [profileImageUrl, setProfileImageUrl] = useState<string>('');
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
   const openPersonalModal = () => {
     setEditPersonalData({
-      first_name: student.first_name,
-      middle_initial: student.middle_initial,
-      last_name: student.last_name,
+      name: student.name,
     });
     setActiveModal('personal');
     setUpdateError(null);
@@ -85,26 +80,19 @@ const StudentDashboardProfile = () => {
         throw new Error('User not authenticated');
       }
 
-      if (
-        !editPersonalData.first_name.trim() ||
-        !editPersonalData.last_name.trim()
-      ) {
-        setUpdateError('First name and last name are required');
+      if (!editPersonalData.name.trim()) {
+        setUpdateError('Name is required');
         setIsUpdating(false);
         return;
       }
 
-      const fullName = editPersonalData.middle_initial.trim()
-        ? `${editPersonalData.first_name} ${editPersonalData.middle_initial} ${editPersonalData.last_name}`.trim()
-        : `${editPersonalData.first_name} ${editPersonalData.last_name}`.trim();
-
-      console.log('Sending update request with name:', fullName);
+      console.log('Sending update request with name:', editPersonalData.name);
 
       const response = await axios.patch(
         `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
         {
           user: {
-            name: fullName,
+            name: editPersonalData.name.trim(),
           },
         },
         {
@@ -118,9 +106,7 @@ const StudentDashboardProfile = () => {
 
       setStudent((prev) => ({
         ...prev,
-        first_name: editPersonalData.first_name,
-        middle_initial: editPersonalData.middle_initial,
-        last_name: editPersonalData.last_name,
+        name: editPersonalData.name,
       }));
 
       setUpdateSuccess('Personal information updated successfully!');
@@ -204,57 +190,6 @@ const StudentDashboardProfile = () => {
     }
   };
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!accessToken || !user?.uid) {
-      setError('Not authenticated');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', file); // matches `file: UploadFile = File(...)` in backend
-
-    try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/profile/upload-image?user_id=${user.uid}`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      );
-
-      console.log('Upload response:', res.data);
-
-      const newImageUrl = res.data?.image_public_url;
-
-      if (newImageUrl) {
-        const cleanedUrl = `${newImageUrl.replace(/\?$/, '')}?t=${Date.now()}`;
-        setProfileImageUrl(cleanedUrl);
-        console.log('New profile image URL set:', newImageUrl);
-      } else {
-        throw new Error('No image URL returned from server');
-      }
-    } catch (err: any) {
-      console.error('Image upload failed:', err);
-      setError(
-        err.response?.data?.detail ||
-          `Image upload failed: ${err.message || 'Unknown error'}`,
-      );
-    }
-  };
-
   useEffect(() => {
     const fetchStudent = async () => {
       try {
@@ -291,76 +226,11 @@ const StudentDashboardProfile = () => {
           console.log('Profile image URL set:', imageUrl);
         }
 
-        const fullName = res.data.user.name || '';
-        console.log('Full name to parse:', fullName);
-
-        const extractNameParts = (name: string) => {
-          const nameParts = name.trim().split(' ');
-
-          if (nameParts.length === 0) {
-            return { firstName: '', middleInitial: '', lastName: '' };
-          }
-
-          if (nameParts.length === 1) {
-            return { firstName: nameParts[0], middleInitial: '', lastName: '' };
-          }
-
-          if (nameParts.length === 2) {
-            return {
-              firstName: nameParts[0],
-              middleInitial: '',
-              lastName: nameParts[1],
-            };
-          }
-
-          let firstName, middleInitial, lastName;
-
-          const singleLetterIndices = nameParts
-            .map((part, index) => (part.length === 1 ? index : -1))
-            .filter((index) => index !== -1);
-
-          if (singleLetterIndices.length === 1) {
-            const miIndex = singleLetterIndices[0];
-
-            firstName = nameParts.slice(0, miIndex).join(' ');
-            middleInitial = nameParts[miIndex];
-            lastName = nameParts.slice(miIndex + 1).join(' ');
-          } else {
-            firstName = nameParts[0];
-            lastName = nameParts[nameParts.length - 1];
-
-            if (nameParts.length > 2) {
-              middleInitial =
-                nameParts[nameParts.length - 2].length === 1
-                  ? nameParts[nameParts.length - 2]
-                  : '';
-
-              if (middleInitial === '') {
-                firstName = nameParts.slice(0, nameParts.length - 1).join(' ');
-              }
-            } else {
-              middleInitial = '';
-            }
-          }
-
-          return { firstName, middleInitial, lastName };
-        };
-
-        const { firstName, middleInitial, lastName } =
-          extractNameParts(fullName);
-
-        console.log('Name parts extracted:', {
-          firstName,
-          middleInitial,
-          lastName,
-        });
-
         setStudent({
-          first_name: firstName,
-          middle_initial: middleInitial,
-          last_name: lastName,
+          name: res.data.user.name || '',
           student_number: res.data.student?.student_number || '',
           degree_program: res.data.student?.degree_program || '',
+          email: res.data.user.email || '',
         });
       } catch (err: any) {
         console.error('Failed to fetch student data:', err);
@@ -397,36 +267,11 @@ const StudentDashboardProfile = () => {
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-gray-700 mb-1">First Name</label>
+                <label className="block text-gray-700 mb-1">Name</label>
                 <input
                   type="text"
-                  name="first_name"
-                  value={editPersonalData.first_name}
-                  onChange={handlePersonalInputChange}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 mb-1">
-                  Middle Initial
-                </label>
-                <input
-                  type="text"
-                  name="middle_initial"
-                  value={editPersonalData.middle_initial}
-                  onChange={handlePersonalInputChange}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
-                  maxLength={1}
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 mb-1">Last Name</label>
-                <input
-                  type="text"
-                  name="last_name"
-                  value={editPersonalData.last_name}
+                  name="name"
+                  value={editPersonalData.name}
                   onChange={handlePersonalInputChange}
                   className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
                 />
@@ -596,24 +441,16 @@ const StudentDashboardProfile = () => {
             {/* Profile Picture */}
             <div className="flex flex-col items-center mb-8">
               <img
-                className="w-50 h-50 rounded-full object-cover"
+                className="w-36 h-36 md:w-44 md:h-44 lg:w-52 lg:h-52"
                 src={profileImageUrl || ProfilePlaceholder}
                 alt="Profile"
               />
               <button
-                className="mt-3 text-center text-base md:text-lg lg:text-xl text-black font-normal underline hover:text-green-400 cursor-pointer"
-                onClick={handleUploadClick}
+                className="mt-3 text-center text-base md:text-lg lg:text-xl text-black font-normal underline"
+                onClick={() => console.log('Update Photo clicked')}
               >
                 Update Photo
               </button>
-
-              <input
-                type="file"
-                accept="image/*"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                style={{ display: 'none' }}
-              />
             </div>
 
             {/* Loading/Error */}
@@ -645,27 +482,18 @@ const StudentDashboardProfile = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span className="text-[#A19A9A] font-semibold w-1/3">
-                        First Name
+                        Name
                       </span>
                       <span className="text-black font-semibold text-right w-2/3">
-                        {student.first_name || 'N/A'}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
-                        Last Name
-                      </span>
-                      <span className="text-black font-semibold text-right w-2/3">
-                        {student.last_name || 'N/A'}
+                        {student.name || 'N/A'}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#A19A9A] font-semibold w-1/3">
-                        Middle Initial
+                        Email
                       </span>
                       <span className="text-black font-semibold text-right w-2/3">
-                        {student.middle_initial || 'N/A'}
+                        {student.email || 'N/A'}
                       </span>
                     </div>
                   </div>
