@@ -63,7 +63,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="flex items-center justify-between px-20 py-7 shadow-md sticky top-0 bg-white z-50">
+    <nav className="flex items-center justify-between px-20 py-3 shadow-md sticky top-0 bg-white z-50">
       {isAuthenticated && user && (
         <span className="absolute left-7">
           <Menu
