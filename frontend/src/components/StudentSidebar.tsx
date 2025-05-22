@@ -40,7 +40,7 @@ const StudentSidebar = () => {
               {
                 label: 'Tutor',
                 icon: Tutor,
-                route: '/profile/student/tutor-tracking',
+                route: '/tutors',
               },
               {
                 label: 'Schedule',

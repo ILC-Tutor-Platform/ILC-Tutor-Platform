@@ -441,7 +441,7 @@ const StudentDashboardProfile = () => {
             {/* Profile Picture */}
             <div className="flex flex-col items-center mb-8">
               <img
-                className="w-36 h-36 md:w-44 md:h-44 lg:w-52 lg:h-52"
+                className="w-36 h-36 md:w-44 md:h-44 lg:w-52 lg:h-52 rounded-full"
                 src={profileImageUrl || ProfilePlaceholder}
                 alt="Profile"
               />
