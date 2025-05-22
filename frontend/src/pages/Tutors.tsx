@@ -78,7 +78,7 @@ const Tutors = () => {
         </div>
       ) : (
         <>
-          <div className="flex flex-wrap gap-5 lg:gap-10 justify-center">
+          <div className="flex flex-col lg:flex-row gap-5 lg:gap-10 justify-center">
             {tutors.length > 0 ? (
               tutors.map((tutor) => (
                 <TutorCard

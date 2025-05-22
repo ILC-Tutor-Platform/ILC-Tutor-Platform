@@ -173,9 +173,9 @@ const IndividualTutor = () => {
   }
 
   return (
-    <section className="grid relative top-[5vh] items-center justify-center px-5 w-full">
+    <section className="relative top-[5vh] p-5">
       <form
-        className="flex flex-col bg-ilc-tutor-card p-5 gap-5 rounded-2xl mx-auto md:w-[60%] lg:w-[100%] w-full green-shadow-card"
+        className="flex flex-col bg-ilc-tutor-card p-10 gap-5 rounded-2xl mx-auto green-shadow-card md:w-[30%]"
         onSubmit={(e) => {
           e.preventDefault();
           handleRequestSession();
@@ -263,7 +263,7 @@ const IndividualTutor = () => {
         <div className="flex flex-col gap-10">
           {/* IF MODALITY IS IN-PERSON, THEN SHOW INPUT ROOM NUMBER. ELSE HIDE */}
           <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-around gap-2">
               <p>Select Modality:</p>
               <div className="flex items-center gap-2">
                 <input
