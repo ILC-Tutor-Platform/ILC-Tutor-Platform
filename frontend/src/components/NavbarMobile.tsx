@@ -70,7 +70,7 @@ const NavbarMobile = () => {
 
   return (
     <>
-      <nav className="flex justify-between items-center shadow-md sticky top-0 bg-white py-5 px-5 z-50">
+      <nav className="flex justify-between items-center shadow-md sticky top-0 bg-white py-5 px-5 z-50 gap-4">
         <div className="flex items-center gap-4">
           {isAuthenticated && user && (
             <span>
@@ -80,9 +80,30 @@ const NavbarMobile = () => {
               {activeRole === 2 && <AdminSidebar />}
             </span>
           )}
-          <Link to={'/'} onClick={close}>
+          <NavLink to={'/'} onClick={close} className="flex gap-4 items-center">
             <img src={logo} alt="" className="w-25 h-auto" />
-          </Link>
+            {activeRole == 0 && (
+              <div className="py-1 px-2 bg-[#307B74] rounded-xl flex items-center gap-2 shadow-md">
+                <div className="text-white text-[10px] font-montserrat">
+                  Student
+                </div>
+              </div>
+            )}
+            {activeRole == 1 && (
+              <div className="py-1 px-2 bg-[#307B74] rounded-xl flex items-center gap-2 shadow-md">
+                <div className="text-white text-[10px] font-montserrat">
+                  Tutor
+                </div>
+              </div>
+            )}
+            {activeRole == 2 && (
+              <div className="py-1 px-2 bg-[#307B74] rounded-xl flex items-center gap-2 shadow-md">
+                <div className="text-white text-[10px] font-montserrat">
+                  Admin
+                </div>
+              </div>
+            )}
+          </NavLink>
         </div>
 
         <div>
