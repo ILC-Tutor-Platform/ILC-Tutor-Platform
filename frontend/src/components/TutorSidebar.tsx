@@ -19,22 +19,22 @@ const TutorSidebar = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const sidebarWidth = isOpen ? (isMobile ? '7rem' : '8rem') : '0rem';
+  const sidebarWidth = isOpen ? (isMobile ? '6rem' : '7rem') : '0rem';
 
   return (
     <aside
-      className="fixed top-0 left-0 h-screen z-50 bg-[#F9F8F4] border-r border-black/30 transition-all duration-300 ease-in-out flex flex-col items-center"
+      className="fixed min-h-screen top-0 left-0 bg-[#F9F8F4] transition-all duration-300 ease-in-out flex flex-col items-center justify-center shadow-2xl"
       style={{ width: sidebarWidth }}
     >
       {isOpen && (
         <>
           <Menu
-            className="absolute top-10 cursor-pointer"
+            className="absolute top-8 cursor-pointer"
             onClick={toggle}
-            width={32}
-            height={32}
+            width={28}
+            height={28}
           />
-          <div className="flex flex-col justify-center items-center flex-1 gap-8">
+          <div className="flex flex-col justify-center items-center gap-7">
             {[
               { label: 'Profile', icon: Profile, route: '/profile/tutor' },
               {
@@ -60,15 +60,15 @@ const TutorSidebar = () => {
                 className="w-full"
                 onClick={toggle}
               >
-                <button className="flex flex-col items-center gap-2 w-full text-black hover:text-[#307B74] transition-colors">
+                <button className="flex flex-col items-center gap-1.5 w-full text-black hover:text-[#307B74] transition-colors cursor-pointer">
                   <img
                     src={item.icon}
                     alt={item.label}
-                    className={item.large ? 'w-6 h-6' : 'w-5 h-5'}
+                    className={item.large ? 'w-5 h-5' : 'w-4 h-4'}
                   />
                   <span
                     className={`${
-                      item.large ? 'text-xs' : 'text-sm'
+                      item.large ? 'text-xs' : 'text-xs'
                     } font-medium text-center`}
                   >
                     {item.label}

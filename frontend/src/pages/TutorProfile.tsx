@@ -46,6 +46,7 @@ const TutorProfile = () => {
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
   const openPersonalModal = () => {
     setEditPersonalData({
@@ -352,6 +353,13 @@ const TutorProfile = () => {
 
         if (!res.data.tutor) {
           throw new Error('Tutor data not found in response');
+        }
+
+        // Set profile image if available
+        const imageUrl = res.data.user.image_public_url;
+        if (imageUrl) {
+          setProfileImageUrl(imageUrl);
+          console.log('Profile image URL set:', imageUrl);
         }
 
         const tutorData = res.data.tutor;
@@ -759,10 +767,11 @@ const TutorProfile = () => {
           </div>
 
           <div className="w-full min-h-[calc(100vh-10rem)] bg-[#F9F8F4] shadow-md rounded-2xl border border-black border-opacity-30 p-6 md:p-8 lg:p-10 flex flex-col gap-8">
+            {/* Profile Picture */}
             <div className="flex flex-col items-center mb-8">
               <img
-                className="w-36 h-36 md:w-44 md:h-44 lg:w-52 lg:h-52 rounded-full object-cover"
-                src={ProfilePlaceholder}
+                className="w-36 h-36 md:w-44 md:h-44 lg:w-52 lg:h-52 rounded-full"
+                src={profileImageUrl || ProfilePlaceholder}
                 alt="Profile"
               />
               <button
