@@ -146,7 +146,6 @@ async def get_tutors_optimized(
                     "subject": subjects_dict[tutor_id] if subjects_dict[tutor_id] else None,
                     "topic_title": None,
                     "topic_id": None,
-
                     "description": tutor_detail.description if tutor_detail else None,
                     "status": str(tutor_detail.status) if tutor_detail else None,
                     "affiliations": affiliations_dict[tutor_id] if affiliations_dict[tutor_id] else None,

@@ -764,16 +764,6 @@ const TutorProfile = () => {
             >
               My Profile
             </h1>
-            <div className="pl-3 pr-3 pt-1 pb-1 md:pl-4 md:pr-4 md:pt-2 md:pb-2 bg-[#307B74] rounded-xl flex items-center gap-2 whitespace-nowrap">
-              <img
-                className="w-5 h-5 md:w-6 md:h-6"
-                src={BadgeIcon}
-                alt="badge icon"
-              />
-              <div className="text-white text-xs md:text-sm lg:text-base xl:text-lg font-bold font-montserrat">
-                Tutor
-              </div>
-            </div>
           </div>
 
           <div className="w-full min-h-[calc(100vh-10rem)] bg-[#F9F8F4] shadow-md rounded-2xl border border-black border-opacity-30 p-6 md:p-8 lg:p-10 flex flex-col gap-8">

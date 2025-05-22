@@ -423,17 +423,6 @@ const StudentDashboardProfile = () => {
             <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
               My Profile
             </span>
-
-            <div className="pl-3 pr-3 pt-1 pb-1 md:pl-4 md:pr-4 md:pt-2 md:pb-2 bg-[#307B74] rounded-xl flex items-center gap-2">
-              <img
-                className="w-5 h-5 md:w-6 md:h-6"
-                src={BadgeIcon}
-                alt="badge icon"
-              />
-              <div className="text-white text-xs md:text-sm lg:text-base xl:text-lg font-bold font-montserrat">
-                Student
-              </div>
-            </div>
           </div>
 
           {/* Profile Content */}
