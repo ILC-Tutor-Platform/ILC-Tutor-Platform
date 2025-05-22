@@ -196,6 +196,14 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         },
       });
 
+      useAuthStore.getState().setUser({
+        email: user.user.email,
+        name: user.user.name,
+      });
+
+      console.log(user.user.email);
+      console.log(user.user.name);
+
       return { success: true };
     } catch (error: any) {
       console.error('Error signing up as tutor: ', error);
