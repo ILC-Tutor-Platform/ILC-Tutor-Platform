@@ -2,7 +2,7 @@ import Logo from '@/assets/AralLinkLogo.svg';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { api } from '@/utils/axios';
+import { UserAuth } from '@/context/AuthContext';
 import { isValidUpEmail } from '@/utils/errorValidations.ts';
 import { BookOpen, Briefcase, Calendar, Plus, Share2, X } from 'lucide-react';
 import { useState } from 'react';
@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 
 const SignUpAsTutor = () => {
   const navigate = useNavigate();
+  const authContext = UserAuth();
+  const { signUpTutor } = authContext || {};
 
   const [loading, setLoading] = useState(false);
 
@@ -200,8 +202,11 @@ const SignUpAsTutor = () => {
     if (validateForm()) {
       setLoading(true);
       const formData = prepareFormData();
-      try {
-        await api.post('auth/signup/tutor', formData);
+      const { success, error } = await signUpTutor(formData);
+      console.log('Form Data:', formData);
+      if (success) {
+        console.log('User signed up successfully:', formData.user.name);
+        navigate('/verify-email');
         toast.success(
           'Please check your email. We sent you a confirmation. Thank you.',
           {
@@ -218,26 +223,29 @@ const SignUpAsTutor = () => {
           },
         );
         setLoading(false);
-      } catch (error) {
+      } else {
         console.log('Error signing up: ', error);
-        toast.error('Error signing up.', {
-          className: 'green-shadow-card text-black',
-          duration: 3000,
-          style: {
-            background: '#ffffff',
-            color: '#8A1538',
-            fontSize: '16px',
-            border: '0px',
-            padding: '1.5rem',
-            boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
+        toast.error(
+          'Sign up failed. Please check your details and try again.',
+          {
+            className: 'green-shadow-card text-black',
+            duration: 3000,
+            style: {
+              background: '#8A1538',
+              color: '#307B74',
+              fontSize: '16px',
+              border: '0px',
+              padding: '1.5rem',
+              boxShadow: '0px 4px 4px 3px rgba(48, 123, 116, 0.40)',
+            },
           },
-        });
+        );
         setLoading(false);
+        return;
       }
-      setTimeout(() => navigate('/verify-email'), 3000);
+      setLoading(false);
     }
   };
-
   return (
     <div className="flex min-h-screen items-center py-10">
       <form
@@ -305,6 +313,7 @@ const SignUpAsTutor = () => {
               onChange={(e) => setEmail(e.target.value)}
               className={errors.email ? 'border-red-500' : ''}
               placeholder="example@up.edu.ph"
+              autoComplete="email"
             />
             {errors.email && (
               <p className="text-red-500 text-sm">{errors.email}</p>
@@ -320,6 +329,7 @@ const SignUpAsTutor = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={errors.password ? 'border-red-500' : ''}
+                autoComplete="new-password"
               />
               {errors.password && (
                 <p className="text-red-500 text-sm">{errors.password}</p>
