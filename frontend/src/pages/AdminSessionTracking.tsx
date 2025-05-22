@@ -118,7 +118,7 @@ const AdminSessionTracking = () => {
                         >
                           {session.status_id === 1 && 'APPROVED'}
                           {session.status_id === 2 && 'DECLINED'}
-                          {session.status_id === 3 && 'PENDING'}
+                          {session.status_id === 0 && 'PENDING'}
                         </span>
                       </div>
                     </div>

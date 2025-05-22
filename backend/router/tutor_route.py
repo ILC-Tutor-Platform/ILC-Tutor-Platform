@@ -40,74 +40,130 @@ class TutorsListResponse(BaseModel):
     page: int
     limit: int
 
-# Retrieve tutor list
-@router.get("/tutors", response_model=TutorsListResponse)
-async def get_tutors(
-    name: Optional[str] = None,  # search by name
-    expertise_filter: Optional[str] = None, # search by expertise
-    status: Optional[str] = None, # search by status
+# Alternative approach using subqueries for better performance
+@router.get("/tutors-optimized", response_model=TutorsListResponse)
+async def get_tutors_optimized(
+    name: Optional[str] = None,
+    expertise_filter: Optional[str] = None,
+    status: Optional[str] = None,
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(10, ge=1, le=100, description="Items per page"),
     db: DBSession = Depends(get_db),
 ):
     try:
-        # Build query with all joins at once
-        query = db.query(UserDetail)\
-            .join(TutorDetail, UserDetail.userid == TutorDetail.tutor_id)\
-            .outerjoin(TutorAffiliation, UserDetail.userid == TutorAffiliation.tutor_id)\
-            .outerjoin(TutorAvailability, UserDetail.userid == TutorAvailability.tutor_id)\
-            .outerjoin(TutorExpertise, UserDetail.userid == TutorExpertise.tutor_id)\
-            .outerjoin(TutorSocials, UserDetail.userid == TutorSocials.tutor_id)\
-            .outerjoin(SubjectDetail, UserDetail.userid == SubjectDetail.tutor_id)\
-            .options(
-                joinedload(UserDetail.tutor_detail),
-                joinedload(UserDetail.tutor_affiliation),
-                joinedload(UserDetail.tutor_availability),
-                joinedload(UserDetail.tutor_expertise),
-                joinedload(UserDetail.tutor_socials),
-                joinedload(UserDetail.subject_detail)
-            )
+        # Get base tutors with filters
+
+        base_query = db.query(UserDetail.userid)\
+            .join(TutorDetail, UserDetail.userid == TutorDetail.tutor_id)
         
-        # filters when searching for tutors pero optional pa muna 
         if name:
-            query = query.filter(UserDetail.name.ilike(f"%{name}%"))
-        
+            base_query = base_query.filter(UserDetail.name.ilike(f"%{name}%"))
         if status:
-            query = query.filter(TutorDetail.status == status)
-            
+            base_query = base_query.filter(TutorDetail.status == status)
         if expertise_filter:
-            query = query.filter(TutorExpertise.expertise.contains([expertise_filter]))
+            base_query = base_query.join(TutorExpertise, UserDetail.userid == TutorExpertise.tutor_id)\
+                .filter(TutorExpertise.expertise.contains([expertise_filter]))
         
-        # Count total results before pagination
-        total_count = query.count()
-        
-        # Apply pagination
+        # Count and paginate
+        total_count = base_query.count()
         offset = (page - 1) * limit
-        users = query.offset(offset).limit(limit).all()
-                
-        # response data 
+        tutor_ids = [row.userid for row in base_query.offset(offset).limit(limit).all()]
+
+        
+        if not tutor_ids:
+            return {"tutors": [], "total": total_count, "page": page, "limit": limit}
+
+        
+        # Get user details
+        users = db.query(UserDetail).filter(UserDetail.userid.in_(tutor_ids)).all()
+        user_dict = {user.userid: user for user in users}
+        
+        # Get tutor details
+        tutor_details = db.query(TutorDetail).filter(TutorDetail.tutor_id.in_(tutor_ids)).all()
+        tutor_dict = {td.tutor_id: td for td in tutor_details}
+        
+        # Get all related data using separate queries
+        affiliations = db.query(TutorAffiliation).filter(TutorAffiliation.tutor_id.in_(tutor_ids)).all()
+        availabilities = db.query(TutorAvailability).filter(TutorAvailability.tutor_id.in_(tutor_ids)).all()
+        expertise = db.query(TutorExpertise).filter(TutorExpertise.tutor_id.in_(tutor_ids)).all()
+        socials = db.query(TutorSocials).filter(TutorSocials.tutor_id.in_(tutor_ids)).all()
+        subjects = db.query(SubjectDetail).filter(SubjectDetail.tutor_id.in_(tutor_ids)).all()
+        
+        # Group related data by tutor_id
+
+        from collections import defaultdict
+        
+        affiliations_dict = defaultdict(list)
+        for aff in affiliations:
+            if aff.affiliations:
+                affiliations_dict[aff.tutor_id].append(aff.affiliations)
+        
+        availability_dict = defaultdict(list)
+        time_from_dict = defaultdict(list)
+        time_to_dict = defaultdict(list)
+        for avail in availabilities:
+            if avail.availability:
+                availability_dict[avail.tutor_id].append(avail.availability)
+            if avail.available_time_from:
+                time_from_dict[avail.tutor_id].append(avail.available_time_from)
+            if avail.available_time_to:
+
+                time_to_dict[avail.tutor_id].append(avail.available_time_to)
+        
+        expertise_dict = defaultdict(list)
+        for exp in expertise:
+            if exp.expertise:
+                if isinstance(exp.expertise, list):
+                    expertise_dict[exp.tutor_id].extend(exp.expertise)
+                else:
+                    expertise_dict[exp.tutor_id].append(exp.expertise)
+        
+        socials_dict = defaultdict(list)
+
+        for social in socials:
+            if social.socials:
+                socials_dict[social.tutor_id].append(social.socials)
+        
+        subjects_dict = defaultdict(list)
+        for subject in subjects:
+            if subject.subject_name:
+                subjects_dict[subject.tutor_id].append(subject.subject_name)
+        
+        # Build final response
+
         tutors_data = []
-        for user in users:
-            tutor_data = {
-                "userid": user.userid,
-                "name": user.name,
-                "email": user.email,
-                "datejoined": user.datejoined,
-                "subject": user.subject_detail.subject_name if hasattr(user, 'subject_detail') and user.subject_detail else None,
-                "description": user.tutor_detail.description if hasattr(user, 'tutor_detail') and user.tutor_detail else None,
-                "status": str(user.tutor_detail.status) if hasattr(user, 'tutor_detail') and user.tutor_detail else None,
-                "affiliations": [user.tutor_affiliation.affiliations] if hasattr(user, 'tutor_affiliation') and user.tutor_affiliation else None,
-                "availability": [user.tutor_availability.availability] if hasattr(user, 'tutor_availability') and user.tutor_availability else None,
-                "available_time_from": [user.tutor_availability.available_time_from] if hasattr(user, 'tutor_availability') and user.tutor_availability else None,
-                "available_time_to": [user.tutor_availability.available_time_to] if hasattr(user, 'tutor_availability') and user.tutor_availability else None,
-                "expertise": [user.tutor_expertise.expertise] if hasattr(user, 'tutor_expertise') and user.tutor_expertise else None,
-                "socials": [user.tutor_socials.socials] if hasattr(user, 'tutor_socials') and user.tutor_socials else None
-            }
-            tutors_data.append(tutor_data)
+        for tutor_id in tutor_ids:
+            user = user_dict.get(tutor_id)
+            tutor_detail = tutor_dict.get(tutor_id)
+
+            
+            if user:
+                tutor_data = {
+                    "userid": user.userid,
+                    "name": user.name,
+                    "email": user.email,
+                    "datejoined": user.datejoined,
+                    "subject": subjects_dict[tutor_id] if subjects_dict[tutor_id] else None,
+                    "topic_title": None,
+                    "topic_id": None,
+
+                    "description": tutor_detail.description if tutor_detail else None,
+                    "status": str(tutor_detail.status) if tutor_detail else None,
+                    "affiliations": affiliations_dict[tutor_id] if affiliations_dict[tutor_id] else None,
+                    "availability": availability_dict[tutor_id] if availability_dict[tutor_id] else None,
+                    "available_time_from": time_from_dict[tutor_id] if time_from_dict[tutor_id] else None,
+                    "available_time_to": time_to_dict[tutor_id] if time_to_dict[tutor_id] else None,
+                    "expertise": expertise_dict[tutor_id] if expertise_dict[tutor_id] else None,
+                    "socials": socials_dict[tutor_id] if socials_dict[tutor_id] else None
+                }
+                tutors_data.append(tutor_data)
+
         
         return {
             "tutors": tutors_data,
+
             "total": total_count,
+
             "page": page,
             "limit": limit
         }
@@ -115,13 +171,6 @@ async def get_tutors(
     except Exception as e:
         logger.error(f"Error fetching tutors: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching tutors: {str(e)}")
-
-        # Query for all subjects associated with this tutor
-        subjects_query = db.query(SubjectDetail)\
-            .filter(SubjectDetail.tutor_id == tutor_id)\
-            .all()
-        
-        subject_names = [subject.subject_name for subject in subjects_query] if subjects_query else []# View tutor details
 
 # View tutor details
 @router.get("/tutors/{tutor_id}", response_model=TutorResponse)

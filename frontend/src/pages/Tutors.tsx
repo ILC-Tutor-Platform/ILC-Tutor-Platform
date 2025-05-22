@@ -23,6 +23,7 @@ const Tutors = () => {
       console.log(response.data);
 
       setTutors(response.data.tutors);
+      console.log(response.data.tutors);
 
       setTotalPages(Math.ceil(response.data.total / response.data.limit));
       setPage(response.data.page);
