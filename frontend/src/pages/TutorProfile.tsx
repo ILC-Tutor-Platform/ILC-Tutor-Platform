@@ -28,8 +28,7 @@ const TutorProfile = () => {
   >(null);
   const [editPersonalData, setEditPersonalData] = useState({
     name: '',
-    facebook_link: '',
-    linkedin_link: '',
+    social_links: [] as string[],
   });
   const [editTutoringData, setEditTutoringData] = useState({
     subjects: [] as string[],
@@ -41,17 +40,18 @@ const TutorProfile = () => {
   const [currentSubject, setCurrentSubject] = useState('');
   const [currentAffiliation, setCurrentAffiliation] = useState('');
   const [currentExpertise, setCurrentExpertise] = useState('');
+  const [currentSocialLink, setCurrentSocialLink] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
   const openPersonalModal = () => {
     setEditPersonalData({
       name: tutor.name,
-      facebook_link: tutor.facebook_link,
-      linkedin_link: tutor.linkedin_link,
+      social_links: [tutor.facebook_link, tutor.linkedin_link].filter(
+        (link) => link,
+      ),
     });
     setActiveModal('personal');
     setUpdateError(null);
@@ -71,23 +71,20 @@ const TutorProfile = () => {
     setUpdateSuccess(null);
   };
 
-  const handlePersonalInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const { name, value } = e.target;
-    setEditPersonalData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const addSocialLink = () => {
+    if (currentSocialLink.trim()) {
+      setEditPersonalData((prev) => ({
+        ...prev,
+        social_links: [...prev.social_links, currentSocialLink.trim()],
+      }));
+      setCurrentSocialLink('');
+    }
   };
 
-  const handleTutoringInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setEditTutoringData((prev) => ({
+  const removeSocialLink = (index: number) => {
+    setEditPersonalData((prev) => ({
       ...prev,
-      [name]: value,
+      social_links: prev.social_links.filter((_, i) => i !== index),
     }));
   };
 
@@ -174,11 +171,6 @@ const TutorProfile = () => {
         return;
       }
 
-      const socialLinks = [
-        editPersonalData.facebook_link,
-        editPersonalData.linkedin_link,
-      ].filter((link) => link);
-
       await axios.patch(
         `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
         {
@@ -186,7 +178,7 @@ const TutorProfile = () => {
             name: editPersonalData.name.trim(),
           },
           socials: {
-            socials: socialLinks,
+            socials: editPersonalData.social_links,
           },
         },
         {
@@ -199,8 +191,8 @@ const TutorProfile = () => {
       setTutor((prev) => ({
         ...prev,
         name: editPersonalData.name,
-        facebook_link: editPersonalData.facebook_link,
-        linkedin_link: editPersonalData.linkedin_link,
+        facebook_link: editPersonalData.social_links[0] || '',
+        linkedin_link: editPersonalData.social_links[1] || '',
       }));
 
       setUpdateSuccess('Personal information updated successfully!');
@@ -235,7 +227,6 @@ const TutorProfile = () => {
         return;
       }
 
-      // Format dates as YYYY-MM-DD strings
       const formattedDates = editTutoringData.dates_available.map((date) => {
         if (date instanceof Date) {
           return date.toISOString().split('T')[0];
@@ -245,28 +236,22 @@ const TutorProfile = () => {
           : new Date().toISOString().split('T')[0];
       });
 
-      // Create the payload using the correct nested structure
       const payload = {
-        // TUTOR INFO
         tutor: {
           description: editTutoringData.description.trim(),
           status: 'active',
         },
-        // AVAILABILITY
         availability: {
           availability: formattedDates,
           available_time_from: formattedDates.map(() => '09:00:00.000Z'),
           available_time_to: formattedDates.map(() => '17:00:00.000Z'),
         },
-        // AFFILIATION - nested structure
         affiliation: {
           affiliation: editTutoringData.affiliations,
         },
-        // EXPERTISE - nested structure
         expertise: {
           expertise: editTutoringData.expertise,
         },
-        // SUBJECTS - assuming similar nested structure
         subjects: {
           subject_name: editTutoringData.subjects,
         },
@@ -290,7 +275,6 @@ const TutorProfile = () => {
 
       console.log('API response:', response.data);
 
-      // Update local state to reflect the changes
       setTutor((prev) => ({
         ...prev,
         subjects: editTutoringData.subjects,
@@ -357,7 +341,6 @@ const TutorProfile = () => {
         const name = res.data.user?.name || '';
         const email = res.data.user?.email || user.email || '';
 
-        // Robust parsing for subjects - handle both string arrays and object arrays
         let subjects: string[] = [];
         if (tutorData.subject) {
           if (Array.isArray(tutorData.subject.subject_name)) {
@@ -371,7 +354,6 @@ const TutorProfile = () => {
           }
         }
 
-        // Robust parsing for expertise
         let expertise: string[] = [];
         if (Array.isArray(tutorData.expertise)) {
           expertise = tutorData.expertise.map((exp: any) => {
@@ -382,11 +364,10 @@ const TutorProfile = () => {
             } else if (typeof exp === 'object' && exp.expertise_name) {
               return exp.expertise_name;
             }
-            return String(exp); // fallback to string conversion
+            return String(exp);
           });
         }
 
-        // Robust parsing for affiliations
         let affiliations: string[] = [];
         if (Array.isArray(tutorData.affiliations)) {
           affiliations = tutorData.affiliations.map((aff: any) => {
@@ -397,16 +378,14 @@ const TutorProfile = () => {
             } else if (typeof aff === 'object' && aff.affiliation_name) {
               return aff.affiliation_name;
             }
-            return String(aff); // fallback to string conversion
+            return String(aff);
           });
         }
 
-        // Parse dates from the 'availability' property
         const datesAvailable = Array.isArray(tutorData.availability)
           ? tutorData.availability.map((dateStr: string) => new Date(dateStr))
           : [];
 
-        // Parse social links correctly from the socials array
         const socials = Array.isArray(tutorData.socials)
           ? tutorData.socials
           : [];
@@ -437,6 +416,10 @@ const TutorProfile = () => {
     fetchTutor();
   }, [user, accessToken, refreshKey]);
 
+  const socialLinks = [tutor.facebook_link, tutor.linkedin_link].filter(
+    (link) => link,
+  );
+
   return (
     <div className="min-h-screen relative flex lg:w-[80%] lg:mx-auto">
       {/* Personal Information Modal */}
@@ -462,35 +445,51 @@ const TutorProfile = () => {
                   type="text"
                   name="name"
                   value={editPersonalData.name}
-                  onChange={handlePersonalInputChange}
+                  onChange={(e) =>
+                    setEditPersonalData((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
                   className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
                 />
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-1">
-                  Facebook Link
-                </label>
-                <input
-                  type="url"
-                  name="facebook_link"
-                  value={editPersonalData.facebook_link}
-                  onChange={handlePersonalInputChange}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 mb-1">
-                  LinkedIn Link
-                </label>
-                <input
-                  type="url"
-                  name="linkedin_link"
-                  value={editPersonalData.linkedin_link}
-                  onChange={handlePersonalInputChange}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
-                />
+                <label className="block text-gray-700 mb-1">Social Links</label>
+                <div className="relative">
+                  <input
+                    type="url"
+                    value={currentSocialLink}
+                    onChange={(e) => setCurrentSocialLink(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addSocialLink()}
+                    className="w-full p-2 pr-[4rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
+                    placeholder="Add a social link"
+                  />
+                  <button
+                    onClick={addSocialLink}
+                    className="absolute right-[0.25rem] top-1/2 transform -translate-y-1/2 px-3 py-1 rounded-md text-white"
+                    style={{ background: '#FF9D02' }}
+                  >
+                    Add
+                  </button>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {editPersonalData.social_links.map((link, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center bg-gray-100 rounded-full px-3 py-1"
+                    >
+                      <span className="truncate max-w-xs">{link}</span>
+                      <button
+                        onClick={() => removeSocialLink(index)}
+                        className="ml-2 text-gray-500 hover:text-gray-700"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -671,7 +670,12 @@ const TutorProfile = () => {
                 <textarea
                   name="description"
                   value={editTutoringData.description}
-                  onChange={handleTutoringInputChange}
+                  onChange={(e) =>
+                    setEditTutoringData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   className="w-full p-[0.5rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
                   rows={4}
                 />
@@ -797,7 +801,7 @@ const TutorProfile = () => {
                       <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Name
                       </span>
-                      <span className="text-black font-semibold md:text-right md:w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {tutor.name || 'N/A'}
                       </span>
                     </div>
@@ -806,49 +810,34 @@ const TutorProfile = () => {
                       <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Email
                       </span>
-                      <span className="text-black font-semibold md:text-right md:w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {tutor.email || 'N/A'}
                       </span>
                     </div>
 
                     <div className="flex flex-col md:flex-row justify-between">
                       <span className="text-[#A19A9A] font-semibold md:w-1/3">
-                        Facebook Link
+                        Socials Links
                       </span>
-                      <span className="text-black font-semibold md:text-right md:w-2/3 break-all">
-                        {tutor.facebook_link ? (
-                          <a
-                            href={tutor.facebook_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            {tutor.facebook_link}
-                          </a>
+                      <div className="text-black font-semibold md:text-right md:w-2/3">
+                        {socialLinks.length > 0 ? (
+                          <div className="flex flex-col space-y-1">
+                            {socialLinks.map((link, index) => (
+                              <a
+                                key={index}
+                                href={link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline truncate max-w-full"
+                              >
+                                {link}
+                              </a>
+                            ))}
+                          </div>
                         ) : (
                           'N/A'
                         )}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col md:flex-row justify-between">
-                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
-                        LinkedIn Link
-                      </span>
-                      <span className="text-black font-semibold md:text-right md:w-2/3 break-all">
-                        {tutor.linkedin_link ? (
-                          <a
-                            href={tutor.linkedin_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            {tutor.linkedin_link}
-                          </a>
-                        ) : (
-                          'N/A'
-                        )}
-                      </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -908,7 +897,7 @@ const TutorProfile = () => {
                       <span className="text-[#A19A9A] font-semibold md:w-1/3 shrink-0">
                         Description
                       </span>
-                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 line-clamp-2">
                         {tutor.description || 'N/A'}
                       </span>
                     </div>

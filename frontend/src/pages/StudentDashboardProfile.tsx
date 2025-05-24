@@ -30,7 +30,6 @@ const StudentDashboardProfile = () => {
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
   const openPersonalModal = () => {
     setEditPersonalData({
@@ -85,9 +84,7 @@ const StudentDashboardProfile = () => {
         return;
       }
 
-      console.log('Sending update request with name:', editPersonalData.name);
-
-      const response = await axios.patch(
+      await axios.patch(
         `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
         {
           user: {
@@ -100,8 +97,6 @@ const StudentDashboardProfile = () => {
           },
         },
       );
-
-      console.log('Update response:', response.data);
 
       setStudent((prev) => ({
         ...prev,
@@ -144,12 +139,7 @@ const StudentDashboardProfile = () => {
         return;
       }
 
-      console.log('Sending education update request:', {
-        student_number: editEducationData.student_number,
-        degree_program: editEducationData.degree_program,
-      });
-
-      const response = await axios.patch(
+      await axios.patch(
         `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
         {
           student: {
@@ -163,8 +153,6 @@ const StudentDashboardProfile = () => {
           },
         },
       );
-
-      console.log('Education update response:', response.data);
 
       setStudent((prev) => ({
         ...prev,
@@ -198,11 +186,6 @@ const StudentDashboardProfile = () => {
           return;
         }
 
-        console.log(
-          'Fetching student profile with token:',
-          accessToken.substring(0, 10) + '...',
-        );
-
         const res = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/users/profile`,
           {
@@ -211,8 +194,6 @@ const StudentDashboardProfile = () => {
             },
           },
         );
-
-        console.log('Profile response:', res.data);
 
         if (!res.data.user) {
           throw new Error('User data not found in response');
@@ -240,7 +221,7 @@ const StudentDashboardProfile = () => {
   }, [user, accessToken, refreshKey]);
 
   return (
-    <div className="min-h-screen relative flex lg:w-[70%] lg:mx-auto">
+    <div className="min-h-screen relative flex lg:w-[80%] lg:mx-auto">
       {/* Personal Information Modal */}
       {activeModal === 'personal' && (
         <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4">
@@ -304,10 +285,10 @@ const StudentDashboardProfile = () => {
 
       {/* Education Information Modal */}
       {activeModal === 'education' && (
-        <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+        <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-[1rem]">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-md mx-auto my-auto flex flex-col max-h-[90vh]">
             <h2
-              className="text-2xl font-bold mb-6"
+              className="text-2xl font-bold p-[1.5rem] pb-0"
               style={{
                 color: '#8A1538',
                 fontFamily: 'Montserrat',
@@ -318,9 +299,9 @@ const StudentDashboardProfile = () => {
               Update Education Information
             </h2>
 
-            <div className="space-y-4 mb-6">
+            <div className="overflow-y-auto px-[1.5rem] pb-[1rem] pt-[1rem] space-y-[1rem]">
               <div>
-                <label className="block text-gray-700 mb-1">
+                <label className="block text-gray-700 mb-[0.25rem]">
                   Student Number
                 </label>
                 <input
@@ -328,19 +309,19 @@ const StudentDashboardProfile = () => {
                   name="student_number"
                   value={editEducationData.student_number}
                   onChange={handleEducationInputChange}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
+                  className="w-full p-[0.5rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
                 />
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-1">
+                <label className="block text-gray-700 mb-[0.25rem]">
                   Degree Program
                 </label>
                 <select
                   name="degree_program"
                   value={editEducationData.degree_program}
                   onChange={handleEducationInputChange}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
+                  className="w-full p-[0.5rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
                 >
                   <option value="">Select a degree program</option>
                   <option value="AA Sports Studies">AA Sports Studies</option>
@@ -370,28 +351,29 @@ const StudentDashboardProfile = () => {
             </div>
 
             {updateError && (
-              <div className="text-red-500 mb-4 text-sm">{updateError}</div>
+              <div className="text-red-500 text-sm px-[1.5rem]">
+                {updateError}
+              </div>
             )}
 
             {updateSuccess && (
-              <div className="text-green-500 mb-4 text-sm">{updateSuccess}</div>
+              <div className="text-green-500 text-sm px-[1.5rem]">
+                {updateSuccess}
+              </div>
             )}
 
-            <div className="flex justify-end space-x-3">
+            <div className="flex justify-end space-x-[0.75rem] px-[1.5rem] py-[1rem] border-t border-gray-200">
               <button
                 onClick={() => setActiveModal(null)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition"
+                className="px-[1rem] py-[0.5rem] border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition"
                 disabled={isUpdating}
               >
                 Go Back
               </button>
               <button
                 onClick={handleSaveEducationChanges}
-                className="px-4 py-2 rounded-md text-white hover:bg-opacity-90 transition"
-                style={{
-                  borderRadius: '5px',
-                  background: '#FF9D02',
-                }}
+                className="px-[1rem] py-[0.5rem] rounded-md text-white hover:bg-opacity-90 transition"
+                style={{ borderRadius: '5px', background: '#FF9D02' }}
                 disabled={isUpdating}
               >
                 {isUpdating ? 'Saving...' : 'Save Changes'}
@@ -403,49 +385,47 @@ const StudentDashboardProfile = () => {
 
       <div className="transition-all duration-300 ease-in-out flex-1">
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
-          {/* Profile Header */}
-          <div
-            className="flex items-center gap-2 md:gap-4 mb-2 md:mb-4 md:-mt-5 lg:-mt-10"
-            style={{
-              color: '#8A1538',
-              fontFamily: 'Montserrat',
-              fontWeight: 700,
-            }}
-          >
-            <span className="text-3xl md:text-4xl lg:text-5xl">
+          <div className="flex items-center gap-2 md:gap-4 mb-2 md:mb-4 md:-mt-5 lg:-mt-10">
+            <h1
+              className="text-3xl md:text-4xl lg:text-5xl whitespace-nowrap"
+              style={{
+                color: '#8A1538',
+                fontFamily: 'Montserrat',
+                fontWeight: 700,
+              }}
+            >
               My Profile
-            </span>
+            </h1>
           </div>
 
-          {/* Profile Content */}
           <div className="w-full min-h-[calc(100vh-12rem)] bg-[#F9F8F4] shadow-md rounded-2xl border border-black border-opacity-30 p-5 md:p-7 lg:p-9 flex flex-col">
             {/* Profile Picture */}
             <div className="flex flex-col items-center mb-8 -mt-2">
               <img
-                className="w-30 h-30 md:w-40 md:h-40 lg:w-50 lg:h-50 rounded-full"
+                className="w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full object-cover"
                 src={ProfilePlaceholder}
                 alt="Profile"
               />
             </div>
 
-            {/* Loading/Error */}
             {loading ? (
-              <div className="text-center text-gray-500">
+              <div className="text-center text-gray-500 py-8">
                 Loading profile information...
               </div>
             ) : error ? (
-              <div className="text-center text-red-500">{error}</div>
+              <div className="text-center text-red-500 py-8">{error}</div>
             ) : (
-              <div className="flex flex-col md:flex-row gap-8 md:gap-10 w-full justify-center">
+              <div className="flex flex-col md:flex-row gap-6 md:gap-8 w-full justify-center">
                 {/* Personal Information Section */}
-                <div className="w-full md:w-[55%] lg:w-[50%] xl:w-[45%] bg-white shadow-lg rounded-lg border border-opacity-10 relative p-6">
+                <div className="w-full md:w-[55%] lg:w-[50%] xl:w-[45%] bg-white shadow-lg rounded-lg border border-opacity-10 relative p-5 md:p-6">
                   <div className="flex justify-between items-start mb-4">
-                    <div className="text-black text-xl font-Montserrat font-semibold">
+                    <h3 className="text-black text-lg md:text-xl font-Montserrat font-semibold truncate">
                       Personal Information
-                    </div>
+                    </h3>
                     <button
                       className="ml-4 p-1 hover:bg-gray-100 rounded"
                       onClick={openPersonalModal}
+                      aria-label="Edit personal information"
                     >
                       <img
                         src={EditIcon}
@@ -455,19 +435,19 @@ const StudentDashboardProfile = () => {
                     </button>
                   </div>
                   <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between gap-2">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Name
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {student.name || 'N/A'}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between gap-2">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Email
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {student.email || 'N/A'}
                       </span>
                     </div>
@@ -475,14 +455,15 @@ const StudentDashboardProfile = () => {
                 </div>
 
                 {/* Education Information Section */}
-                <div className="w-full md:w-[55%] lg:w-[50%] xl:w-[45%] bg-white shadow-lg rounded-lg border border-opacity-10 relative p-6">
+                <div className="w-full md:w-[55%] lg:w-[50%] xl:w-[45%] bg-white shadow-lg rounded-lg border border-opacity-10 relative p-5 md:p-6">
                   <div className="flex justify-between items-start mb-4">
-                    <div className="text-black text-xl font-Montserrat font-semibold">
+                    <h3 className="text-black text-lg md:text-xl font-Montserrat font-semibold truncate">
                       Education Information
-                    </div>
+                    </h3>
                     <button
                       className="ml-4 p-1 hover:bg-gray-100 rounded"
                       onClick={openEducationModal}
+                      aria-label="Edit education information"
                     >
                       <img
                         src={EditIcon}
@@ -492,19 +473,19 @@ const StudentDashboardProfile = () => {
                     </button>
                   </div>
                   <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between gap-2">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Student Number
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {student.student_number || 'N/A'}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#A19A9A] font-semibold w-1/3">
+                    <div className="flex flex-col md:flex-row justify-between gap-2">
+                      <span className="text-[#A19A9A] font-semibold md:w-1/3">
                         Degree Program
                       </span>
-                      <span className="text-black font-semibold text-right w-2/3">
+                      <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {student.degree_program || 'N/A'}
                       </span>
                     </div>
