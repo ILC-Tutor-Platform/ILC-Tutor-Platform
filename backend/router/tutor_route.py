@@ -40,8 +40,11 @@ class TutorsListResponse(BaseModel):
     page: int
     limit: int
 
+class StatusUpdate(BaseModel):
+    status: int  # 1 for approve, 2 for reject
+
 # Alternative approach using subqueries for better performance
-@router.get("/tutors-optimized", response_model=TutorsListResponse)
+@router.get("/tutors", response_model=TutorsListResponse)
 async def get_tutors_optimized(
     name: Optional[str] = None,
     expertise_filter: Optional[str] = None,
@@ -356,10 +359,6 @@ def get_tutor_requests(db: DBSession = Depends(get_db)):
     except Exception as e:
         logger.error(f"Error retrieving tutor requests: {e}")
         raise HTTPException(status_code=500, detail="Internal server error during authentication")
-
-
-class StatusUpdate(BaseModel):
-    status: int  # 1 for approve, 2 for reject
 
 @router.put("/tutor-requests/{tutor_id}/status")
 def update_tutor_status(tutor_id: str, update: StatusUpdate, db: DBSession = Depends(get_db)):
