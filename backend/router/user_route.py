@@ -358,25 +358,82 @@ def update_user_profile(
         if "subject" in data:
             if "1" in role:
                 subject_names = data["subject"].get("subject_name", [])
-        
-                # Get existing subjects
+
+                # Get all current subjects for this tutor
+
                 existing_subjects = supabase.table("subject_detail")\
                     .select("subject_id, subject_name")\
                     .eq("tutor_id", uid)\
                     .execute()
-        
+
                 existing_names = [s["subject_name"] for s in existing_subjects.data or []]
+
                 new_names = [name.strip() for name in subject_names if name and name.strip()]
-        
-                # Only add new subjects, don't delete existing ones with active topics
+
                 to_add = [name for name in new_names if name not in existing_names]
-        
+                to_remove = [s for s in existing_subjects.data or [] if s["subject_name"] not in new_names]
+
+                # Add any new subjects
                 for name in to_add:
                     supabase.table("subject_detail").insert({
                         "tutor_id": uid,
                         "subject_name": name
                     }).execute()
-        
+
+        class FakeResponse:
+            def __init__(self, data):
+                self.data = data
+
+        # Attempt to remove unused subjects
+        for subject in to_remove:
+            subject_id = subject["subject_id"]
+
+            try:
+                # Step 1: Get topics under this subject
+                topics = supabase.table("topic_detail")\
+                    .select("topic_id")\
+                    .eq("subject_id", subject_id)\
+                    .execute()
+
+
+                topic_ids = [t["topic_id"] for t in topics.data or []]
+
+                # Step 2: Check if any sessions exist for these topics
+                if topic_ids:
+                    active_sessions_check = supabase.table("session")\
+                        .select("session_id")\
+                        .in_("topic_id", topic_ids)\
+                        .in_("status", [0, 1, 2])\
+                        .execute()
+                else:
+                    active_sessions_check = FakeResponse([])
+
+                # Step 3: If no active sessions, delete topics and subject
+                if not active_sessions_check.data:
+                    # Delete all topics first
+                    if topic_ids:
+                        supabase.table("topic_detail")\
+                            .delete()\
+                            .in_("topic_id", topic_ids)\
+                            .execute()
+                        logger.info(f"Deleted all topics for subject: {subject['subject_name']}")
+
+                    # Then delete subject
+                    supabase.table("subject_detail")\
+                        .delete()\
+                        .eq("subject_id", subject_id)\
+                        .execute()
+                    logger.info(f"Deleted subject: {subject['subject_name']}")
+                else:
+                    logger.warning(
+                        f"Cannot delete subject '{subject['subject_name']}' - it has {len(active_sessions_check.data)} active sessions"
+                    )
+
+
+            except Exception as e:
+                logger.error(f"Error checking/deleting subject {subject['subject_name']}: {str(e)}")
+
+
 
         # Expertise updates
 
