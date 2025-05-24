@@ -136,14 +136,18 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
             
             logger.info(f"Found {len(subjects)} subjects for tutor {uid}")
             
-            # Get all topics for subjects owned by this tutor
-            topics = []
-            if subjects:  # Only query topics if there are subjects
-                topics = db.query(TopicDetail).join(
-                    SubjectDetail, TopicDetail.subject_id == SubjectDetail.subject_id
-                ).filter(SubjectDetail.tutor_id == uid).all()
+            topic_map = {}
+
+            if subjects:
+                for subject in subjects:
+                    subject_topics = (
+                    db.query(TopicDetail)
+                    .filter(TopicDetail.subject_id == subject.subject_id)
+                    .all()
+                    )
+                    topic_map[subject.subject_name] = [t.topic_title for t in subject_topics]
             
-            logger.info(f"Found {len(topics)} topics for tutor {uid}")
+            logger.info(f"Found {len(topic_map)} topics for tutor {uid}")
             
 
             if tutor:
@@ -155,7 +159,7 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
                     "socials": [s.socials for s in socials] if socials else [],
                     "availability": [a.availability for a in availability] if availability else [],
                     "subjects": [s.subject_name for s in subjects] if subjects else [],
-                    "topics": [t.topic_title for t in topics] if topics else []
+                    "topics": topic_map 
                 }
             else:
                 logger.warning(f"Tutor detail not found for uid: {uid}")
@@ -192,22 +196,109 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
         logger.error(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+# Helper function to sync topics for a subject
+def sync_topics_for_subject(subject_id: str, updated_topics: list):
+    """
+    Synchronizes topics for a given subject by adding new topics and 
+    removing unused ones (only if they're not referenced in sessions).
+    """
+    try:
+        # Get existing topics for this subject
+        existing_res = supabase.table("topic_detail")\
+            .select("topic_id, topic_title")\
+            .eq("subject_id", subject_id)\
+            .execute()
+        existing_topics = existing_res.data or []
+
+        existing_titles = [t["topic_title"] for t in existing_topics]
+        existing_title_to_id = {t["topic_title"]: t["topic_id"] for t in existing_topics}
+
+        # Clean and filter updated topics
+        updated_titles = [name.strip() for name in updated_topics if name and name.strip()]
+
+
+        # Determine what to add and what to potentially delete
+        to_add = list(set(updated_titles) - set(existing_titles))
+        to_delete = list(set(existing_titles) - set(updated_titles))
+
+        topics_deleted = 0
+        topics_skipped = 0
+        topics_added = 0
+
+        # Delete topics not in updated list (only if unused)
+        for title in to_delete:
+
+            topic_id = existing_title_to_id.get(title)
+            if topic_id:
+                try:
+                    # Check if topic is referenced in sessions
+                    session_check = supabase.table("session")\
+                        .select("session_id")\
+                        .eq("topic_id", topic_id)\
+                        .limit(1)\
+                        .execute()
+                    
+                    if session_check.data:
+                        logger.warning(f"Cannot delete topic '{title}' - it's being used in sessions")
+                        topics_skipped += 1
+                    else:
+                        # Safe to delete
+                        supabase.table("topic_detail").delete().eq("topic_id", topic_id).execute()
+                        topics_deleted += 1
+                        logger.info(f"Deleted topic: {title}")
+                except Exception as e:
+                    logger.error(f"Error checking/deleting topic '{title}': {str(e)}")
+                    topics_skipped += 1
+
+
+        # Add new topics
+        for title in to_add:
+            try:
+                supabase.table("topic_detail").insert({
+                    "subject_id": subject_id, 
+                    "topic_title": title
+
+                }).execute()
+                topics_added += 1
+                logger.info(f"Added topic: {title} to subject_id: {subject_id}")
+            except Exception as e:
+
+                logger.error(f"Error adding topic '{title}': {str(e)}")
+
+        # Return summary for logging
+        return {
+            "added": topics_added,
+            "deleted": topics_deleted,
+            "skipped": topics_skipped
+
+        }
+
+
+    except Exception as e:
+        logger.error(f"Error syncing topics for subject_id {subject_id}: {str(e)}")
+        raise
+
+
 @router.patch("/users/profile/update")
 def update_user_profile(
     data: dict, 
     user=Depends(verify_token), 
-    ):
 
+):
     uid = user["user_id"]
     role = user["role"]
+    
     try:
         logger.info(f"Updating user {uid}")
-        # Check if user exists in Supabase Auth
+        
+        # Check if user exists
+
         if not user:
+
             logger.error("User not found in database.")
             raise HTTPException(status_code=404, detail="User not found.")
         
-        # User table
+        # User table updates
         if "user" in data:
             user_fields = {
                 "name": data["user"].get("name"),
@@ -217,7 +308,8 @@ def update_user_profile(
             if user_fields:
                 supabase.table("user_detail").update(user_fields).eq("userid", uid).execute()
 
-        # Student table
+        # Student table updates
+
         if "student" in data:
             logger.info("Updating student info...")
             if "0" in role:
@@ -228,11 +320,12 @@ def update_user_profile(
                 student_fields = {k: v for k, v in student_fields.items() if v is not None}
                 if student_fields:
                     supabase.table("student_detail").update(student_fields).eq("student_id", uid).execute()
+
             else:
                 logger.error("Only students can update student fields.")
                 raise HTTPException(status_code=403, detail="Permission denied.")
 
-        # Tutor table
+        # Tutor table updates
         if "tutor" in data:
             if "1" in role:
                 tutor_fields = {
@@ -246,58 +339,80 @@ def update_user_profile(
                 logger.error("Only tutors can update tutor fields.")
                 raise HTTPException(status_code=403, detail="Permission denied")
 
-        # Admin table
+        # Admin table updates
         if "admin" in data:
             if "2" in role:
                 admin_fields = {
+
                     "admin_role": data["admin"].get("admin_role")
                 }
+                admin_fields = {k: v for k, v in admin_fields.items() if v is not None}
                 
                 if admin_fields:
                     supabase.table("admin_detail").update(admin_fields).eq("admin_id", uid).execute()
             else:
                 logger.error("Only an admin can update admin fields.")
+
                 raise HTTPException(status_code=403, detail="Permission denied")
         
         if "subject" in data:
             if "1" in role:
-                subject_name = data["subject"].get("subject_name", [])
-                supabase.table("subject_detail").delete().eq("tutor_id", uid).execute()
-                for name in subject_name:
+                subject_names = data["subject"].get("subject_name", [])
+        
+                # Get existing subjects
+                existing_subjects = supabase.table("subject_detail")\
+                    .select("subject_id, subject_name")\
+                    .eq("tutor_id", uid)\
+                    .execute()
+        
+                existing_names = [s["subject_name"] for s in existing_subjects.data or []]
+                new_names = [name.strip() for name in subject_names if name and name.strip()]
+        
+                # Only add new subjects, don't delete existing ones with active topics
+                to_add = [name for name in new_names if name not in existing_names]
+        
+                for name in to_add:
                     supabase.table("subject_detail").insert({
                         "tutor_id": uid,
                         "subject_name": name
                     }).execute()
-            else:
-                logger.error("Only tutors can update subjects.")
-                raise HTTPException(status_code=403, detail="Permission denied")
         
+
+        # Expertise updates
+
         if "expertise" in data:
             if "1" in role:
                 expertise_list = data["expertise"].get("expertise", [])
+                # Delete existing expertise
                 supabase.table("tutor_expertise").delete().eq("tutor_id", uid).execute()
+
+                # Insert new expertise
                 for topic in expertise_list:
-                    supabase.table("tutor_expertise").insert({
-                        "tutor_id": uid,
-                        "expertise": topic
-                    }).execute()
+                    if topic and topic.strip():
+                        supabase.table("tutor_expertise").insert({
+                            "tutor_id": uid,
+                            "expertise": topic.strip()
+                        }).execute()
             else:
                 logger.error("Only tutors can update expertise.")
                 raise HTTPException(status_code=403, detail="Permission denied") 
 
+        # Availability updates
         if "availability" in data:
             if "1" in role:
-                availability_list = data["availability"]
-                dates = availability_list.get("availability", [])
-                time_from = availability_list.get("available_time_from", [])
-                time_to = availability_list.get("available_time_to", [])
+                availability_data = data["availability"]
+                dates = availability_data.get("availability", [])
+                time_from = availability_data.get("available_time_from", [])
+                time_to = availability_data.get("available_time_to", [])
 
                 # Delete existing availability entries
                 supabase.table("tutor_availability").delete().eq("tutor_id", uid).execute()
 
+
                 # Insert new availability entries
-                for i in range(len(dates)):
-                    if i < len(time_from) and i < len(time_to):
+                min_length = min(len(dates), len(time_from), len(time_to))
+                for i in range(min_length):
+                    if dates[i] and time_from[i] and time_to[i]:
                         supabase.table("tutor_availability").insert({
                             "tutor_id": uid,
                             "availability": dates[i],
@@ -308,62 +423,76 @@ def update_user_profile(
                 logger.error("Only tutors can update tutor availability.")
                 raise HTTPException(status_code=403, detail="Permission denied")    
 
-
+        # Affiliation updates
         if "affiliation" in data:
             if "1" in role:
                 affiliation_list = data["affiliation"].get("affiliation", [])
+                # Delete existing affiliations
                 supabase.table("tutor_affiliation").delete().eq("tutor_id", uid).execute()
+                # Insert new affiliations
                 for affiliation in affiliation_list:
-                    supabase.table("tutor_affiliation").insert({
-                        "tutor_id": uid,
-                        "affiliations": affiliation
-                    }).execute()
+
+                    if affiliation and affiliation.strip():
+                        supabase.table("tutor_affiliation").insert({
+                            "tutor_id": uid,
+                            "affiliations": affiliation.strip()
+                        }).execute()
             else:
                 logger.error("Only tutors can update tutor affiliation.")
                 raise HTTPException(status_code=403, detail="Permission denied")    
 
+        # Socials updates
         if "socials" in data:
+
             if "1" in role:
-                # Get socials from the metadata 
                 socials_list = data["socials"].get("socials", [])
-                
-                # Get socials from the database, if it exists
+                # Delete existing socials
                 supabase.table("tutor_socials").delete().eq("tutor_id", uid).execute()
+                # Insert new socials
                 for link in socials_list:
-                    supabase.table("tutor_socials").insert({
-                        "tutor_id": uid,
-                        "socials": link
-                    }).execute()
+                    if link and link.strip():
+                        supabase.table("tutor_socials").insert({
+                            "tutor_id": uid,
+                            "socials": link.strip()
+                        }).execute()
             else:
                 logger.error("Only tutors can update tutor socials.")
                 raise HTTPException(status_code=403, detail="Permission denied")        
 
-        # Enhanced topic update functionality
+        # Topic updates using the helper function
         if "topic" in data:
             if "1" in role:  # Tutor check
                 subject_topic_map = data["topic"]
                 logger.info(f"Updating topics for tutor {uid}: {subject_topic_map}")
 
+
                 # Validate that subject_topic_map is a dictionary
+
                 if not isinstance(subject_topic_map, dict):
                     logger.error("Topic data must be a dictionary mapping subjects to topic lists")
-                    raise HTTPException(status_code=400, detail="Invalid topic data format")
+                    raise HTTPException(status_code=400, detail="Invalid topic data format. Expected a dictionary mapping subjects to topic lists.")
+
+                total_added = 0
+                total_deleted = 0
+                total_skipped = 0
 
                 for subject_name, topic_list in subject_topic_map.items():
                     logger.info(f"Processing subject: {subject_name} with topics: {topic_list}")
+
                     
                     # Validate topic_list is a list
+
                     if not isinstance(topic_list, list):
                         logger.error(f"Topics for subject '{subject_name}' must be a list")
                         raise HTTPException(status_code=400, detail=f"Topics for subject '{subject_name}' must be a list")
 
-                    # 1. Find subject_id where tutor owns the subject
+
+                    # Find subject_id where tutor owns the subject
                     subject_res = supabase.table("subject_detail")\
                         .select("subject_id")\
                         .eq("subject_name", subject_name)\
                         .eq("tutor_id", uid)\
                         .execute()
-
 
                     if not subject_res.data:
                         logger.warning(f"Subject '{subject_name}' not found or not owned by tutor {uid}")
@@ -372,90 +501,36 @@ def update_user_profile(
                             detail=f"Subject '{subject_name}' not found or not owned by you. Please ensure the subject exists in your profile first."
                         )
 
+
                     subject_id = subject_res.data[0]["subject_id"]
                     logger.info(f"Found subject_id: {subject_id} for subject: {subject_name}")
 
+                    # Use the helper function to sync topics
 
-                    # 2. Check if topics currently exist for this subject
-                    existing_topics_res = supabase.table("topic_detail")\
-                        .select("topic_id, topic_title")\
-                        .eq("subject_id", subject_id)\
-                        .execute()
+                    try:
+                        result = sync_topics_for_subject(subject_id, topic_list)
+                        total_added += result["added"]
+                        total_deleted += result["deleted"]
+                        total_skipped += result["skipped"]
+                        
 
-                    
-                    existing_topics_count = len(existing_topics_res.data) if existing_topics_res.data else 0
-                    logger.info(f"Found {existing_topics_count} existing topics for subject {subject_name}")
+                        logger.info(f"Updated topics for subject '{subject_name}' - Added: {result['added']}, Deleted: {result['deleted']}, Skipped: {result['skipped']}")
+                        
+                    except Exception as e:
+                        logger.error(f"Error updating topics for subject '{subject_name}': {str(e)}")
 
-                    # 3. Smart topic update - only modify what's needed
-                    existing_topic_titles = [topic["topic_title"] for topic in existing_topics_res.data] if existing_topics_res.data else []
-                    new_topic_titles = [name.strip() for name in topic_list if name and name.strip()]
-                    
-                    # Find topics to delete (exist in DB but not in new list)
-                    topics_to_delete = [topic for topic in existing_topics_res.data or [] 
-                                      if topic["topic_title"] not in new_topic_titles]
-                    
-                    # Find topics to add (in new list but not in DB)
-                    topics_to_add = [name for name in new_topic_titles 
-                                   if name not in existing_topic_titles]
-                    
-                    logger.info(f"Topics to delete: {[t['topic_title'] for t in topics_to_delete]}")
-                    logger.info(f"Topics to add: {topics_to_add}")
-                    
-                    # Delete only unused topics
-                    topics_deleted = 0
-                    topics_skipped = 0
-                    
+                        raise HTTPException(
+                            status_code=500, 
+                            detail=f"Failed to update topics for subject '{subject_name}'"
+                        )
 
-                    for topic in topics_to_delete:
-
-                        try:
-                            # Check if topic is referenced in sessions
-                            session_check = supabase.table("session")\
-                                .select("session_id")\
-                                .eq("topic_id", topic["topic_id"])\
-                                .execute()
-                            
-                            if session_check.data:
-                                logger.warning(f"Cannot delete topic '{topic['topic_title']}' - it's being used in {len(session_check.data)} session(s)")
-                                topics_skipped += 1
-                            else:
-                                # Safe to delete
-                                supabase.table("topic_detail").delete().eq("topic_id", topic["topic_id"]).execute()
-                                topics_deleted += 1
-                                logger.info(f"Deleted topic: {topic['topic_title']}")
-                                
-
-                        except Exception as e:
-                            logger.error(f"Error processing topic '{topic['topic_title']}': {str(e)}")
-
-                            topics_skipped += 1
-                    
-                    # Add new topics
-                    topics_added = 0
-                    for topic_title in topics_to_add:
-                        try:
-                            supabase.table("topic_detail").insert({
-                                "subject_id": subject_id,
-                                "topic_title": topic_title
-                            }).execute()
-                            topics_added += 1
-                            logger.info(f"Added topic: {topic_title} to subject: {subject_name}")
-                        except Exception as e:
-                            logger.error(f"Error adding topic '{topic_title}': {str(e)}")
-                    
-
-                    # Log results
-                    if existing_topics_count == 0 and topics_added > 0:
-                        logger.info(f"Created {topics_added} new topics for subject: {subject_name}")
-                    else:
-                        logger.info(f"Updated topics for subject: {subject_name} - Added: {topics_added}, Deleted: {topics_deleted}, Skipped (in use): {topics_skipped}")
-                    
-                    # Warn user if some topics couldn't be deleted
-                    if topics_skipped > 0:
-                        logger.warning(f"{topics_skipped} topics could not be removed from '{subject_name}' because they are being used in active sessions")
-
-                logger.info(f"Successfully processed topics for tutor {uid}")
+                # Log overall results
+                logger.info(f"Topic update completed for tutor {uid} - Total added: {total_added}, deleted: {total_deleted}, skipped: {total_skipped}")
                 
+                # Warn user if some topics couldn't be deleted
+                if total_skipped > 0:
+                    logger.warning(f"{total_skipped} topics could not be removed because they are being used in active sessions")
+
 
             else:
                 logger.error("Only tutors can update topics.")
@@ -465,9 +540,8 @@ def update_user_profile(
     
     except HTTPException:
         raise
-
     except Exception as e:
         logger.error(f"User detail cannot be updated. Error: {str(e)}")
         import traceback
         logger.error(f"Traceback: {traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail="Update user failed.")
+        raise HTTPException(status_code=500, detail="Profile update failed.")
