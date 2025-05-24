@@ -107,10 +107,20 @@ const TutorProfile = () => {
   };
 
   const removeSubject = (index: number) => {
-    setEditTutoringData((prev) => ({
-      ...prev,
-      subjects: prev.subjects.filter((_, i) => i !== index),
-    }));
+    setEditTutoringData((prev) => {
+      const subjectToRemove = prev.subjects[index];
+      const updatedSubjects = prev.subjects.filter((_, i) => i !== index);
+
+      // Create a new topics object without the removed subject
+      const updatedTopics = { ...prev.topics };
+      delete updatedTopics[subjectToRemove];
+
+      return {
+        ...prev,
+        subjects: updatedSubjects,
+        topics: updatedTopics,
+      };
+    });
   };
 
   const addAffiliation = () => {
@@ -204,7 +214,7 @@ const TutorProfile = () => {
         setIsUpdating(false);
         return;
       }
-
+      // `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`
       await axios.patch(
         `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
         {
@@ -238,7 +248,7 @@ const TutorProfile = () => {
       console.error('Failed to update tutor data:', err.response?.data || err);
       setUpdateError(
         err.response?.data?.detail ||
-        'Failed to update personal information. Please try again.',
+          'Failed to update personal information. Please try again.',
       );
     } finally {
       setIsUpdating(false);
@@ -270,10 +280,15 @@ const TutorProfile = () => {
           : new Date().toISOString().split('T')[0];
       });
 
+      // Filter topics to only include those for existing subjects
       const topicsPayload: Record<string, string[]> = {};
-
-      Object.keys(editTutoringData.topics || {}).forEach((subject) => {
-        topicsPayload[subject] = editTutoringData.topics[subject];
+      editTutoringData.subjects.forEach((subject) => {
+        if (
+          editTutoringData.topics[subject] &&
+          editTutoringData.topics[subject].length > 0
+        ) {
+          topicsPayload[subject] = editTutoringData.topics[subject];
+        }
       });
 
       const payload = {
@@ -283,6 +298,7 @@ const TutorProfile = () => {
         },
         availability: {
           availability: formattedDates,
+
           available_time_from: formattedDates.map(() => '09:00:00.000Z'),
           available_time_to: formattedDates.map(() => '17:00:00.000Z'),
         },
@@ -295,14 +311,14 @@ const TutorProfile = () => {
         subject: {
           subject_name: editTutoringData.subjects,
         },
-        topic: editTutoringData.topics || {},
+        topic: topicsPayload, // Use filtered topics payload
       };
 
       console.log(
-        'Payload being sent (new format):',
+        'Payload being sent (filtered):',
         JSON.stringify(payload, null, 2),
       );
-      // `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`
+
       const response = await axios.patch(
         `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
         payload,
@@ -323,14 +339,14 @@ const TutorProfile = () => {
         expertise: editTutoringData.expertise,
         description: editTutoringData.description,
         dates_available: editTutoringData.dates_available,
-        topics: editTutoringData.topics,
+        topics: topicsPayload, // Use the filtered topics
       }));
 
       setUpdateSuccess('Tutoring information updated successfully!');
       setTimeout(() => {
         setActiveModal(null);
         setRefreshKey((prev) => prev + 1);
-      }, 1500);
+      }, 3000);
     } catch (err: any) {
       console.error('Update error:', err);
       console.error('Response data:', err.response?.data);
@@ -354,7 +370,6 @@ const TutorProfile = () => {
       setIsUpdating(false);
     }
   };
-
   useEffect(() => {
     const fetchTutor = async () => {
       try {
@@ -365,7 +380,7 @@ const TutorProfile = () => {
         }
         // `${import.meta.env.VITE_BACKEND_URL}/users/profile`
         const res = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
+          `${import.meta.env.VITE_BACKEND_URL}/users/profile`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -464,7 +479,7 @@ const TutorProfile = () => {
         console.error('Fetch error:', err);
         setError(
           err.response?.data?.detail ||
-          `Failed to load tutor data: ${err.message || 'Unknown error'}`,
+            `Failed to load tutor data: ${err.message || 'Unknown error'}`,
         );
       } finally {
         setLoading(false);
@@ -1027,8 +1042,8 @@ const TutorProfile = () => {
                       <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {tutor.dates_available.length > 0
                           ? tutor.dates_available
-                            .map((date) => date.toLocaleDateString())
-                            .join(', ')
+                              .map((date) => date.toLocaleDateString())
+                              .join(', ')
                           : 'N/A'}
                       </span>
                     </div>

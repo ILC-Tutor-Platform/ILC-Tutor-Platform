@@ -56,16 +56,8 @@ const TutorSchedule = () => {
       );
 
       const allSchedules = response.data.session;
-
-      // Filter out past sessions — assuming each session has a `start_time` field in ISO format
-      const now = new Date();
-
-      const upcomingSchedules = allSchedules.filter((session) => {
-        const sessionDate = new Date(session.date);
-        return sessionDate >= now;
-      });
-
-      setSchedule(upcomingSchedules);
+      console.log(allSchedules);
+      setSchedule(allSchedules);
     } catch (error) {
       console.error('Error fetching schedule:', error);
     } finally {
