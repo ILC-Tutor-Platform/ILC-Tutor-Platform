@@ -15,7 +15,6 @@ router = APIRouter()
 class SessionStatusUpdate(BaseModel):
     session_id:str
     status_id: int
-    status: str
 
 # Payload definition
 class SessionRequestPayload(BaseModel):
@@ -335,7 +334,6 @@ def get_sessions(db: Session = Depends(get_db)):
             .join(SubjectDetail, SubjectDetail.subject_id == TopicDetail.subject_id)
             .join(StudentUser, StudentUser.userid == StudentDetail.student_id)
             .join(TutorUser, TutorUser.userid == TutorDetail.tutor_id)
-            .filter(Session.status == 1)
             .all()
         )
 

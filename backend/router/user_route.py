@@ -1,7 +1,7 @@
 from fastapi import Depends, APIRouter, HTTPException, status, Request, File, UploadFile
 from sqlalchemy.orm import Session
 from database.config import get_db
-from models import UserDetail, StudentDetail, TutorDetail, TutorAffiliation, TutorAvailability, TutorExpertise, TutorSocials, AdminDetail, SubjectDetail
+from models import UserDetail, StudentDetail, TutorDetail, TutorAffiliation, TutorAvailability, TutorExpertise, TutorSocials, AdminDetail, SubjectDetail, TopicDetail
 from constants.supabase_client import supabase
 from jose import jwt, JWTError
 from constants import settings
@@ -107,7 +107,6 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
             "user": {
 
                 "name": user_detail.name,
-
                 "email": user_detail.email,
                 "datejoined": str(user_detail.datejoined),
                 "image_public_url": user_detail.image_public_url
@@ -156,7 +155,6 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
                     "socials": [s.socials for s in socials] if socials else [],
                     "availability": [a.availability for a in availability] if availability else [],
                     "subjects": [s.subject_name for s in subjects] if subjects else [],
-
                     "topics": [t.topic_title for t in topics] if topics else []
                 }
             else:
