@@ -35,13 +35,8 @@ const StudentTracking = () => {
 
       const allStudentRequests = response.data;
 
-      const now = new Date();
-
-      const upcomingRequests = allStudentRequests.filter((student) => {
-        const sessionDate = new Date(student.date);
-        return sessionDate >= now;
-      });
-      setStudents(upcomingRequests);
+      setStudents(allStudentRequests);
+      console.log(allStudentRequests);
     } catch (error) {
       console.error('Error fetching students:', error);
     } finally {

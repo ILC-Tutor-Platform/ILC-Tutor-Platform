@@ -1,3 +1,4 @@
+import DropdownSubjects from '@/components/DropdownSubject';
 import { useTokenStore } from '@/stores/authStore';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -48,6 +49,9 @@ const TutorProfile = () => {
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [currentTopic, setCurrentTopic] = useState('');
+  const [currentSubjectDropdown, setCurrentSubjectDropdown] = useState<
+    string | null
+  >(null);
 
   const openPersonalModal = () => {
     setEditPersonalData({
@@ -93,10 +97,10 @@ const TutorProfile = () => {
   };
 
   const addSubject = () => {
-    if (currentSubject.trim()) {
+    if (currentSubject?.trim()) {
       setEditTutoringData((prev) => ({
         ...prev,
-        subjects: [...prev.subjects, currentSubject.trim()],
+        subjects: [...prev.subjects, currentSubject?.trim()],
       }));
       setCurrentSubject('');
     }
@@ -144,13 +148,13 @@ const TutorProfile = () => {
   };
 
   const addTopic = () => {
-    if (currentTopic.trim() && currentSubject) {
+    if (currentTopic.trim() && currentSubjectDropdown) {
       setEditTutoringData((prev) => ({
         ...prev,
         topics: {
           ...prev.topics,
-          [currentSubject]: [
-            ...(prev.topics[currentSubject] || []),
+          [currentSubjectDropdown]: [
+            ...(prev.topics[currentSubjectDropdown] || []),
             currentTopic.trim(),
           ],
         },
@@ -291,16 +295,14 @@ const TutorProfile = () => {
         subject: {
           subject_name: editTutoringData.subjects,
         },
-        topics: {
-          topic_name: editTutoringData.topics,
-        },
+        topic: editTutoringData.topics || {},
       };
 
       console.log(
         'Payload being sent (new format):',
         JSON.stringify(payload, null, 2),
       );
-
+      // `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`
       const response = await axios.patch(
         `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
         payload,
@@ -321,6 +323,7 @@ const TutorProfile = () => {
         expertise: editTutoringData.expertise,
         description: editTutoringData.description,
         dates_available: editTutoringData.dates_available,
+        topics: editTutoringData.topics,
       }));
 
       setUpdateSuccess('Tutoring information updated successfully!');
@@ -360,9 +363,9 @@ const TutorProfile = () => {
           setLoading(false);
           return;
         }
-
+        // `${import.meta.env.VITE_BACKEND_URL}/users/profile`
         const res = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/users/profile`,
+          `${import.meta.env.VITE_BACKEND_URL}/users/profile/update`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -419,6 +422,23 @@ const TutorProfile = () => {
           });
         }
 
+        let topics: Record<string, string[]> = {};
+
+        if (
+          tutorData.topics &&
+          typeof tutorData.topics === 'object' &&
+          !Array.isArray(tutorData.topics)
+        ) {
+          // Directly assign if it's an object mapping subjects to topic arrays
+          topics = tutorData.topics;
+        } else if (Array.isArray(tutorData.topics)) {
+          // fallback for old formats (array of strings)
+          topics['General'] = tutorData.topics;
+        } else {
+          // empty fallback
+          topics = {};
+        }
+
         const datesAvailable = Array.isArray(tutorData.availability)
           ? tutorData.availability.map((dateStr: string) => new Date(dateStr))
           : [];
@@ -433,7 +453,7 @@ const TutorProfile = () => {
           facebook_link: socials[0] || '',
           linkedin_link: socials[1] || '',
           subjects,
-          topics: tutorData.topics || [],
+          topics: topics,
           affiliations,
           expertise,
           description: tutorData.description || '',
@@ -589,7 +609,7 @@ const TutorProfile = () => {
                 <div className="relative">
                   <input
                     type="text"
-                    value={currentSubject}
+                    value={currentSubject ?? ''}
                     onChange={(e) => setCurrentSubject(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addSubject()}
                     className="w-full p-[0.5rem] pr-[4rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
@@ -626,22 +646,30 @@ const TutorProfile = () => {
                 <label className="block text-gray-700 mb-[0.25rem]">
                   Topics
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={currentTopic}
-                    onChange={(e) => setCurrentTopic(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addTopic()}
-                    className="w-full p-[0.5rem] pr-[4rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
-                    placeholder="Add a topic"
+                <div className="flex flex-col gap-4">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={currentTopic}
+                      onChange={(e) => setCurrentTopic(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addTopic()}
+                      className="w-full p-[0.5rem] pr-[4rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
+                      placeholder="Add a topic"
+                    />
+                    <button
+                      onClick={addTopic}
+                      className="absolute right-[0.25rem] top-1/2 transform -translate-y-1/2 px-[0.75rem] py-[0.25rem] rounded-md text-white"
+                      style={{ background: '#FF9D02' }}
+                    >
+                      Add
+                    </button>
+                  </div>
+                  <DropdownSubjects
+                    subjects={editTutoringData.subjects}
+                    selectedSubject={currentSubjectDropdown}
+                    setSelectedSubject={setCurrentSubjectDropdown}
+                    className="w-full"
                   />
-                  <button
-                    onClick={addTopic}
-                    className="absolute right-[0.25rem] top-1/2 transform -translate-y-1/2 px-[0.75rem] py-[0.25rem] rounded-md text-white"
-                    style={{ background: '#FF9D02' }}
-                  >
-                    Add
-                  </button>
                 </div>
                 <div className="mt-[0.5rem] flex flex-col gap-[1rem]">
                   {Object.entries(editTutoringData.topics).map(
