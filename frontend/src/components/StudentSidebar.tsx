@@ -40,7 +40,7 @@ const StudentSidebar = () => {
               {
                 label: 'Tutor',
                 icon: Tutor,
-                route: '/profile/student/tutor-tracking',
+                route: '/tutors',
               },
               {
                 label: 'Schedule',
@@ -67,9 +67,8 @@ const StudentSidebar = () => {
                     className={item.large ? 'w-5 h-5' : 'w-4 h-4'}
                   />
                   <span
-                    className={`${
-                      item.large ? 'text-xs' : 'text-xs'
-                    } font-medium text-center`}
+                    className={`${item.large ? 'text-xs' : 'text-xs'
+                      } font-medium text-center`}
                   >
                     {item.label}
                   </span>
