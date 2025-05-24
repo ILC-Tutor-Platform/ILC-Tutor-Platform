@@ -175,7 +175,7 @@ const IndividualTutor = () => {
   return (
     <section className="relative top-[5vh] p-5">
       <form
-        className="flex flex-col bg-ilc-tutor-card p-10 gap-5 rounded-2xl mx-auto green-shadow-card md:w-[60%] lg:w-[60%] xl:w-[50%] 2xl:w-[30%]"
+        className="flex flex-col bg-ilc-tutor-card p-10 gap-5 rounded-2xl mx-auto green-shadow-card md:w-[60%] lg:w-[60%] xl:w-[50%] 2xl:w-[30%] mb-10 -mt-5"
         onSubmit={(e) => {
           e.preventDefault();
           handleRequestSession();
@@ -297,6 +297,8 @@ const IndividualTutor = () => {
                     id="roomNumber"
                     name="roomNumber"
                     placeholder="Input room number"
+                    value={roomNumber ?? ''}
+                    onChange={e => setRoomNumber(e.target.value)}
                   />
                 </div>
               </>
