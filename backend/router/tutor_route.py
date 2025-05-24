@@ -43,7 +43,6 @@ class TutorsListResponse(BaseModel):
 class StatusUpdate(BaseModel):
     status: int  # 1 for approve, 2 for reject
 
-# Alternative approach using subqueries for better performance
 @router.get("/tutors", response_model=TutorsListResponse)
 async def get_tutors_optimized(
     name: Optional[str] = None,
