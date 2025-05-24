@@ -3,7 +3,6 @@ import axios from 'axios';
 import { ChangeEvent, useEffect, useState } from 'react';
 import EditIcon from '../assets/edit.svg';
 import ProfilePlaceholder from '../assets/ProfilePlaceholder.svg';
-import BadgeIcon from '../assets/user2.svg';
 import { UserAuth } from '../context/AuthContext';
 
 const StudentDashboardProfile = () => {
@@ -219,13 +218,6 @@ const StudentDashboardProfile = () => {
           throw new Error('User data not found in response');
         }
 
-        // Set profile image if available
-        const imageUrl = res.data.user.image_public_url;
-        if (imageUrl) {
-          setProfileImageUrl(imageUrl);
-          console.log('Profile image URL set:', imageUrl);
-        }
-
         setStudent({
           name: res.data.user.name || '',
           student_number: res.data.student?.student_number || '',
@@ -248,7 +240,7 @@ const StudentDashboardProfile = () => {
   }, [user, accessToken, refreshKey]);
 
   return (
-    <div className="min-h-screen relative flex lg:w-[80%] lg:mx-auto">
+    <div className="min-h-screen relative flex lg:w-[70%] lg:mx-auto">
       {/* Personal Information Modal */}
       {activeModal === 'personal' && (
         <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4">
@@ -413,33 +405,27 @@ const StudentDashboardProfile = () => {
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
           {/* Profile Header */}
           <div
-            className="flex items-center gap-2 md:gap-4 mb-4 md:mb-6"
+            className="flex items-center gap-2 md:gap-4 mb-2 md:mb-4 -mt-10"
             style={{
               color: '#8A1538',
               fontFamily: 'Montserrat',
               fontWeight: 700,
             }}
           >
-            <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
+            <span className="text-3xl md:text-4xl lg:text-5xl">
               My Profile
             </span>
           </div>
 
           {/* Profile Content */}
-          <div className="w-full min-h-[calc(100vh-10rem)] bg-[#F9F8F4] shadow-md rounded-2xl border border-black border-opacity-30 p-6 md:p-8 lg:p-10 flex flex-col gap-8">
+          <div className="w-full min-h-[calc(100vh-12rem)] bg-[#F9F8F4] shadow-md rounded-2xl border border-black border-opacity-30 p-5 md:p-7 lg:p-9 flex flex-col">
             {/* Profile Picture */}
-            <div className="flex flex-col items-center mb-8">
+            <div className="flex flex-col items-center mb-8 -mt-2">
               <img
-                className="w-36 h-36 md:w-44 md:h-44 lg:w-52 lg:h-52 rounded-full"
-                src={profileImageUrl || ProfilePlaceholder}
+                className="w-30 h-30 md:w-40 md:h-40 lg:w-50 lg:h-50 rounded-full"
+                src={ProfilePlaceholder}
                 alt="Profile"
               />
-              <button
-                className="mt-3 text-center text-base md:text-lg lg:text-xl text-black font-normal underline"
-                onClick={() => console.log('Update Photo clicked')}
-              >
-                Update Photo
-              </button>
             </div>
 
             {/* Loading/Error */}
@@ -452,9 +438,9 @@ const StudentDashboardProfile = () => {
             ) : (
               <div className="flex flex-col md:flex-row gap-8 md:gap-10 w-full justify-center">
                 {/* Personal Information Section */}
-                <div className="w-full md:w-[45%] lg:w-[40%] xl:w-[35%] bg-white shadow-lg rounded-lg border border-opacity-10 relative p-6">
+                <div className="w-full md:w-[55%] lg:w-[50%] xl:w-[45%] bg-white shadow-lg rounded-lg border border-opacity-10 relative p-6">
                   <div className="flex justify-between items-start mb-4">
-                    <div className="text-black text-xl md:text-2xl font-Montserrat font-semibold">
+                    <div className="text-black text-xl font-Montserrat font-semibold">
                       Personal Information
                     </div>
                     <button
@@ -464,7 +450,7 @@ const StudentDashboardProfile = () => {
                       <img
                         src={EditIcon}
                         alt="Edit"
-                        className="w-5 h-5 md:w-6 md:h-6"
+                        className="w-4 h-4 md:w-5 md:h-5 cursor-pointer"
                       />
                     </button>
                   </div>
@@ -489,9 +475,9 @@ const StudentDashboardProfile = () => {
                 </div>
 
                 {/* Education Information Section */}
-                <div className="w-full md:w-[45%] lg:w-[40%] xl:w-[35%] bg-white shadow-lg rounded-lg border border-opacity-10 relative p-6">
+                <div className="w-full md:w-[55%] lg:w-[50%] xl:w-[45%] bg-white shadow-lg rounded-lg border border-opacity-10 relative p-6">
                   <div className="flex justify-between items-start mb-4">
-                    <div className="text-black text-xl md:text-2xl font-Montserrat font-semibold">
+                    <div className="text-black text-xl font-Montserrat font-semibold">
                       Education Information
                     </div>
                     <button
@@ -501,7 +487,7 @@ const StudentDashboardProfile = () => {
                       <img
                         src={EditIcon}
                         alt="Edit"
-                        className="w-5 h-5 md:w-6 md:h-6"
+                        className="w-4 h-4 md:w-5 md:h-5 cursor-pointer"
                       />
                     </button>
                   </div>
