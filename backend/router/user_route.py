@@ -91,32 +91,41 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
         roles = user["role"]
         
         logger.info(f"Profile preview made by user {uid}")
-
         # Fetch user from supabase
         user_detail = db.query(UserDetail).filter(UserDetail.userid == uid).first()
+        
+        if not user_detail:
+            logger.error(f"User detail not found for uid: {uid}")
+            raise HTTPException(status_code=404, detail="User not found")
+            
 
         # Fetch roles from Supabase
         role_ids = [int(r) for r in roles]
         logger.info(f"Role ids: {role_ids}")
+        
         response = {
             "user": {
+
                 "name": user_detail.name,
+
                 "email": user_detail.email,
                 "datejoined": str(user_detail.datejoined),
                 "image_public_url": user_detail.image_public_url
+
             }
         }
-
         logger.info(f"Details: {response}")
+        
         # Add student data if applicable
         if 0 in role_ids:
             student = db.query(StudentDetail).filter(StudentDetail.student_id == uid).first()
             if student:
+
                 response["student"] = {
                     "student_number": student.student_number,
                     "degree_program": student.degree_program
                 }
-
+        
         # Add tutor data if applicable
         if 1 in role_ids:
             tutor = db.query(TutorDetail).filter(TutorDetail.tutor_id == uid).first()
@@ -124,31 +133,66 @@ def get_profile(user= Depends(verify_token), db: Session = Depends(get_db)):
             affiliation = db.query(TutorAffiliation).filter(TutorAffiliation.tutor_id == uid).all()
             expertise = db.query(TutorExpertise).filter(TutorExpertise.tutor_id == uid).all()
             socials = db.query(TutorSocials).filter(TutorSocials.tutor_id == uid).all()
-            subject = db.query(SubjectDetail).filter(SubjectDetail.tutor_id == uid).all()
+            subjects = db.query(SubjectDetail).filter(SubjectDetail.tutor_id == uid).all()
+            
+            logger.info(f"Found {len(subjects)} subjects for tutor {uid}")
+            
+            # Get all topics for subjects owned by this tutor
+            topics = []
+            if subjects:  # Only query topics if there are subjects
+                topics = db.query(TopicDetail).join(
+                    SubjectDetail, TopicDetail.subject_id == SubjectDetail.subject_id
+                ).filter(SubjectDetail.tutor_id == uid).all()
+            
+            logger.info(f"Found {len(topics)} topics for tutor {uid}")
+            
+
             if tutor:
                 response["tutor"] = {
                     "description": tutor.description,
                     "status": tutor.status,
-                    "affiliations": [a.affiliations for a in affiliation],
-                    "expertise": [e.expertise for e in expertise],
-                    "socials": [s.socials for s in socials],
-                    "availability": [a.availability for a in availability],
-                    "subject": [s.subject_name for s in subject]
-                }
+                    "affiliations": [a.affiliations for a in affiliation] if affiliation else [],
+                    "expertise": [e.expertise for e in expertise] if expertise else [],
+                    "socials": [s.socials for s in socials] if socials else [],
+                    "availability": [a.availability for a in availability] if availability else [],
+                    "subjects": [s.subject_name for s in subjects] if subjects else [],
 
+                    "topics": [t.topic_title for t in topics] if topics else []
+                }
+            else:
+                logger.warning(f"Tutor detail not found for uid: {uid}")
+                response["tutor"] = {
+                    "description": None,
+                    "status": None,
+                    "affiliations": [],
+                    "expertise": [],
+                    "socials": [],
+                    "availability": [],
+                    "subjects": [],
+                    "topics": []
+                }
+        
+        # Add admin data if applicable
         if 2 in role_ids:
             admin = db.query(AdminDetail).filter(AdminDetail.admin_id == uid).first()
-
             if admin:
                 response["admin"] = {
                     "admin_role": admin.admin_role
                 }
 
+        
         return response
-    
-    except Exception:
-        logger.error("User requested is not found.")
-        raise HTTPException(status_code=500, detail="User not found.")
+        
+
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error in get_profile for user {uid if 'uid' in locals() else 'unknown'}: {str(e)}")
+        logger.error(f"Exception type: {type(e).__name__}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.patch("/users/profile/update")
 def update_user_profile(
@@ -296,6 +340,129 @@ def update_user_profile(
                 logger.error("Only tutors can update tutor socials.")
                 raise HTTPException(status_code=403, detail="Permission denied")        
 
+        # Enhanced topic update functionality
+        if "topic" in data:
+            if "1" in role:  # Tutor check
+                subject_topic_map = data["topic"]
+                logger.info(f"Updating topics for tutor {uid}: {subject_topic_map}")
+
+                # Validate that subject_topic_map is a dictionary
+                if not isinstance(subject_topic_map, dict):
+                    logger.error("Topic data must be a dictionary mapping subjects to topic lists")
+                    raise HTTPException(status_code=400, detail="Invalid topic data format")
+
+                for subject_name, topic_list in subject_topic_map.items():
+                    logger.info(f"Processing subject: {subject_name} with topics: {topic_list}")
+                    
+                    # Validate topic_list is a list
+                    if not isinstance(topic_list, list):
+                        logger.error(f"Topics for subject '{subject_name}' must be a list")
+                        raise HTTPException(status_code=400, detail=f"Topics for subject '{subject_name}' must be a list")
+
+                    # 1. Find subject_id where tutor owns the subject
+                    subject_res = supabase.table("subject_detail")\
+                        .select("subject_id")\
+                        .eq("subject_name", subject_name)\
+                        .eq("tutor_id", uid)\
+                        .execute()
+
+
+                    if not subject_res.data:
+                        logger.warning(f"Subject '{subject_name}' not found or not owned by tutor {uid}")
+                        raise HTTPException(
+                            status_code=400, 
+                            detail=f"Subject '{subject_name}' not found or not owned by you. Please ensure the subject exists in your profile first."
+                        )
+
+                    subject_id = subject_res.data[0]["subject_id"]
+                    logger.info(f"Found subject_id: {subject_id} for subject: {subject_name}")
+
+
+                    # 2. Check if topics currently exist for this subject
+                    existing_topics_res = supabase.table("topic_detail")\
+                        .select("topic_id, topic_title")\
+                        .eq("subject_id", subject_id)\
+                        .execute()
+
+                    
+                    existing_topics_count = len(existing_topics_res.data) if existing_topics_res.data else 0
+                    logger.info(f"Found {existing_topics_count} existing topics for subject {subject_name}")
+
+                    # 3. Smart topic update - only modify what's needed
+                    existing_topic_titles = [topic["topic_title"] for topic in existing_topics_res.data] if existing_topics_res.data else []
+                    new_topic_titles = [name.strip() for name in topic_list if name and name.strip()]
+                    
+                    # Find topics to delete (exist in DB but not in new list)
+                    topics_to_delete = [topic for topic in existing_topics_res.data or [] 
+                                      if topic["topic_title"] not in new_topic_titles]
+                    
+                    # Find topics to add (in new list but not in DB)
+                    topics_to_add = [name for name in new_topic_titles 
+                                   if name not in existing_topic_titles]
+                    
+                    logger.info(f"Topics to delete: {[t['topic_title'] for t in topics_to_delete]}")
+                    logger.info(f"Topics to add: {topics_to_add}")
+                    
+                    # Delete only unused topics
+                    topics_deleted = 0
+                    topics_skipped = 0
+                    
+
+                    for topic in topics_to_delete:
+
+                        try:
+                            # Check if topic is referenced in sessions
+                            session_check = supabase.table("session")\
+                                .select("session_id")\
+                                .eq("topic_id", topic["topic_id"])\
+                                .execute()
+                            
+                            if session_check.data:
+                                logger.warning(f"Cannot delete topic '{topic['topic_title']}' - it's being used in {len(session_check.data)} session(s)")
+                                topics_skipped += 1
+                            else:
+                                # Safe to delete
+                                supabase.table("topic_detail").delete().eq("topic_id", topic["topic_id"]).execute()
+                                topics_deleted += 1
+                                logger.info(f"Deleted topic: {topic['topic_title']}")
+                                
+
+                        except Exception as e:
+                            logger.error(f"Error processing topic '{topic['topic_title']}': {str(e)}")
+
+                            topics_skipped += 1
+                    
+                    # Add new topics
+                    topics_added = 0
+                    for topic_title in topics_to_add:
+                        try:
+                            supabase.table("topic_detail").insert({
+                                "subject_id": subject_id,
+                                "topic_title": topic_title
+                            }).execute()
+                            topics_added += 1
+                            logger.info(f"Added topic: {topic_title} to subject: {subject_name}")
+                        except Exception as e:
+                            logger.error(f"Error adding topic '{topic_title}': {str(e)}")
+                    
+
+                    # Log results
+                    if existing_topics_count == 0 and topics_added > 0:
+                        logger.info(f"Created {topics_added} new topics for subject: {subject_name}")
+                    else:
+                        logger.info(f"Updated topics for subject: {subject_name} - Added: {topics_added}, Deleted: {topics_deleted}, Skipped (in use): {topics_skipped}")
+                    
+                    # Warn user if some topics couldn't be deleted
+                    if topics_skipped > 0:
+                        logger.warning(f"{topics_skipped} topics could not be removed from '{subject_name}' because they are being used in active sessions")
+
+                logger.info(f"Successfully processed topics for tutor {uid}")
+                
+
+            else:
+                logger.error("Only tutors can update topics.")
+                raise HTTPException(status_code=403, detail="Permission denied")
+
         return {"message": "Profile updated successfully."}
     
     except HTTPException:
@@ -303,5 +470,6 @@ def update_user_profile(
 
     except Exception as e:
         logger.error(f"User detail cannot be updated. Error: {str(e)}")
-        raise HTTPException(status_code=400, detail="Update user failed.")
-    
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail="Update user failed.")
