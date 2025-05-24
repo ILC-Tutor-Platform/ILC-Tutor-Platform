@@ -405,7 +405,7 @@ const StudentDashboardProfile = () => {
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
           {/* Profile Header */}
           <div
-            className="flex items-center gap-2 md:gap-4 mb-2 md:mb-4 -mt-10"
+            className="flex items-center gap-2 md:gap-4 mb-2 md:mb-4 md:-mt-5 lg:-mt-10"
             style={{
               color: '#8A1538',
               fontFamily: 'Montserrat',

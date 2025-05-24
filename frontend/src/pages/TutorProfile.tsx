@@ -744,7 +744,7 @@ const TutorProfile = () => {
       {/* Main Profile Content */}
       <div className="transition-all duration-300 ease-in-out flex-1">
         <main className="p-4 md:p-8 lg:p-12 xl:p-16 min-h-[calc(100vh-5rem)]">
-          <div className="flex items-center gap-2 md:gap-4 mb-2 md:mb-4 -mt-10">
+          <div className="flex items-center gap-2 md:gap-4 mb-2 md:mb-4 md:-mt-5 lg:-mt-10">
             <h1
               className="text-3xl md:text-4xl lg:text-5xl whitespace-nowrap"
               style={{
