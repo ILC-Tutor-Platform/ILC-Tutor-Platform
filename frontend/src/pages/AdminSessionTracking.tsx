@@ -116,12 +116,13 @@ const AdminSessionTracking = () => {
                         </div>
                         <div>
                           <span
-                            className={`border text-[0.5rem] md:text-sm px-3 py-1 rounded-full ${session.status_id === 1
+                            className={`border text-[0.5rem] md:text-sm px-3 py-1 rounded-full ${
+                              session.status_id === 1
                                 ? 'border-[#307B74] text-[#307B74]'
                                 : session.status_id === 2
                                   ? 'border-[#8A1538] text-[#8A1538]'
                                   : 'border-gray-400 text-gray-500'
-                              }`}
+                            }`}
                           >
                             {session.status_id === 1 && 'APPROVED'}
                             {session.status_id === 2 && 'DECLINED'}
