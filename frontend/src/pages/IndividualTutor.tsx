@@ -175,7 +175,7 @@ const IndividualTutor = () => {
   return (
     <section className="relative top-[5vh] p-5">
       <form
-        className="flex flex-col bg-ilc-tutor-card p-10 gap-5 rounded-2xl mx-auto green-shadow-card md:w-[30%]"
+        className="flex flex-col bg-ilc-tutor-card p-10 gap-5 rounded-2xl mx-auto green-shadow-card md:w-[60%] lg:w-[60%] xl:w-[50%] 2xl:w-[30%]"
         onSubmit={(e) => {
           e.preventDefault();
           handleRequestSession();

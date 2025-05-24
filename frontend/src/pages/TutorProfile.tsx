@@ -16,6 +16,7 @@ const TutorProfile = () => {
     facebook_link: '',
     linkedin_link: '',
     subjects: [] as string[],
+    topics: {} as Record<string, string[]>,
     affiliations: [] as string[],
     expertise: [] as string[],
     description: '',
@@ -32,6 +33,7 @@ const TutorProfile = () => {
   });
   const [editTutoringData, setEditTutoringData] = useState({
     subjects: [] as string[],
+    topics: {} as Record<string, string[]>,
     affiliations: [] as string[],
     expertise: [] as string[],
     description: '',
@@ -45,6 +47,7 @@ const TutorProfile = () => {
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [currentTopic, setCurrentTopic] = useState('');
 
   const openPersonalModal = () => {
     setEditPersonalData({
@@ -61,6 +64,7 @@ const TutorProfile = () => {
   const openTutoringModal = () => {
     setEditTutoringData({
       subjects: [...tutor.subjects],
+      topics: { ...tutor.topics },
       affiliations: [...tutor.affiliations],
       expertise: [...tutor.expertise],
       description: tutor.description,
@@ -139,6 +143,32 @@ const TutorProfile = () => {
     }));
   };
 
+  const addTopic = () => {
+    if (currentTopic.trim() && currentSubject) {
+      setEditTutoringData((prev) => ({
+        ...prev,
+        topics: {
+          ...prev.topics,
+          [currentSubject]: [
+            ...(prev.topics[currentSubject] || []),
+            currentTopic.trim(),
+          ],
+        },
+      }));
+      setCurrentTopic('');
+    }
+  };
+
+  const removeTopic = (subject: string, index: number) => {
+    setEditTutoringData((prev) => ({
+      ...prev,
+      topics: {
+        ...prev.topics,
+        [subject]: prev.topics[subject].filter((_, i) => i !== index),
+      },
+    }));
+  };
+
   const handleDateChange = (date: Date | null) => {
     if (date) {
       setEditTutoringData((prev) => ({
@@ -204,7 +234,7 @@ const TutorProfile = () => {
       console.error('Failed to update tutor data:', err.response?.data || err);
       setUpdateError(
         err.response?.data?.detail ||
-          'Failed to update personal information. Please try again.',
+        'Failed to update personal information. Please try again.',
       );
     } finally {
       setIsUpdating(false);
@@ -236,6 +266,12 @@ const TutorProfile = () => {
           : new Date().toISOString().split('T')[0];
       });
 
+      const topicsPayload: Record<string, string[]> = {};
+
+      Object.keys(editTutoringData.topics || {}).forEach((subject) => {
+        topicsPayload[subject] = editTutoringData.topics[subject];
+      });
+
       const payload = {
         tutor: {
           description: editTutoringData.description.trim(),
@@ -252,8 +288,11 @@ const TutorProfile = () => {
         expertise: {
           expertise: editTutoringData.expertise,
         },
-        subjects: {
+        subject: {
           subject_name: editTutoringData.subjects,
+        },
+        topics: {
+          topic_name: editTutoringData.topics,
         },
       };
 
@@ -342,15 +381,13 @@ const TutorProfile = () => {
         const email = res.data.user?.email || user.email || '';
 
         let subjects: string[] = [];
-        if (tutorData.subject) {
-          if (Array.isArray(tutorData.subject.subject_name)) {
-            subjects = tutorData.subject.subject_name;
-          } else if (Array.isArray(tutorData.subject)) {
-            subjects = tutorData.subject.map((sub: any) => {
-              if (typeof sub === 'string') return sub;
-              if (sub.subject_name) return sub.subject_name;
-              return String(sub);
-            });
+        if (Array.isArray(tutorData.subjects)) {
+          if (typeof tutorData.subjects[0] === 'string') {
+            subjects = tutorData.subjects;
+          } else {
+            subjects = tutorData.subjects.map((sub: any) =>
+              typeof sub === 'string' ? sub : sub.subject_name || String(sub),
+            );
           }
         }
 
@@ -396,16 +433,18 @@ const TutorProfile = () => {
           facebook_link: socials[0] || '',
           linkedin_link: socials[1] || '',
           subjects,
+          topics: tutorData.topics || [],
           affiliations,
           expertise,
           description: tutorData.description || '',
           dates_available: datesAvailable,
         });
+        console.log(tutorData);
       } catch (err: any) {
         console.error('Fetch error:', err);
         setError(
           err.response?.data?.detail ||
-            `Failed to load tutor data: ${err.message || 'Unknown error'}`,
+          `Failed to load tutor data: ${err.message || 'Unknown error'}`,
         );
       } finally {
         setLoading(false);
@@ -579,6 +618,57 @@ const TutorProfile = () => {
                       </button>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* Topics */}
+              <div>
+                <label className="block text-gray-700 mb-[0.25rem]">
+                  Topics
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={currentTopic}
+                    onChange={(e) => setCurrentTopic(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addTopic()}
+                    className="w-full p-[0.5rem] pr-[4rem] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8A1538]"
+                    placeholder="Add a topic"
+                  />
+                  <button
+                    onClick={addTopic}
+                    className="absolute right-[0.25rem] top-1/2 transform -translate-y-1/2 px-[0.75rem] py-[0.25rem] rounded-md text-white"
+                    style={{ background: '#FF9D02' }}
+                  >
+                    Add
+                  </button>
+                </div>
+                <div className="mt-[0.5rem] flex flex-col gap-[1rem]">
+                  {Object.entries(editTutoringData.topics).map(
+                    ([subject, topicList]) => (
+                      <div key={subject}>
+                        <h4 className="font-semibold mb-[0.25rem]">
+                          {subject}
+                        </h4>
+                        <div className="flex flex-wrap gap-[0.5rem]">
+                          {topicList.map((topic, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center bg-gray-100 rounded-full px-[0.75rem] py-[0.25rem]"
+                            >
+                              <span>{topic}</span>
+                              <button
+                                onClick={() => removeTopic(subject, index)}
+                                className="ml-[0.5rem] text-gray-500 hover:text-gray-700"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ),
+                  )}
                 </div>
               </div>
 
@@ -909,8 +999,8 @@ const TutorProfile = () => {
                       <span className="text-black font-semibold md:text-right md:w-2/3 truncate">
                         {tutor.dates_available.length > 0
                           ? tutor.dates_available
-                              .map((date) => date.toLocaleDateString())
-                              .join(', ')
+                            .map((date) => date.toLocaleDateString())
+                            .join(', ')
                           : 'N/A'}
                       </span>
                     </div>

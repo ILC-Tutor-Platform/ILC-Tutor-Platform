@@ -56,7 +56,7 @@ const AdminSessionTracking = () => {
     <div className="min-h-screen font-manrope relative flex">
       <AdminSidebar />
       <div className="transition-all duration-300 ease-in-out flex-1">
-        <main className="px-5 py-10 md:w-[80%] md:mx-auto min-h-[calc(100vh-5rem)]">
+        <main className="px-5 py-10 md:w-[80%] md:mx-auto min-h-[calc(100vh-40vh)]">
           <div
             className="flex items-center gap-2 md:gap-4 mb-2 md:mb-4 -mt-6"
             style={{
@@ -72,7 +72,7 @@ const AdminSessionTracking = () => {
             </span>
           </div>
 
-          <div className="w-full min-h-[calc(100vh-10rem)] bg-[#F9F8F4] border border-black border-opacity-30 rounded-[1.25rem] p-2 md:p-3 lg:p-5 shadow-md">
+          <div className="w-full min-h-[calc(100vh-30vh)] bg-[#F9F8F4] border border-black border-opacity-30 rounded-[1.25rem] p-2 md:p-3 lg:p-5 shadow-md">
             <div className="w-full flex flex-col gap-4">
               <div className="grid grid-cols-5 font-semibold text-white bg-[#8A1538] rounded-md px-4 py-3 text-center text-xs sm:text-sm md:text-base">
                 <div>Student</div>
@@ -91,45 +91,46 @@ const AdminSessionTracking = () => {
                 </div>
               ) : (
                 <>
-                  {session.length === 0 && (
-                    <div className="text-center text-gray-500 mt-4">
-                      No sessions found.
-                    </div>
-                  )}
-                  {session.map((session, index) => (
-                    <div
-                      key={index}
-                      className="grid grid-cols-5 items-center bg-white rounded-md px-4 py-3 text-center text-xs sm:text-sm lg:py-4 shadow-sm"
-                    >
-                      <div className="text-[0.6rem] md:text-base">
-                        {session.student_name}
+                  <div className="flex flex-col gap-4 overflow-y-auto max-h-[calc(100vh-30vh)]">
+                    {session.length === 0 && (
+                      <div className="text-center text-gray-500 mt-4">
+                        No sessions found.
                       </div>
-                      <div className="text-[0.6rem] md:text-base">
-                        {session.tutor_name}
+                    )}
+                    {session.map((session, index) => (
+                      <div
+                        key={index}
+                        className="grid grid-cols-5 items-center bg-white rounded-md px-4 py-3 text-center text-xs sm:text-sm lg:py-4 shadow-sm"
+                      >
+                        <div className="text-[0.6rem] md:text-base">
+                          {session.student_name}
+                        </div>
+                        <div className="text-[0.6rem] md:text-base">
+                          {session.tutor_name}
+                        </div>
+                        <div className="text-[0.6rem] md:text-base">
+                          {session.date} : {session.time}
+                        </div>
+                        <div className="text-[0.6rem] md:text-base">
+                          {session.subject}
+                        </div>
+                        <div>
+                          <span
+                            className={`border text-[0.5rem] md:text-sm px-3 py-1 rounded-full ${session.status_id === 1
+                                ? 'border-[#307B74] text-[#307B74]'
+                                : session.status_id === 2
+                                  ? 'border-[#8A1538] text-[#8A1538]'
+                                  : 'border-gray-400 text-gray-500'
+                              }`}
+                          >
+                            {session.status_id === 1 && 'APPROVED'}
+                            {session.status_id === 2 && 'DECLINED'}
+                            {session.status_id === 0 && 'PENDING'}
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-[0.6rem] md:text-base">
-                        {session.date} : {session.time}
-                      </div>
-                      <div className="text-[0.6rem] md:text-base">
-                        {session.subject}
-                      </div>
-                      <div>
-                        <span
-                          className={`border text-[0.5rem] md:text-sm px-3 py-1 rounded-full ${
-                            session.status_id === 1
-                              ? 'border-[#307B74] text-[#307B74]'
-                              : session.status_id === 2
-                                ? 'border-[#8A1538] text-[#8A1538]'
-                                : 'border-gray-400 text-gray-500'
-                          }`}
-                        >
-                          {session.status_id === 1 && 'APPROVED'}
-                          {session.status_id === 2 && 'DECLINED'}
-                          {session.status_id === 0 && 'PENDING'}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </>
               )}
             </div>
